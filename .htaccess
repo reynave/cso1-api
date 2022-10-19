@@ -1,0 +1,5 @@
+RewriteEngine on
+RewriteBase /application/cso/admin/api/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /application/cso/admin/api/index.php?/$1 [L]
