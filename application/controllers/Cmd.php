@@ -201,7 +201,7 @@ class Cmd extends CI_Controller
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
         $txt = curl_exec($ch);
-        // echo $txt;
+         echo $txt;
         $saveFile = "member" . date("YmdHis") . ".txt";
         $myfile = fopen("./uploads/member/$saveFile", "w") or die("Unable to open file!");
         fwrite($myfile, $txt);
@@ -209,9 +209,11 @@ class Cmd extends CI_Controller
         echo "\n" . 'SAVE FILE DONE' . "\n";
 
         $handle = fopen("./uploads/member/$saveFile", "r");
+        
+        
 
         if ($handle) {
-
+            echo  "\n" . 'handle run' . "\n";
             while (($line = fgets($handle)) !== false) {
                 $ar =  explode("|", $line);
 
@@ -249,6 +251,8 @@ class Cmd extends CI_Controller
             }
 
             fclose($handle);
+        }else{
+            echo  "\n" . 'handle ERROR' . "\n";
         }
     }
 

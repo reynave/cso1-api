@@ -688,7 +688,9 @@ class Model extends CI_Model
 
      function barcode($code){
         $barcode = str_split($code);
+       if(count( $barcode ) >= 13){
 
+     
         $digitPrefixPosition = (int)$this->model->select("value","cso1_account","id=51");
         $digitItem = (int)$this->model->select("value","cso1_account","id=52");
         $digitWeight = (int)$this->model->select("value","cso1_account","id=53");
@@ -727,8 +729,11 @@ class Model extends CI_Model
             "weight" => $weight,
             "checkDigit" => $checkDigit, 
         );
-
-        return $array;
+            return $array;
+        }else{
+            return $code;
+        }
+       
      }
 
 

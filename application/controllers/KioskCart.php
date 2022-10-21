@@ -120,10 +120,11 @@ class KioskCart extends CI_Controller
                 $weight = 1;
                 $note = "";
                 // CHECK BARCODE 
-                $barcode = str_split($post['barcode']);
-          
-                if(count($barcode) > 10 ){
+                $barcode = str_split($post['barcode']); 
+                
+                if(count($barcode) >= 13 ){
                     $arrItem = $this->model->barcode($post['barcode']);
+                  
                     if( $arrItem['prefix'] == 2 ){
                         // BARCODE DINAMIC  
                         $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" .  $arrItem['itemId'] . "' and presence = 1"); 
