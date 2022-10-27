@@ -725,7 +725,7 @@ class Model extends CI_Model
                 "digitFloat"            => $digitFloat,
             ),
             "prefix" => $prefix,
-            "itemId" => $item,
+            "itemId" => $prefix == 2 ? $item  : $code,
             "weight" => $weight,
             "checkDigit" => $checkDigit, 
         );
@@ -758,6 +758,8 @@ class Model extends CI_Model
 
     function cam_to_img($data, $output_file, $filename = "")
     {
+        $data =  str_replace("data:image/png;base64,","",$data);
+
         $data = base64_decode($data);
         $signname = strtolower($filename);
         $signname = str_replace(" ", "-", $signname);

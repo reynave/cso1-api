@@ -63,8 +63,7 @@ class KioskLogin extends CI_Controller
                 "kioskUuid" => $kioskUuid,
                 "memberId" => 0,
                 "terminalId" => $this->terminalId,
-                "storeOutlesId" => $this->storeOutlesId,
-                
+                "storeOutlesId" => $this->storeOutlesId, 
                 "startDate" => date("Y-m-d H:i:s"),
                 "inputDate" => time(),
                 "presence" => 1,
@@ -75,6 +74,29 @@ class KioskLogin extends CI_Controller
                 "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=16"),
                 "post" => $post,
                 "insert" => $insert,
+            );
+        }
+        echo json_encode($data);
+    }
+
+    function takePhoto()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) { 
+            $update = array(
+                "photo" =>  $post['base64Images'] != false ? $this->model->cam_to_img($post['base64Images'], "./uploads/photo/visitor/",  $post['kioskUuid']) : "",
+            );
+            $this->db->update("cso1_kioskUuid", $update,"kioskUuid = '".$post['kioskUuid']."'");
+            $data = array(
+                "error" => false,
+                "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=16"),
+                "post" => $post, 
+            );
+        }else{
+            $data = array(
+                "error" => true, 
+                "post" => $post, 
             );
         }
         echo json_encode($data);

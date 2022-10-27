@@ -324,16 +324,25 @@ class KioskPayment extends CI_Controller
             $summary = $this->model->summary($kioskUuid);
             $final = (int)$summary['final'];
             $cliTrxNumber = $kioskUuid . "-01";
+            $exp = $this->model->select("kioskUuid","cso1_paymentQrisTelkom","kioskUuid = '$kioskUuid' ") ? $this->model->sql("select DATEADD(mi, 30,qris_request_date) as 'exp' from cso1_paymentQrisTelkom where kioskUuid = '$kioskUuid' ")[0]['exp'] : false;
 
             if ($this->model->select("qris_content","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'")  ) {
                 $qris_content = $this->model->select("qris_content","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'");
                 $data = array(
+                    "status" => strtotime($exp ) < time() ? false : true,
+                    "check" => array(
+                        "timeCreated" => strtotime($exp ),
+                        "timeCurrent" => time(),
+                    ),
                     "summary" =>$summary,
                     "do" => $kioskUuid,
                     "error" => false,
-                    "status" => "view only",
+                    "note" => "View only",
+                    "exp" =>  $exp,
                     "qris" => $qris_content,
-                    "image" => $this->model->select("image","cso1_paymentType","id='QRT001'") 
+                    "image" => $this->model->select("image","cso1_paymentType","id='QRT001'"),
+                    "nmid" => $this->model->select("qris_nmid","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'"),
+                    "name" => $this->model->select("name","cso1_paymentType","id='QRT001'"),
                 );
                 $update = array(
                     "ilock" => 1,
@@ -383,10 +392,16 @@ class KioskPayment extends CI_Controller
                     "ilock" => 1,
                 );
                 $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
+                $exp = $this->model->sql("select DATEADD(mi, 30,qris_request_date) as 'exp' from cso1_paymentQrisTelkom where kioskUuid ='$kioskUuid' ")[0]['exp'];
+
                 $data = array(
+                    "status" => true,
                     "summary" =>$summary,
                     "do" => $kioskUuid,
+                    "nmid" => $resp['data']['qris_nmid'],
+                    "name" => $this->model->select("name","cso1_paymentType","id='QRT001'"),
                     "error" => false,
+                    "exp" =>  $exp,
                     "status" => "create new",
                     "qris" =>  $insert['qris_content'],
                     "image" => $this->model->select("image","cso1_paymentType","id='QRT001'") 
@@ -403,6 +418,23 @@ class KioskPayment extends CI_Controller
         echo json_encode($data);
     }
 
+    function fnQrisTelkomRegenerate(){
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post){
+            $kioskUuid = $post['kioskUuid'];
+            $this->db->delete("cso1_paymentQrisTelkom","kioskUuid = '$kioskUuid' "); 
+
+            $data = array(
+                "error" => false,
+            );
+        }else{
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
     
     function fnQrisTelkomStatus()
     {
