@@ -150,6 +150,39 @@ class KioskLogin extends CI_Controller
         echo json_encode($data);
     }
 
+
+    function getInfo()
+    { 
+        if( $this->model->select("kioskUuid", "cso1_kioskUuid", "kioskUuid = '" . $this->input->get('kioskUuid') . "' ") ){
+            $memberId  = $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" . $this->input->get('kioskUuid') . "' "); 
+            $terminalId  = $this->model->select("terminalId", "cso1_kioskUuid", "kioskUuid = '" . $this->input->get('kioskUuid') . "' "); 
+             
+            $name = $this->model->sql(" SELECT concat(firstname,' ',lastname) as 'name' FROM cso1_member  WHERE id='" . $memberId . "'  ")[0]['name'];
+              
+            $branches = $this->model->sql("SELECT t.storeOutlesId, o.name as 'outlet', b.name as 'branches'
+            FROM cso1_terminal as  t 
+            join cso1_storeOutles as o on o.id = t.storeOutlesId
+            join cso1_storeBranches as b on b.id = o.storeBranchesId
+            WHERE t.id='" .   $terminalId. "'")[0]['branches'];
+
+
+            $data = array(
+                "kioskUuid" =>  $this->input->get('kioskUuid'), 
+                "welcomeMember" => $name ? "Welcome " . ucwords($name) . " <br>Ke cabang kami $branches" : 'Member not found', 
+                "name" => $name,
+                "memberId" => $memberId, 
+            ); 
+
+        }else{
+            $data = array(
+                "kioskUuid" =>  $this->input->get('kioskUuid'), 
+                "error" => true,
+            ); 
+        }
+    
+        echo json_encode($data);
+    }
+
     function checkSession()
     {
  

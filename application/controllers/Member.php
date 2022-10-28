@@ -12,15 +12,13 @@ class Member extends CI_Controller
         header('Access-Control-Allow-Methods: GET, POST, PUT');
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
-        if (!$this->model->header($this->openAPI)) {
-          echo $this->model->error("Error auth");
-          exit;
-        }
+       
     }
 
 
     function index()
     {
+        
         $data = array( 
             "total" => $this->model->sql("select count(id)   total from cso1_member where presence = 1 ")[0]['total'],  
         ); 
@@ -32,7 +30,7 @@ class Member extends CI_Controller
     {
         $search = $this->input->get('search');
         $data = array( 
-            "data" => strlen($search) >= 3  ? $this->model->sql("SELECT  * 
+            "data" => strlen($search) >= 3  ? $this->model->sql("SELECT top 100  * 
             from cso1_member where presence = 1 
             and (firstName like '%".$search."%' OR id = '".$search."' )
             order by firstName") : [], 
