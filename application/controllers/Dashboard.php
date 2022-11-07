@@ -13,8 +13,8 @@ class Dashboard extends CI_Controller
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
+            //    echo $this->model->error("Error auth");
+            //   exit;
         }
     }
     // START :: ITEMS
@@ -26,7 +26,7 @@ class Dashboard extends CI_Controller
 
             "storeBranches" => $this->model->sql("SELECT id, name from cso1_storeBranches where presence = 1 order by name ASC"),
             "dateFrom" => date('Y-m-d'),
-            "dateTo" =>date('Y-m-d'),
+            "dateTo" => date('Y-m-d'),
         );
         echo json_encode($data);
     }
@@ -81,10 +81,17 @@ class Dashboard extends CI_Controller
         ,'1970/1/1') AS DATE) ASC
         ");
         $salesVisitorObj = [];
+        $totalMember = 0;
+        $totalNonMember = 0;
+        $totalQty = 0;
         foreach ($salesVisitor as  $row) {
             array_push($salesVisitorObj, [
                 $row['date'],  $row['member'],  $row['nonMember']
             ]);
+
+            $totalMember += $row['member'];
+            $totalNonMember += $row['nonMember'];
+            $totalQty  += $row['qty'];
         }
 
         $paymentWhere = "";
@@ -92,8 +99,7 @@ class Dashboard extends CI_Controller
             $paymentWhere .= " SUM(CASE WHEN paymentTypeId = '" . $row['id'] . "' THEN finalPrice ELSE 0 END) as '" . $row['name'] . "', ";
         }
 
-
-        $salesPayment =  $this->model->sql("SELECT CAST(DATEADD(SECOND, transactionDate
+        $sql = "SELECT CAST(DATEADD(SECOND, transactionDate
         ,'1970/1/1') AS DATE) as 'date'  ,
              $paymentWhere 
          count(transactionDate) as 'qty'
@@ -103,9 +109,30 @@ class Dashboard extends CI_Controller
         ,'1970/1/1') AS DATE) 
         order by CAST(DATEADD(SECOND, transactionDate
         ,'1970/1/1') AS DATE) ASC
-       ");
+       ";
+       
+        $salesPayment =  $this->model->sql($sql);
         $salesPaymentObj = [];
         $salesPaymentColumnsObj = [];
+
+
+        $paymentTotalWhere = "";
+        foreach ($this->model->sql("SELECT * from cso1_paymentType where presence = 1") as $row) {
+            $paymentTotalWhere .= " SUM(a.[" . $row['name'] . "]) as '".$row['name']."', ";
+        }
+
+        $sql2 = "SELECT  $paymentTotalWhere  sum(a.qty) as 'qty' from (SELECT CAST(DATEADD(SECOND, transactionDate
+        ,'1970/1/1') AS DATE) as 'date',
+             $paymentWhere 
+         count(transactionDate) as 'qty'
+            from cso1_transaction 
+            where presence = 1   $w 
+            group by CAST(DATEADD(SECOND, transactionDate
+        ,'1970/1/1') AS DATE) ) as a
+       ";
+
+        
+        
         foreach ($salesPayment as  $row) {
             $temp = [];
             $salesPaymentColumnsObj = [];
@@ -114,11 +141,10 @@ class Dashboard extends CI_Controller
                     array_push($temp, $val);
                     array_push($salesPaymentColumnsObj, $x);
                 }
-            }
-
+            } 
             array_push($salesPaymentObj, $temp);
         }
-
+ 
 
         $data = array(
             "dateFrom" => strtotime($this->input->get('dateFrom')),
@@ -128,11 +154,15 @@ class Dashboard extends CI_Controller
 
             "salesVisitor" => $salesVisitor,
             "salesVisitorObj" => $salesVisitorObj,
-
+            "salesVisitorTotal" => array(
+                "member" =>  $totalMember,
+                "nonMember" =>  $totalNonMember,
+                "qty" =>  $totalQty
+            ),
             "salesPayment" => $salesPayment,
             "salesPaymentObj" => $salesPaymentObj,
-            "salesPaymentColumnsObj" => $salesPaymentColumnsObj,
-
+            "salesPaymentColumnsObj" => $salesPaymentColumnsObj, 
+            "salesPaymentTotal" => $this->model->sql($sql2),
         );
         echo json_encode($data);
     }

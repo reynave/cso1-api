@@ -41,6 +41,7 @@ class KioskPrint extends CI_Controller
             $data = array(
                 "id" => $id,
                 "date" => $this->model->select("endDate","cso1_transaction","id=".$id),
+                "detail" =>   $this->model->sql("select * from cso1_transaction where id='".$id."' ")[0],
                 "items" =>  $this->model->sql("SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
                     FROM (
                         SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price,

@@ -69,6 +69,7 @@ class Terminal extends CI_Controller
                 "name" => $post['item']['name'] ? $post['item']['name'] : 'Terminal',
                 "storeOutlesId" => $post['item']['storeOutlesId'],
                 "status" => $post['item']['status'],
+                "token" =>   $post['item']['token'],
                 "updateDate" => time(),
                 "updateBy" => $this->model->userId(),
             );
