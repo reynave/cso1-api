@@ -43,36 +43,50 @@ class ReportsSalesSummary extends CI_Controller
     function fnFilter()
     {
         //? storeBranchesId=11&storeOutletId=&dateFrom=2022-09-14&dateTo=2022-09-13 
-
+        $q = "SELECT t1.*, i.description , i.itemCategoryId, c.name
+        from (
+            select td.itemId, sum(td.price) as 'totalAmount', count(td.itemId) as 'qty'
+            from cso1_transaction as t
+            join cso1_transactionDetail as td on td.transactionId = t.id 
+            where t.presence = 1 and  td.void = 1 and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
+            and (t.transactionDate  >=  ".strtotime($this->input->get('dateFrom') )." and t.transactionDate <= ".strtotime($this->input->get('dateTo')." 23:59:55" ).")
+                group by td.itemId
+            ) as t1
+            join cso1_item as i on i.id = t1.itemId
+            left join cso1_itemCategory as c on c.id = i.itemCategoryId 
+        ";
         $dateFrom = strtotime($this->input->get('dateFrom').' -1 day');
+        $paymentSql = "SELECT t1.*, p.name
+        from (
+        SELECT paymentTypeId, count(paymentTypeId) as 'qty',  sum(finalPrice) as 'totalAmount'
+        from cso1_transaction where 
+        (transactionDate >= " .  $dateFrom . " and  transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) 
+        and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+        and presence = 1 
+        group by paymentTypeId) as t1
+        join cso1_paymentType as p on p.id = t1.paymentTypeId";
+      
         $data = array(
             "dateFrom" =>  $dateFrom,
 
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateTo" => strtotime($this->input->get('dateTo')." 23:59:55"),
 
-            "overall" => $this->model->sql("SELECT count(id) as 'totalBill', sum(discount) as 'discount', sum(total) as 'netSales',
+            "overall" => $this->model->sql("SELECT count(id) as 'totalBill', sum(discount) as 'discount', sum(total-ppn) as 'netSales',
             sum(ppn) as 'tax', sum(finalPrice) as 'grossSales'
             from cso1_transaction where 
-            (transactionDate >= " .  $dateFrom . " and  transactionDate <= " . strtotime($this->input->get('dateTo')) . ") 
+            (transactionDate >= " .  $dateFrom . " and  transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . ") 
             and storeOutlesId = '" . $this->input->get('storeOutletId') . "'  
             and presence = 1")[0],
 
             "itemSales" => $this->model->sql("SELECT count(d.itemId) as 'itemSales' from cso1_transaction as a
             join cso1_transactionDetail as d on d.transactionId = a.id
             where 
-            (a.transactionDate >= " .  $dateFrom . " and  a.transactionDate < " . strtotime($this->input->get('dateTo')) . ") 
+            (a.transactionDate >= " .  $dateFrom . " and  a.transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . ") 
             and a.storeOutlesId =  '" . $this->input->get('storeOutletId') . "'    and d.presence = 1 and d.void = 0
             and a.presence = 1;")[0]['itemSales'],
 
-            "payment" => $this->model->sql("SELECT t1.*, p.name
-            from (
-            SELECT paymentTypeId, count(paymentTypeId) as 'qty',  sum(finalPrice) as 'totalAmount'
-            from cso1_transaction where 
-            (transactionDate >= " .  $dateFrom . " and  transactionDate < " . strtotime($this->input->get('dateTo')) . " ) 
-            and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-            and presence = 1 
-            group by paymentTypeId) as t1
-            join cso1_paymentType as p on p.id = t1.paymentTypeId"),
+            "payment" => $this->model->sql($paymentSql),
+            "paymentSql" =>$paymentSql,
 
             "tax" => $this->model->sql("SELECT t1.*, x.name from 
                     (
@@ -80,27 +94,19 @@ class ReportsSalesSummary extends CI_Controller
                         join cso1_transactionDetail as td on td.transactionId = t.id
                         join cso1_item as i on i.id = td.itemId
                         where t.presence = 1 and td.presence= 1 and 
-                        (transactionDate >= " .  $dateFrom . " and  transactionDate < " . strtotime($this->input->get('dateTo')) . " ) 
+                        (transactionDate >= " .  $dateFrom . " and  transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) 
                         group by i.itemTaxId
                     ) as t1
                 left join cso1_taxCode as x on x.id = t1.itemTaxId"),
 
-            "void" => $this->model->sql("SELECT d.itemId, count(d.itemId) as 'qty', i.description
-            from cso1_transaction as a
-            join cso1_transactionDetail as d on d.transactionId = a.id
-            join cso1_item as i on i.id = d.itemId
-            where 
-            (a.transactionDate >=  " .  $dateFrom . " and  a.transactionDate < " . strtotime($this->input->get('dateTo')) . " ) 
-            and a.storeOutlesId = '" . $this->input->get('storeOutletId') . "'   and d.void = 1
-            and a.presence = 1
-            group by d.itemId,  i.description"),
+            "void" => $this->model->sql($q),
 
             "discount" => $this->model->sql("SELECT t1.* , p.description, p.endDate from (
                 select  td.promotionId, count( td.itemId) as qty, sum(td.price) as price
                 from cso1_transaction as t
                 join cso1_transactionDetail as td on td.transactionId = t.id
                 where t.presence = 1 and td.presence = 1 and 
-                (t.transactionDate >=  " .  $dateFrom . " and  t.transactionDate < " . strtotime($this->input->get('dateTo')) . " ) 
+                (t.transactionDate >=  " .  $dateFrom . " and  t.transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) 
                 and td.promotionId is not null
                 group by td.promotionId) as t1
                 join cso1_promotion as p on p.id = t1.promotionId "),

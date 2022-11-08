@@ -19,31 +19,32 @@ class ReportsPromotions extends CI_Controller
     }
     // START :: ITEMS
     function storeBranches()
-    { 
+    {
         $data = array(
             "storeOutles" => $this->input->get('storeBranchesId') ?  $this->model->sql("SELECT id, name 
-            from cso1_storeOutles where storeBranchesId = '".$this->input->get('storeBranchesId')."' and presence = 1 order by name ASC") : [], 
+            from cso1_storeOutles where storeBranchesId = '" . $this->input->get('storeBranchesId') . "' and presence = 1 order by name ASC") : [],
 
-            "storeBranches" => $this->model->sql("SELECT id, name from cso1_storeBranches where presence = 1 order by name ASC"),  
+            "storeBranches" => $this->model->sql("SELECT id, name from cso1_storeBranches where presence = 1 order by name ASC"),
             "dateFrom" => date('Y-m-d'),
-            "dateTo" =>date('Y-m-d'),
+            "dateTo" => date('Y-m-d'),
         );
         echo json_encode($data);
     }
 
-    function storeOutles($storeBranchesId="")
-    { 
+    function storeOutles($storeBranchesId = "")
+    {
         $data = array(
-            "storeOutles" => $this->model->sql("SELECT id, name from cso1_storeOutles where storeBranchesId = '$storeBranchesId' and  presence = 1 order by name ASC"),  
+            "storeOutles" => $this->model->sql("SELECT id, name from cso1_storeOutles where storeBranchesId = '$storeBranchesId' and  presence = 1 order by name ASC"),
         );
         echo json_encode($data);
     }
-   
-    function fnFilter(){
-     
+
+    function fnFilter()
+    {
+        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom') ), 
-            "dateTo" => strtotime($this->input->get('dateTo') ),  
+            "dateFrom" => strtotime($this->input->get('dateFrom')),
+            "dateTo" => strtotime($this->input->get('dateTo')),
             "items" => $this->model->sql("SELECT t1.*, i.description as 'item', p.description as 'promo', p.id 
             from 
                 (
@@ -51,30 +52,38 @@ class ReportsPromotions extends CI_Controller
                     from cso1_transaction as t
                     join cso1_transactionDetail as td on t.id = td.transactionId
                     where t.presence = 1  and td.presence = 1 and promotionId is not null and 
-                    (t.transactionDate >= " . strtotime($this->input->get('dateFrom')) . " and  t.transactionDate < " . strtotime($this->input->get('dateTo')) . " ) and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+                    (t.transactionDate >= " . $dateFrom . " and  t.transactionDate <= " . strtotime($this->input->get('dateTo') . " 23:59:55") . " ) and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
                     GROUP BY  td.itemId, td.promotionId
                 ) as t1
                 join cso1_item as i on i.id = t1.itemId
                 join cso1_promotion as p on p.id = t1.promotionId
                 order by t1.qty DESC"),
+            "discount" => $this->model->sql("SELECT t1.* , p.description, p.endDate from (
+                    select  td.promotionId, count( td.itemId) as qty, sum(td.price) as price
+                    from cso1_transaction as t
+                    join cso1_transactionDetail as td on td.transactionId = t.id
+                    where t.presence = 1 and td.presence = 1 and 
+                    (t.transactionDate >=  " .  $dateFrom . " and  t.transactionDate <= " . strtotime($this->input->get('dateTo') . " 23:59:55") . " ) 
+                    and td.promotionId is not null
+                    group by td.promotionId) as t1
+                    join cso1_promotion as p on p.id = t1.promotionId "),
         );
         echo json_encode($data);
     }
 
-    function paymentDetail( )
+    function paymentDetail()
     {
+        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
         $data = array(
             "items" => $this->model->sql("
                 SELECT id, transactionDate,  paymentTypeId,  finalPrice
                 from cso1_transaction where 
-                paymentTypeId = '".$this->input->get("paymentTypeId")."'  and 
+                paymentTypeId = '" . $this->input->get("paymentTypeId") . "'  and 
                 presence = 1  and 
-                 (transactionDate >= " . strtotime($this->input->get('dateFrom')) . " and  transactionDate < " . strtotime($this->input->get('dateTo')) . " ) and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+                 (transactionDate >= " . $dateFrom . " and  transactionDate <= " . strtotime($this->input->get('dateTo') . " 23:59:55") . " ) and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
                  order by finalPrice DESC
             "),
         );
         echo json_encode($data);
     }
-
-
 }

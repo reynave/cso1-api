@@ -67,7 +67,7 @@ class ReportsPayment extends CI_Controller
 
     function fnFilter()
     {
-
+        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
         $data = array(
             "dateFrom" => strtotime($this->input->get('dateFrom')),
             "dateTo" => strtotime($this->input->get('dateTo')),
@@ -75,7 +75,7 @@ class ReportsPayment extends CI_Controller
                 from (
                 SELECT paymentTypeId, count(paymentTypeId) as 'qty',  sum(finalPrice) as 'totalAmount'
                 from cso1_transaction where 
-                (transactionDate >= " . strtotime($this->input->get('dateFrom')) . " and  transactionDate < " . strtotime($this->input->get('dateTo')) . " ) 
+                (transactionDate >= " .$dateFrom  . " and  transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) 
                 and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
                 and presence = 1 
                 group by paymentTypeId) as t1
@@ -86,13 +86,14 @@ class ReportsPayment extends CI_Controller
 
     function paymentDetail()
     {
+        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
         $data = array(
             "items" => $this->model->sql("
                 SELECT id, transactionDate,  paymentTypeId,  finalPrice
                 from cso1_transaction where 
                 paymentTypeId = '" . $this->input->get("paymentTypeId") . "'  and 
                 presence = 1  and 
-                 (transactionDate >= " . strtotime($this->input->get('dateFrom')) . " and  transactionDate < " . strtotime($this->input->get('dateTo')) . " ) and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+                 (transactionDate >= " .  $dateFrom . " and  transactionDate < " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
                  order by finalPrice DESC
             "),
         );

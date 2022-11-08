@@ -43,23 +43,24 @@ class ReportsItemVoid extends CI_Controller
 
     function fnFilter(){
         //? storeBranchesId=11&storeOutletId=&dateFrom=2022-09-14&dateTo=2022-09-13 
-    
+        $q = "SELECT t1.*, i.description , i.itemCategoryId, c.name
+        from (
+            select td.itemId, sum(td.price) as 'totalAmount', count(td.itemId) as 'qty'
+            from cso1_transaction as t
+            join cso1_transactionDetail as td on td.transactionId = t.id 
+            where t.presence = 1 and  td.void = 1 and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
+            and (t.transactionDate  >=  ".strtotime($this->input->get('dateFrom') )." and t.transactionDate <= ".strtotime($this->input->get('dateTo')." 23:59:55" ).")
+                group by td.itemId
+            ) as t1
+            join cso1_item as i on i.id = t1.itemId
+            left join cso1_itemCategory as c on c.id = i.itemCategoryId 
+        ";
 
         $data = array(
             "dateFrom" => strtotime($this->input->get('dateFrom') ), 
             "dateTo" => strtotime($this->input->get('dateTo') ),  
-            "items" => $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
-            from (
-                select td.itemId, sum(td.price) as 'totalAmount', count(td.itemId) as 'qty'
-                from cso1_transaction as t
-                join cso1_transactionDetail as td on td.transactionId = t.id 
-                where t.presence = 1 and  td.void = 1 and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
-                and (t.transactionDate  >=  ".strtotime($this->input->get('dateFrom') )." and t.transactionDate < ".strtotime($this->input->get      ('dateTo') ).")
-                    group by td.itemId
-                ) as t1
-                join cso1_item as i on i.id = t1.itemId
-                left join cso1_itemCategory as c on c.id = i.itemCategoryId 
-            ") 
+            "items" => $this->model->sql($q),
+            "q" => $q
         );
         echo json_encode($data);
     }

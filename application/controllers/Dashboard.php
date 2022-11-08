@@ -20,11 +20,28 @@ class Dashboard extends CI_Controller
     // START :: ITEMS
     function storeBranches()
     {
+
+        $storeBrands = [];
+        foreach ($this->model->sql("SELECT * from cso1_storeBrands where presence = 1 order by name ASC") as $row) {
+         
+            $storeBranches = [];
+            foreach ($this->model->sql("SELECT  storeBrandsId, id, name
+            from cso1_storeBranches where storeBrandsId = '" . $row['id'] . "' and presence = 1 order by name ASC") as $row2) {
+                array_push($storeBranches, $row2);
+            } 
+            $temp = array(
+                "brand" => "[" . $row['id'] . "] " . ($row['name'] == null ? $row['id'] : $row['name']),
+                "detail" => $storeBranches, 
+            );
+            array_push($storeBrands, $temp);
+        }
+
+
         $data = array(
             "storeOutles" => $this->input->get('storeBranchesId') ?  $this->model->sql("SELECT id, name 
             from cso1_storeOutles where storeBranchesId = '" . $this->input->get('storeBranchesId') . "' and presence = 1 order by name ASC") : [],
 
-            "storeBranches" => $this->model->sql("SELECT id, name from cso1_storeBranches where presence = 1 order by name ASC"),
+            "storeBranches" => $storeBrands,
             "dateFrom" => date('Y-m-d'),
             "dateTo" => date('Y-m-d'),
         );
