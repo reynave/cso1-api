@@ -5,10 +5,10 @@ class KioskPayment extends CI_Controller
 {
     public function __construct()
     {
-        parent::__construct(); 
+        parent::__construct();
         $this->priceLevel = 1;
         $this->terminalId = "";
-        $this->storeOutlesId = ""; 
+        $this->storeOutlesId = "";
         header('Access-Control-Allow-Origin: *');
         header("Access-Control-Allow-Headers: key, token,  Content-Type");
         header('Access-Control-Allow-Methods: GET, POST, PUT');
@@ -16,8 +16,8 @@ class KioskPayment extends CI_Controller
         date_default_timezone_set('Asia/Jakarta');
 
         if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
+            //  echo $this->model->error("Error auth");
+            //  exit;
         } else {
             $getDeviceObj =  $this->model->getDeviceObj();
             $this->terminalId =  $getDeviceObj['terminalId'];
@@ -32,8 +32,8 @@ class KioskPayment extends CI_Controller
 
             $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
 
-            $storeOutlesId =$this->storeOutlesId;
-            $terminalId = $this->terminalId;  
+            $storeOutlesId = $this->storeOutlesId;
+            $terminalId = $this->terminalId;
 
             $memberId =  $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
 
@@ -71,8 +71,8 @@ class KioskPayment extends CI_Controller
             $summary = $this->model->summary($kioskUuid);
 
             $storeOutlesId = $this->storeOutlesId;
-            $terminalId = $this->terminalId;  
-            
+            $terminalId = $this->terminalId;
+
             $insert = array(
                 "id" => $id,
                 "transactionDate" => time(),
@@ -121,7 +121,7 @@ class KioskPayment extends CI_Controller
                     "isSpecialPrice" => $row['isSpecialPrice'],
                     "isPrintOnBill" => $row['isPrintOnBill'],
                     "note" => $row['note'],
-                    
+
                     "void" => $row['void'],
                     "presence" => 1,
                     "inputDate" => time(),
@@ -157,18 +157,18 @@ class KioskPayment extends CI_Controller
             }
 
             // PAYMENT GATEWAY
-            if($post['paymentTypeId'] == 'QRT001'){
+            if ($post['paymentTypeId'] == 'QRT001') {
                 $updateQris = array(
                     "qris_status" => $post['qris']['data']['qris_status'],
                     "qris_payment_customername" => $post['qris']['data']['qris_payment_customername'],
                     "qris_payment_methodby" => $post['qris']['data']['qris_payment_methodby'],
                     "transactionId" => $id,
-                    "status" => 10, 
+                    "status" => 10,
                     "updateDate" => time(),
                 );
-                $this->db->update("cso1_paymentQrisTelkom",   $updateQris, "kioskUuid = '$kioskUuid'" );
+                $this->db->update("cso1_paymentQrisTelkom",   $updateQris, "kioskUuid = '$kioskUuid'");
             }
- 
+
             $this->db->trans_complete();
             $trans_status = true;
             if ($this->db->trans_status() === FALSE) {
@@ -206,8 +206,8 @@ class KioskPayment extends CI_Controller
             $kioskUuid =  $post['kioskUuid'];
             $summary = $this->model->summary($kioskUuid);
 
-            $storeOutlesId =$this->storeOutlesId;
-            $terminalId = $this->terminalId;  
+            $storeOutlesId = $this->storeOutlesId;
+            $terminalId = $this->terminalId;
 
             $insert = array(
                 "id" => $id,
@@ -219,7 +219,7 @@ class KioskPayment extends CI_Controller
 
                 "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
                 "endDate" => date("Y-m-d H:i:s"),
-              
+
                 "struk" => $id,
                 "cashierId" => "",
                 "pthType" => 1,
@@ -324,31 +324,30 @@ class KioskPayment extends CI_Controller
             $summary = $this->model->summary($kioskUuid);
             $final = (int)$summary['final'];
             $cliTrxNumber = $kioskUuid . "-01";
-            $exp = $this->model->select("kioskUuid","cso1_paymentQrisTelkom","kioskUuid = '$kioskUuid' ") ? $this->model->sql("select DATEADD(mi, 30,qris_request_date) as 'exp' from cso1_paymentQrisTelkom where kioskUuid = '$kioskUuid' ")[0]['exp'] : false;
+            $exp = $this->model->select("kioskUuid", "cso1_paymentQrisTelkom", "kioskUuid = '$kioskUuid' ") ? $this->model->sql("select DATEADD(mi, 30,qris_request_date) as 'exp' from cso1_paymentQrisTelkom where kioskUuid = '$kioskUuid' ")[0]['exp'] : false;
 
-            if ($this->model->select("qris_content","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'")  ) {
-                $qris_content = $this->model->select("qris_content","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'");
+            if ($this->model->select("qris_content", "cso1_paymentQrisTelkom", "kioskUuid ='$kioskUuid'")) {
+                $qris_content = $this->model->select("qris_content", "cso1_paymentQrisTelkom", "kioskUuid ='$kioskUuid'");
                 $data = array(
-                    "status" => strtotime($exp ) < time() ? false : true,
+                    "status" => strtotime($exp) < time() ? false : true,
                     "check" => array(
-                        "timeCreated" => strtotime($exp ),
+                        "timeCreated" => strtotime($exp),
                         "timeCurrent" => time(),
                     ),
-                    "summary" =>$summary,
+                    "summary" => $summary,
                     "do" => $kioskUuid,
                     "error" => false,
                     "note" => "View only",
                     "exp" =>  $exp,
                     "qris" => $qris_content,
-                    "image" => $this->model->select("image","cso1_paymentType","id='QRT001'"),
-                    "nmid" => $this->model->select("qris_nmid","cso1_paymentQrisTelkom","kioskUuid ='$kioskUuid'"),
-                    "name" => $this->model->select("name","cso1_paymentType","id='QRT001'"),
+                    "image" => $this->model->select("image", "cso1_paymentType", "id='QRT001'"),
+                    "nmid" => $this->model->select("qris_nmid", "cso1_paymentQrisTelkom", "kioskUuid ='$kioskUuid'"),
+                    "name" => $this->model->select("name", "cso1_paymentType", "id='QRT001'"),
                 );
                 $update = array(
                     "ilock" => 1,
                 );
                 $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
-             
             } else {
                 $ch = curl_init();
                 $headers = array(
@@ -357,19 +356,19 @@ class KioskPayment extends CI_Controller
                 );
 
                 $setting = $this->model->sql("select * from cso1_paymentType where id = 'QRT001' and presence = 1 and status = 1 ")[0];
-                $url = $setting['apiUrl']."?do=$kioskUuid&apikey=".$setting['apikey']."&mID=".$setting['mId']."&cliTrxNumber=$cliTrxNumber&cliTrxAmount=$final";
+                $url = $setting['apiUrl'] . "?do=$kioskUuid&apikey=" . $setting['apikey'] . "&mID=" . $setting['mId'] . "&cliTrxNumber=$cliTrxNumber&cliTrxAmount=$final";
                 curl_setopt($ch, CURLOPT_URL, $url);
                 // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                $body = '{}'; 
+                $body = '{}';
                 curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
                 // Timeout in seconds
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30); 
+                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
                 $res = curl_exec($ch);
-                 
+
                 $resp = json_decode($res, true);
 
                 $insert = array(
@@ -387,7 +386,7 @@ class KioskPayment extends CI_Controller
                     "status" => 0,
                     "presence" => 1,
                 );
-                $this->db->insert("cso1_paymentQrisTelkom", $insert); 
+                $this->db->insert("cso1_paymentQrisTelkom", $insert);
                 $update = array(
                     "ilock" => 1,
                 );
@@ -396,46 +395,46 @@ class KioskPayment extends CI_Controller
 
                 $data = array(
                     "status" => true,
-                    "summary" =>$summary,
+                    "summary" => $summary,
                     "do" => $kioskUuid,
                     "nmid" => $resp['data']['qris_nmid'],
-                    "name" => $this->model->select("name","cso1_paymentType","id='QRT001'"),
+                    "name" => $this->model->select("name", "cso1_paymentType", "id='QRT001'"),
                     "error" => false,
                     "exp" =>  $exp,
                     "status" => "create new",
                     "qris" =>  $insert['qris_content'],
-                    "image" => $this->model->select("image","cso1_paymentType","id='QRT001'") 
+                    "image" => $this->model->select("image", "cso1_paymentType", "id='QRT001'")
                 );
             }
         } else {
             $data = array(
                 "error" => true,
-                "status" => "not found kiosk Uuid", 
+                "status" => "not found kiosk Uuid",
                 "qris" => "",
             );
-           
         }
         echo json_encode($data);
     }
 
-    function fnQrisTelkomRegenerate(){
+    function fnQrisTelkomRegenerate()
+    {
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
-        if ($post){
+        if ($post) {
             $kioskUuid = $post['kioskUuid'];
-            $this->db->delete("cso1_paymentQrisTelkom","kioskUuid = '$kioskUuid' "); 
+            $this->db->delete("cso1_paymentQrisTelkom", "kioskUuid = '$kioskUuid' ");
 
             $data = array(
                 "error" => false,
             );
-        }else{
+        } else {
             $data = array(
                 "error" => true,
             );
         }
         echo json_encode($data);
     }
-    
+
     function fnQrisTelkomStatus()
     {
         $kioskUuid = $this->input->get("kioskUuid");
@@ -450,9 +449,9 @@ class KioskPayment extends CI_Controller
             $qris = $this->model->sql("select * from cso1_paymentQrisTelkom where kioskUuid = '$kioskUuid' ")[0];
 
             $apiUrlResp = "https://qris.id/restapi/qris/checkpaid_qris.php";
-            $url =  $apiUrlResp."?do=$kioskUuid&apikey=".$setting['apikey']."&mID=".$setting['mId']."&invid=".$qris['qris_invoiceid']."&trxvalue=".$qris['cliTrxAmount']."&trxdate=".date("Y-m-d", strtotime($qris['qris_request_date']) );
+            $url =  $apiUrlResp . "?do=$kioskUuid&apikey=" . $setting['apikey'] . "&mID=" . $setting['mId'] . "&invid=" . $qris['qris_invoiceid'] . "&trxvalue=" . $qris['cliTrxAmount'] . "&trxdate=" . date("Y-m-d", strtotime($qris['qris_request_date']));
 
-           // $url = "https://qris.id/restapi/qris/checkpaid_qris.php?do=BILL000000097&apikey=139139211206273&mID=195233984319&invid=50588963759&trxvalue=1000&trxdate=2022-09-30";
+            // $url = "https://qris.id/restapi/qris/checkpaid_qris.php?do=BILL000000097&apikey=139139211206273&mID=195233984319&invid=50588963759&trxvalue=1000&trxdate=2022-09-30";
 
             curl_setopt($ch, CURLOPT_URL, $url);
             // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -466,22 +465,86 @@ class KioskPayment extends CI_Controller
             // Timeout in seconds
             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
-            $res = curl_exec($ch);   
+            $res = curl_exec($ch);
             $resp = json_decode($res, true);
 
             $data = array(
                 "error" => false,
-                "qris" =>  $resp,  
+                "qris" =>  $resp,
             );
-        }else{
+        } else {
             $data = array(
                 "error" => true,
-                "status" => "not found kiosk Uuid",  
+                "status" => "not found kiosk Uuid",
             );
-             
         }
-        echo json_encode($data); 
-       
+        echo json_encode($data);
     }
 
+
+    /*
+    BCA ERC 
+    */
+
+    function fnBcaCashDevNoCC()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $paymentId = $post['paymentTypeId'];
+            $kioskUuid = $post['kioskUuid'];
+            $data = [];
+            if ($paymentId == 'bca01') {
+                $summary = $this->model->summary($kioskUuid);
+                 $final = (string)$summary['final'];
+  
+                $str_length = 10;
+                $debit = substr("00000000000{$final}", -$str_length)."00";
+
+
+
+                $erc_STX            = "02";
+                $erc_messageLenght  = "0150";
+                $erc_version        = "02";
+                $erc_transType      = "01";
+                //$erc_transAmount    = "000061235300" . "000000000000";
+                $erc_transAmount    = $debit . "000000000000"; 
+                $erc_cc             = "5409120012345684   251000000000000000  ";
+                $erc_other          = "N00000                                                                              ";
+                $erc_ETX            = "03";
+
+                $msg_length =  strlen($erc_version . $erc_transType . $erc_transAmount . $erc_cc . $erc_other);
+                $erc_message =  ($erc_transType) . ($erc_transAmount) . ($erc_cc) . ($erc_other);
+
+                $hex  = $erc_STX .
+                    $erc_messageLenght .
+                    $erc_version .
+                    bin2hex($erc_transType) .
+                    bin2hex($erc_transAmount) .
+                    bin2hex($erc_cc) .
+                    bin2hex($erc_other) . $erc_ETX .
+                    $this->ecr->fnXor($erc_message);
+
+                $data = array(
+                    "summary" => $summary,
+                    "msg" => $erc_message,
+                    "length" => $msg_length,
+                    "hex" =>  $hex,
+                    "debit" => $debit,
+                );
+            }
+
+
+            $data = array(
+                "post" => $post,
+                "data" => $data,
+                "error" => false,
+            );
+        } else {
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
 }
