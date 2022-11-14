@@ -156,7 +156,7 @@ class KioskPayment extends CI_Controller
                 $this->db->insert('cso1_transactionDetail', $insertDetail);
             }
 
-            // PAYMENT GATEWAY
+            // QRIS TELKOM
             if ($post['paymentTypeId'] == 'QRT001') {
                 $updateQris = array(
                     "qris_status" => $post['qris']['data']['qris_status'],
@@ -169,6 +169,20 @@ class KioskPayment extends CI_Controller
                 $this->db->update("cso1_paymentQrisTelkom",   $updateQris, "kioskUuid = '$kioskUuid'");
             }
 
+            // DEBIT BCA
+            if ($post['paymentTypeId'] == 'BCA01' ||  $post['paymentTypeId'] == 'BCA31' ) {
+                $insert = array(
+                    "transactionId" => $id,
+                    "paymentTypeId" => $post['paymentTypeId'],
+                    "kioskUuid"     => $kioskUuid, 
+                    "respCode"      => $post['data']['respCode'],  
+                    "hex"           => $post['data']['hex'],  
+                    "asciiString"         => $post['data']['ascii'],  
+                    "updateDate"    => time(),
+                    "inputDate"     => time(),
+                );
+                $this->db->insert("cso1_paymentBcaEcr",   $insert);
+            }  
             $this->db->trans_complete();
             $trans_status = true;
             if ($this->db->trans_status() === FALSE) {
@@ -476,89 +490,6 @@ class KioskPayment extends CI_Controller
             $data = array(
                 "error" => true,
                 "status" => "not found kiosk Uuid",
-            );
-        }
-        echo json_encode($data);
-    }
-
-
-    /*
-    BCA ERC 
-    */
-
-    function fnBcaCashDevNoCC()
-    {
-        $post =   json_decode(file_get_contents('php://input'), true);
-        $error = true;
-        if ($post) {
-            $paymentId = $post['paymentTypeId'];
-            $kioskUuid = $post['kioskUuid'];
-            $data = [];
-            if ($paymentId == 'bca01') {
-                $update = array(
-                    "ilock" => 1,
-                );
-                $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
-
-                $summary = $this->model->summary($kioskUuid);
-                 $final = (string)$summary['final'];
-  
-                $str_length = 10;
-                $debit = substr("00000000000{$final}", -$str_length)."00";
- 
-
-                $erc_STX            = "02";
-                $erc_messageLenght  = "0150";
-                $erc_version        = "02";
-               
-                $erc_transAmount    = $debit . "000000000000";  
-                $erc_other          = "N00000                                                                              ";
-                $erc_ETX            = "03";
-                $erc_transType      =  $post['transType'];  
-
-                if( $erc_transType == '01'){
-                    // DEBIT CC 
-                    $erc_cc             = "5409120012345684   251000000000000000  "; 
-                }
-                if( $erc_transType == '31'){
-                    // QRIS  
-                    $erc_cc             = "                       00000000000000  "; 
-                }
-
-
-
-
-                $msg_length =  strlen($erc_version . $erc_transType . $erc_transAmount . $erc_cc . $erc_other);
-                $erc_message =  ($erc_transType) . ($erc_transAmount) . ($erc_cc) . ($erc_other);
-
-                $hex  = $erc_STX .
-                    $erc_messageLenght .
-                    $erc_version .
-                    bin2hex($erc_transType) .
-                    bin2hex($erc_transAmount) .
-                    bin2hex($erc_cc) .
-                    bin2hex($erc_other) . $erc_ETX .
-                    $this->ecr->fnXor($erc_message);
-
-                $data = array(
-                    "summary" => $summary,
-                    "msg" => $erc_message,
-                    "length" => $msg_length,
-                    "hex" =>  $hex,
-                    "update" => $update,
-                    "debit" => $debit,
-                );
-            }
-
-
-            $data = array(
-                "post" => $post,
-                "data" => $data,
-                "error" => false,
-            );
-        } else {
-            $data = array(
-                "error" => true,
             );
         }
         echo json_encode($data);
