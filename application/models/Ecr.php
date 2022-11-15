@@ -49,14 +49,14 @@ class Ecr extends CI_Model
 
         $char = bindec($xor);
         $char = dechex($char);
-        $char = sprintf("%02d", $char);
+       // $char = sprintf("%02d", $char);
 
         return $char;
     }
 
 
 
-    function strToBit($str = [] )
+    function strToBit($str )
     {
         $resp = [];
         foreach (str_split($str) as  $arr) {

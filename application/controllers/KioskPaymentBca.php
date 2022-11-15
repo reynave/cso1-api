@@ -59,7 +59,7 @@ class kioskPaymentBca extends CI_Controller
                 $erc_STX            = "02";
                 $erc_messageLenght  = "0150";
                 $erc_version        = "02";
-               
+                                     
                 $erc_transAmount    = $debit . "000000000000";  
                 $erc_other          = "N00000                                                                              ";
                 $erc_ETX            = "03";
@@ -76,7 +76,7 @@ class kioskPaymentBca extends CI_Controller
                 }
                 if( $erc_transType == '31'){
                     // QRIS  
-                    $erc_cc             = "                       00000000000000  "; 
+                     $erc_cc             = "                       00000000000000  "; 
                 }
 
 
@@ -100,6 +100,7 @@ class kioskPaymentBca extends CI_Controller
                     "length" => $msg_length,
                     "hex" =>  $hex,
                     "update" => $update,
+                    "xor" =>   $this->ecr->fnXor($erc_message),
                     "debit" => $debit,
                 );
             }
