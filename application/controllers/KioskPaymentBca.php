@@ -27,12 +27,11 @@ class kioskPaymentBca extends CI_Controller
 
     function index()
     {
-        
     }
-  
+
     /*
     BCA ERC 
-    */ 
+    */
     function fnBcaEcr()
     {
         $post =   json_decode(file_get_contents('php://input'), true);
@@ -41,7 +40,137 @@ class kioskPaymentBca extends CI_Controller
             $paymentId = $post['paymentTypeId'];
             $kioskUuid = $post['kioskUuid'];
             $dummyCC = $post['dummyCC'];
-            
+
+            $data = [];
+
+            $update = array(
+                "ilock" => 1,
+            );
+            $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
+
+            $summary = $this->model->summary($kioskUuid);
+            $final = (string)$summary['final'];
+
+            $str_length = 10;
+            $debit = substr("00000000000{$final}", -$str_length) . "00";
+
+
+            $erc_STX            = "02";
+            $erc_messageLenght  = "0150";
+            $erc_version        = "02";
+
+            $erc_transAmount    = $debit . "000000000000";
+            $erc_other          = "N00000                                                                              ";
+            $erc_ETX            = "03";
+            $erc_transType      =  $post['transType'];
+
+            if ($erc_transType == '01') {
+                // DEBIT CC 
+                if ($dummyCC == true) {
+                    $erc_cc             = "5409120012345684   251000000000000000  ";
+                } else {
+                    $erc_cc             = "                       00000000000000  ";
+                }
+            }
+            if ($erc_transType == '31') {
+                // QRIS  
+                $erc_cc             = "                       00000000000000  ";
+            }
+
+
+
+
+            $msg_length =  strlen($erc_version . $erc_transType . $erc_transAmount . $erc_cc . $erc_other);
+            $erc_message =  ($erc_transType) . ($erc_transAmount) . ($erc_cc) . ($erc_other);
+
+            $hex  = $erc_STX .
+                $erc_messageLenght .
+                $erc_version .
+                bin2hex($erc_transType) .
+                bin2hex($erc_transAmount) .
+                bin2hex($erc_cc) .
+                bin2hex($erc_other) . $erc_ETX .
+                $this->ecr->fnXor($erc_message);
+
+            $data = array(
+                "summary" => $summary,
+                "msg" => $erc_message,
+                "length" => $msg_length,
+                "hex" =>  $hex,
+                "update" => $update,
+                "xor" =>   $this->ecr->fnXor($erc_message),
+                "debit" => $debit,
+            );
+
+
+
+            $data = array(
+                "post" => $post,
+                "data" => $data,
+                "error" => false,
+            );
+        } else {
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
+
+    function fnQrisCheck()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+
+        if ($post) {
+            $id = $this->model->select("id", "cso1_paymentBcaQris", "presence = 1 and  kioskUuid = '" . $post['kioskUuid'] . "' ");
+            $data = array(
+                "data" => $id ? $this->model->sql("select * from cso1_paymentBcaQris where id= $id ")[0] : false,
+                "error" => false,
+            );
+        } else {
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
+
+    function fnQrisInsert()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+
+        if ($post) {
+            $insert = array(
+                "kioskUuid" =>  $post['kioskUuid'],
+                "reffNo" =>  $post['hex'],
+                "hex" =>  $post['hex'],
+                "asciiString"  =>  $post['hex'],
+                "inputDate"  => time(),
+                "updateDate"  => time(),
+            );
+            $this->db->insert($insert);
+
+            $data = array(
+                "insert" =>  $insert,
+                "error" => false,
+            );
+        } else {
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
+
+
+
+    function fnBcaCashDEL()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $paymentId = $post['paymentTypeId'];
+            $kioskUuid = $post['kioskUuid'];
             $data = [];
             if ($paymentId == 'bca01') {
                 $update = array(
@@ -50,33 +179,28 @@ class kioskPaymentBca extends CI_Controller
                 $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
 
                 $summary = $this->model->summary($kioskUuid);
-                 $final = (string)$summary['final'];
-  
+                $final = (string)$summary['final'];
+
                 $str_length = 10;
-                $debit = substr("00000000000{$final}", -$str_length)."00";
- 
+                $debit = substr("00000000000{$final}", -$str_length) . "00";
+
 
                 $erc_STX            = "02";
                 $erc_messageLenght  = "0150";
                 $erc_version        = "02";
-                                     
-                $erc_transAmount    = $debit . "000000000000";  
+
+                $erc_transAmount    = $debit . "000000000000";
                 $erc_other          = "N00000                                                                              ";
                 $erc_ETX            = "03";
-                $erc_transType      =  $post['transType'];  
+                $erc_transType      =  $post['transType'];
 
-                if( $erc_transType == '01'){
+                if ($erc_transType == '01') {
                     // DEBIT CC 
-                    if(   $dummyCC == true){
-                        $erc_cc             = "5409120012345684   251000000000000000  "; 
-                    }else{
-                        $erc_cc             = "                       00000000000000  "; 
-                    }
-                   
+                    $erc_cc             = "                       00000000000000  ";
                 }
-                if( $erc_transType == '31'){
+                if ($erc_transType == '31') {
                     // QRIS  
-                     $erc_cc             = "                       00000000000000  "; 
+                    $erc_cc             = "                       00000000000000  ";
                 }
 
 
@@ -100,7 +224,6 @@ class kioskPaymentBca extends CI_Controller
                     "length" => $msg_length,
                     "hex" =>  $hex,
                     "update" => $update,
-                    "xor" =>   $this->ecr->fnXor($erc_message),
                     "debit" => $debit,
                 );
             }
@@ -118,82 +241,4 @@ class kioskPaymentBca extends CI_Controller
         }
         echo json_encode($data);
     }
- 
-    function fnBcaCash()
-    {
-        $post =   json_decode(file_get_contents('php://input'), true);
-        $error = true;
-        if ($post) {
-            $paymentId = $post['paymentTypeId'];
-            $kioskUuid = $post['kioskUuid'];
-            $data = [];
-            if ($paymentId == 'bca01') {
-                $update = array(
-                    "ilock" => 1,
-                );
-                $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
-
-                $summary = $this->model->summary($kioskUuid);
-                 $final = (string)$summary['final'];
-  
-                $str_length = 10;
-                $debit = substr("00000000000{$final}", -$str_length)."00";
- 
-
-                $erc_STX            = "02";
-                $erc_messageLenght  = "0150";
-                $erc_version        = "02";
-               
-                $erc_transAmount    = $debit . "000000000000";  
-                $erc_other          = "N00000                                                                              ";
-                $erc_ETX            = "03";
-                $erc_transType      =  $post['transType'];  
-
-                if( $erc_transType == '01'){
-                    // DEBIT CC 
-                    $erc_cc             = "                       00000000000000  "; 
-                }
-                if( $erc_transType == '31'){
-                    // QRIS  
-                    $erc_cc             = "                       00000000000000  "; 
-                }
-
-
-
-
-                $msg_length =  strlen($erc_version . $erc_transType . $erc_transAmount . $erc_cc . $erc_other);
-                $erc_message =  ($erc_transType) . ($erc_transAmount) . ($erc_cc) . ($erc_other);
-
-                $hex  = $erc_STX .
-                    $erc_messageLenght .
-                    $erc_version .
-                    bin2hex($erc_transType) .
-                    bin2hex($erc_transAmount) .
-                    bin2hex($erc_cc) .
-                    bin2hex($erc_other) . $erc_ETX .
-                    $this->ecr->fnXor($erc_message);
-
-                $data = array(
-                    "summary" => $summary,
-                    "msg" => $erc_message,
-                    "length" => $msg_length,
-                    "hex" =>  $hex,
-                    "update" => $update,
-                    "debit" => $debit,
-                );
-            }
-
-
-            $data = array(
-                "post" => $post,
-                "data" => $data,
-                "error" => false,
-            );
-        } else {
-            $data = array(
-                "error" => true,
-            );
-        }
-        echo json_encode($data);
-    } 
 }
