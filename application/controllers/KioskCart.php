@@ -46,11 +46,11 @@ class KioskCart extends CI_Controller
                         from cso1_kioskCart as k
                         where k.presence = 1 and k.kioskUuid = '$uuid'
                         group by k.itemId ) as t1
-                    join cso1_item as i  on t1.itemId = i.id
+                    left join cso1_item as i  on t1.itemId = i.id
                 "),
                 "itemsList" => $this->model->sql("SELECT c.id, c.kioskUuid, c.itemId, c.price, c.discount, i.description, i.shortDesc, i.images
                     FROM cso1_kioskCart as c
-                    join cso1_item as i on i.id = c.itemId
+                    left join cso1_item as i on i.id = c.itemId
                     WHERE c.presence =1 and c.kioskUuid = '$uuid' "),
 
                 "itemsListfreeItem" => $this->model->sql("SELECT a.* , i.description, i.images
@@ -96,7 +96,8 @@ class KioskCart extends CI_Controller
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $totalQty = $this->model->sql("select count(id) as 'totalQty' from cso1_kioskCart where  presence = 1 and  kioskUuid =  '".$post['kioskUuid']."' ")[0]['totalQty'];
+            $sqlQty = "select count(id) as 'totalQty' from cso1_kioskCart where  presence = 1 and  kioskUuid =  '".$post['kioskUuid']."' ";
+            $totalQty = $this->model->sql( $sqlQty )[0]['totalQty'];
          
             $priceLevel = $this->model->priceLevel($post['kioskUuid']);
             $limit = (int)$this->model->storeOutlesLimit($post['kioskUuid']);
@@ -139,6 +140,7 @@ class KioskCart extends CI_Controller
 
                 if(   $totalQty  >= $limit ){
                     $data = array(
+                        "sql"=>  $sqlQty ,
                         "totalQty" =>  $totalQty,
                         "limit" => $limit,
                         "error" => true, 
@@ -239,14 +241,15 @@ class KioskCart extends CI_Controller
                         }
                     };
 
-
+                    $sql = "select *, price$priceLevel as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
                     $data = array(
                         "totalQty" =>  $totalQty,
                         "admin" => false,
                         "error" => false,
                         "note" => "Item add",
-                        "items" => $this->model->sql("select *, price$priceLevel as price from cso1_item where id= '" . $itemId . "'")[0],
+                        "items" => $this->model->sql( $sql)[0],
                         "priceLevel" => $priceLevel,
+                        "sql" => $sql,
                     );
                 } else {
                     $data = array(

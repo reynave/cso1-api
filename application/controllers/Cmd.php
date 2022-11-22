@@ -6,12 +6,71 @@ class Cmd extends CI_Controller
     public function __construct()
     {
         parent::__construct();
+        $this->item = "item.txt";
+        $this->barcode = "barcode.txt";
 
-        // CALL cmd : php index.php Cmd
+        $this->promo_header = "promo_header.txt";
+        $this->promo_detail = "promo_detail.txt";
+        $this->promo_free = "promo_free.txt";
+        date_default_timezone_set('Asia/Jakarta');
+        error_reporting(E_ERROR | E_PARSE);
+        $this->time = ["04:00:00"];
     }
+    // CALL cmd : php index.php Cmd
     function index()
     {
-        echo "ver 1.0.3";
+        echo "\n";
+        echo "Server Run ver 1.0.3";
+
+        echo "\n";
+        echo "\n";
+        $i = 0;
+        do {
+            $i++;
+            echo  $i . ' ' . date("D Y-m-d H:i:s") . "  |  Schadule " . " \n";
+            print_r($this->time);
+            echo "\n";
+
+            $time = array_search(date("H:i:s"), $this->time);
+            echo 'time : ' . $time;
+
+            if (date("H:i:s")  == $this->time[$time]) {
+                self::promoHeader();
+                self::promoDetail();
+                self::promoFree();
+
+                self::masterItem();
+                self::masterItemBarcode();
+            }
+            sleep(1);
+        } while (true);
+    }
+    //php index.php Cmd item
+    function item()
+    {
+        self::masterItem();
+        self::masterItemBarcode();
+    }
+
+
+    function promo()
+    {
+        self::promoHeader();
+        self::promoDetail();
+        self::promoFree();
+    }
+
+    function transaction(){
+        $this->load->model('transaction');
+        echo $this->transaction->sync('2022-08-12');
+    }
+
+    function total()
+    { 
+        $fileName =   $this->promo_detail;
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        echo $file->key();;
     }
 
     function masterItem()
@@ -20,284 +79,245 @@ class Cmd extends CI_Controller
          * HOW TO CALL :
          * php index.php Cmd masterItem
          */
-        $error = false;
+        $i = 0;
+
         // $this->db->trans_start();
-        $handle = fopen("./uploads/items/item.txt", "r");
-        if ($handle) {
-            while (($line = fgets($handle)) !== false) {
-                $ar =  explode("|", $line);
-                // Action code  or $ar[4]
-                // 1 = New insert / update  
-                // 2 = Deletion
-                if ($ar[4] == 2) {
-                    $update = array(
-                        "status" => 0,
-                        "presence" => 0,
-                        "updateDate" => time(),
-                    );
-                    $this->db->update("cso1_item", $update, " id = '" . $ar[0] . "'");
-                } else {
-                    $id  = $this->model->select("id", "cso1_item", " id = '" . $ar[0] . "' ");
-                    if ($id) {
-                        $update = array( 
-                            "description" => $ar[1],
-                            "shortDesc" =>  $ar[1],
-                            "price1" =>  $ar[2],
-                            "price2" =>  $ar[2],
-                            "price3" =>  $ar[2],
-                            "price4" =>  $ar[2],
-                            "price5" =>  $ar[2],
-                            "price6" =>  $ar[2],
-                            "price7" =>  $ar[2],
-                            "price8" =>  $ar[2],
-                            "price9" =>  $ar[2],
-                            "price10" =>  $ar[2],
+        $fileName =   $this->item;
 
-                            "priceFlag" =>  (int)$ar[3],
-                            "ppnFlag" =>  (int)$ar[5],
-                            "status" => 1,
-                            "presence" => 1,
-                            "updateDate" => time(),
-                        );
-                        $this->db->update("cso1_item", $update, "id='" . $id . "' ");
-                        echo "UDPDATE " . $ar[0] . "\n";
-                        $itemBarcodeId = $this->model->select("id","cso1_itemBarcode","itemId = '$id'");
-                        if($itemBarcodeId ){
-                            $update = array( 
-                                "barcode" =>  $id, 
-                                "status" => 1,
-                                "presence" => 1,
-                                "updateDate" => time(),
-                            );
-                            $this->db->update("cso1_itemBarcode", $update, "itemId='" . $id . "' ");
-                            echo "UDPDATE BARCODE" . $id . "\n";
-                        }else{ 
-                            $insert = array( 
-                                "itemId" => $id,
-                                "barcode" => $ar[0],  
-                                "presence" => 1,
-                                "inputDate" => time(),
-                            );
-                            $this->db->insert("cso1_itemBarcode", $insert);
-                            echo "INSERT BARCODE " . $id . "\n";
-                        }
-                       
- 
-                      
-                    } else {
-                        $insert = array(
-                            "id" => $ar[0],
-                            "barcode" => $ar[0], 
-                            "description" => $ar[1],
-                            "shortDesc" =>  $ar[1],
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        $file->key();
 
-                            "price1" =>  $ar[2],
-                            "price2" =>  $ar[2],
-                            "price3" =>  $ar[2],
-                            "price4" =>  $ar[2],
-                            "price5" =>  $ar[2],
-                            "price6" =>  $ar[2],
-                            "price7" =>  $ar[2],
-                            "price8" =>  $ar[2],
-                            "price9" =>  $ar[2],
-                            "price10" =>  $ar[2],
-
-                            "priceFlag" =>  (int)$ar[3],
-                            "ppnFlag" =>  (int)$ar[5],
-                            "status" => 1,
-                            "presence" => 1,
-                            "inputDate" => time(),
-                        );
-                        $this->db->insert("cso1_item", $insert);
- 
-                        $insert = array( 
-                            "itemId" => $id,
-                            "barcode" => $ar[0],  
-                            "presence" => 1,
-                            "inputDate" => time(),
-                        );
-                        $this->db->insert("cso1_itemBarcode", $insert);
-                        echo "INSERT " . $ar[0] . "\n";
-                    }
-                }
-            }
-
-            fclose($handle);
-        }
-    }
-
-    function promo($name = "")
-    {
-        $error = false;
-        // $this->db->trans_start();
-        $handle = fopen("./uploads/promo/" . $name, "r");
-        if ($handle) {
-            while (($line = fgets($handle)) !== false) {
-                $ar =  explode("|", $line);
-                $update = array(
-                    "promoCode" => $ar[0],
-                    "barcode" => $ar[1],
-                    "fixPriceHSP" =>  $ar[2],
-                    "price1" =>  $ar[3],
-                    "discMember1" => $ar[4],
-                    "discMember2" => $ar[5],
-                    "discMember3" => $ar[6],
-                    "discMemberRupiah" => $ar[7],
-                    "discNormal1" => $ar[8],
-                    "discNormal2" => $ar[9],
-                    "discNormal3" => $ar[10],
-                    "discNormalRupiah" => $ar[11],
-                    "minQty" => $ar[12],
-                    "maxQty" => $ar[13],
-                    "price1" => $ar[14],
-                    "price2" => $ar[15],
-                    "minQty1" => $ar[16],
-                    "maxQty1" => $ar[17],
-                    "minQty2" => $ar[18],
-                    "maxQty2" => $ar[19],
-                    "endDate" => $ar[20],
-                    "startTime" => $ar[21],
-                    "endTime"  => $ar[22],
-                );
-                $this->db->insert("gold_promo", $update);
-                print_r($update);
-            }
-
-            $update = array(
-                "status" => 1,
-            );
-            $this->db->update("cso1_syncLog", $update, "module = 'promo' and fileName= '" . $name . "'");
-
-            fclose($handle);
-        }
-        // $this->db->trans_complete();
-        // if ($this->db->trans_status() === FALSE)
-        // {
-        //         $error = true; 
-        //  } 
-
-    }
-
-    function member()
-    {
-        # php index.php Cmd member
-        error_reporting(E_ERROR | E_PARSE);
-        $ch = curl_init();
-        $headers = array(
-            'Accept: application/json',
-            'Content-Type: application/json',
-
-        );
-        curl_setopt($ch, CURLOPT_URL, "http://103.169.238.219:8080/uploads/android/getmember.php");
-        //curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        $body = '{}';
-
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        // Timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
-        $txt = curl_exec($ch);
-         echo $txt;
-        $saveFile = "member" . date("YmdHis") . ".txt";
-        $myfile = fopen("./uploads/member/$saveFile", "w") or die("Unable to open file!");
-        fwrite($myfile, $txt);
-        fclose($myfile);
-        echo "\n" . 'SAVE FILE DONE' . "\n";
-
-        $handle = fopen("./uploads/member/$saveFile", "r");
-        
-        
-
-        if ($handle) {
-            echo  "\n" . 'handle run' . "\n";
-            while (($line = fgets($handle)) !== false) {
-                $ar =  explode("|", $line);
-
-                $id  =  $this->model->select("id", "cso1_member", " id = '" . str_replace("\r\n", "", $ar[1]) . "'  ");
-
-                if ($id) {
-                    $update = array(
-                        "firstName" =>  $ar[0],
-                        "status" => 1,
-                        "presence" => 1,
-                        "updateDate" => time(),
-                    );
-                    if (is_int((int)$id)) {
-                        $this->db->update("cso1_member", $update, "id='" . $id . "' ");
-                        echo "UDPDATE  " .$id."|".$ar[0] . "\n";
-                    }else{
-                        echo "UDPDATE  ERROR, ID is not INT" . $ar[0] . "\n";
-                    }
-                } else {
-                    $newId = str_replace("\r\n", "", $ar[1]);
+        if ($file->key() > 0) {
+           
+            $handle = fopen("../sync/$fileName", "r");
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $ar =  explode("|", $line);
+                    $this->db->delete("cso1_item", "id='$ar[0]'");
+                    $i++;
                     $insert = array(
-                        "id" => $newId ,
-                        "firstName" =>  $ar[0],
+                        "id" => $ar[0],
+                        "description" => $ar[1],
+                        "shortDesc" =>  $ar[2],
+                        "price1" =>  (int)$ar[3],
+                        "price2" =>  (int)$ar[4],
+                        "price3" =>  (int)$ar[5],
+                        "price4" =>  (int)$ar[6],
+                        "price5" =>  (int)$ar[7],
+                        "price6" =>  (int)$ar[8],
+                        "price7" =>  (int)$ar[9],
+                        "price8" =>  (int)$ar[10],
+                        "price9" =>  (int)$ar[11],
+                        "price10" => (int)$ar[12],
+
+                        "itemUomId"         =>   $ar[13],
+                        "itemCategoryId"    =>   $ar[14],
+                        "itemTaxId"         =>   $ar[15],
+                        "images"            =>   $ar[16],
+
                         "status" => 1,
                         "presence" => 1,
                         "inputDate" => time(),
+                        "updateDate" => time(),
                     );
-                    if (is_int((int)$id)) {
-                        $this->db->insert("cso1_member", $insert);
-                        echo "INSERT " . $newId .'|'. $ar[0] . "\n";
-                    }else{
-                        echo "INSERT ERROR, ID is not INT " . $ar[0] . "\n";
+                    $this->db->insert("cso1_item", $insert);
+                    echo "masterItem INSERT " . $ar[0] . "\n";
+                }
+                $insert = array(
+                    "fileName" => $fileName,
+                    "totalInsert" => $i,
+                    "lastSycn" => date("Y-m-d H:i:s"),
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_sync", $insert);
+                print_r($insert);
+                fclose($handle);
+            }
+        } else {
+            echo "\n $fileName NO DATA";
+        }
+    }
+ 
+    function masterItemBarcode()
+    {
+ 
+        $fileName =   $this->barcode; 
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        $file->key();
+
+        if ($file->key() > 0) { 
+            $this->db->query("Truncate table cso1_itemBarcode");
+            echo $this->db->last_query() . "\n\m";
+            $handle = fopen("../sync/$fileName", "r");
+            $i = 0;
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $i++;
+                    $ar =  explode("|", $line);
+                    $id = $this->model->select("id", "cso1_itemBarcode", "itemId='$ar[0]' and barcode = '$ar[1]' ");
+                    if (!$id) {
+                        $insert = array(
+                            "itemId" => $ar[0],
+                            "barcode" =>  trim(preg_replace('/\s\s+/', ' ', $ar[1])),
+                            "status" => 1,
+                            "presence" => 1,
+                            "inputDate" => time(),
+                            "updateDate" => time(),
+                        );
+                        $this->db->insert("cso1_itemBarcode", $insert);
+                        echo $i . " barcode INSERT " . $ar[0] . '|' . $ar[1]  . "\n";
+                    } else {
+                        echo $i . " barcode SKIP " . $ar[0] . '|' . $ar[1] . "\n";
                     }
                 }
+                $insert = array(
+                    "fileName" => $fileName,
+                    "totalInsert" => $i,
+                    "lastSycn" => date("Y-m-d H:i:s"),
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_sync", $insert);
+                fclose($handle);
             }
-
-            fclose($handle);
         }else{
-            echo  "\n" . 'handle ERROR' . "\n";
+            echo "\n $fileName NO DATA";
         }
     }
 
-    function memberSave()
+    function promoHeader()
     {
-        # php index.php Cmd member
-        error_reporting(E_ERROR | E_PARSE);
-        $ch = curl_init();
-        $headers = array(
-            'Accept: application/json',
-            'Content-Type: application/json',
+        $i = 0;
+        $fileName = $this->promo_header;
+        $handle = fopen("../sync/$fileName", "r");
+        if ($handle) {
+            while (($line = fgets($handle)) !== false) {
+                $i++;
+                $ar =  explode("|", $line);
+                $this->db->delete("cso1_promotion", "id='$ar[0]'");
+                $insert = array(
+                    "id"                => $ar[0],
+                    "typeOfPromotion"   => (int)$ar[1],
+                    "storeOutlesId"     => $ar[2],
+                    "code"              => $ar[3],
+                    "description"       => $ar[4],
+                    "startDate"         => (int)$ar[5],
+                    "endDate"           => (int)$ar[6],
+                    "discountPercent"   => (float)$ar[7],
+                    "discountAmount"    => (float)$ar[8],
+                    "status"            => (int)$ar[9],
 
-        );
-        curl_setopt($ch, CURLOPT_URL, "http://103.169.238.219:8080/uploads/android/getmember.php");
-        //curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        $body = '{}';
+                    "Mon"          => (int)$ar[10],
+                    "Tue"          => (int)$ar[11],
+                    "Wed"          => (int)$ar[12],
+                    "Thur"         => (int)$ar[13],
+                    "Fri"          => (int)$ar[14],
+                    "Sat"          => (int)$ar[15],
+                    "Sun"          => (int)$ar[16],
+                    "presence"          => 1,
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    "inputDate"         => time(),
 
-        // Timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                );
+                $this->db->insert("cso1_promotion", $insert);
+                echo "promoHeader INSERT " . $ar[0] . "\n";
+            }
 
-        $txt = curl_exec($ch);
-        // echo $txt;
-        $date = "member" . date("YmdHis");
-        $myfile = fopen("./uploads/member/$date.txt", "w") or die("Unable to open file!");
-        fwrite($myfile, $txt);
-        fclose($myfile);
-        echo "\n" . 'SAVE FILE DONE ' . $date . "\n";
+            $insert = array(
+                "fileName" => $fileName,
+                "totalInsert" => $i,
+                "lastSycn" => date("Y-m-d H:i:s"),
+                "inputDate" => time(),
+            );
+            $this->db->insert("cso1_sync", $insert);
+
+            fclose($handle);
+        }
     }
 
-    function memberToDatabase()
+    function promoDetail()
     {
+        $i = 0;
+        $fileName = $this->promo_detail;
+        $handle = fopen("../sync/$fileName", "r");
+        if ($handle) {
+            while (($line = fgets($handle)) !== false) {
+                $i++;
+                $ar =  explode("|", $line);
+                $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+                $insert = array(
+                    "promotionId"   => $ar[0],
+                    "itemId"        => $ar[1],
+                    "qtyFrom"       =>  (int)$ar[2],
+                    "qtyTo"         => (int)$ar[3],
+                    "specialPrice"  => (float)$ar[4],
+                    "disc1"         => (float)$ar[5],
+                    "disc2"         => (float)$ar[6],
+                    "disc3"         => (float)$ar[7],
+                    "discountPrice" => (float)$ar[8],
+                    "status"        => (int)$ar[9],
+                    "presence"      => 1,
+                    "inputDate"     => time(),
+
+                );
+                $this->db->insert("cso1_promotionItem", $insert);
+                echo "promoDetail INSERT " . $ar[0] . "\n";
+            }
+
+            $insert = array(
+                "fileName" => $fileName,
+                "totalInsert" => $i,
+                "lastSycn" => date("Y-m-d H:i:s"),
+                "inputDate" => time(),
+            );
+            $this->db->insert("cso1_sync", $insert);
+
+            fclose($handle);
+        }
     }
 
-    function saveTxt()
+    function promoFree()
     {
-        $myfile = fopen("./uploads/member/member.txt", "w") or die("Unable to open file!");
-        $txt = "John Doe\n";
-        fwrite($myfile, $txt);
-        $txt = "Jane Doe\n";
-        fwrite($myfile, $txt);
-        fclose($myfile);
+        $i = 0;
+        $fileName = $this->promo_free;
+        $handle = fopen("../sync/$fileName", "r");
+        if ($handle) {
+            while (($line = fgets($handle)) !== false) {
+                $i++;
+                $ar =  explode("|", $line);
+                $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+                $insert = array(
+                    "promotionId"   => $ar[0],
+                    "itemId"        => $ar[1],
+                    "qty"           => (int)$ar[2],
+                    "freeItemId"    => $ar[3],
+                    "freeQty"       => (int)$ar[4],
+                    "applyMultiply"  => (int)$ar[5],
+                    "scanFree"       => (int)$ar[6],
+                    "printOnBill"    => (int)$ar[7],
+                    "status"        => (int)$ar[8],
+                    "presence"      => 1,
+                    "inputDate"     => time(),
+
+                );
+                $this->db->insert("cso1_promotionFree", $insert);
+                echo " promoFree INSERT " . $ar[0] . "\n";
+            }
+
+            $insert = array(
+                "fileName" => $fileName,
+                "totalInsert" => $i,
+                "lastSycn" => date("Y-m-d H:i:s"),
+                "inputDate" => time(),
+            );
+            $this->db->insert("cso1_sync", $insert);
+
+            fclose($handle);
+        }
+    }
+
+    function transactionToTxt()
+    {
     }
 }

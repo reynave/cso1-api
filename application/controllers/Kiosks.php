@@ -45,6 +45,7 @@ class Kiosks extends CI_Controller
             "storeOutlesId" =>  $this->storeOutlesId,
             "terminalId" =>  $this->terminalId,
             "systemOnline" => $systemOnline,
+            "turnOn"    =>  (int)$this->model->select("value", "cso1_account", "id=4"),
         );
 
         echo json_encode($data);
