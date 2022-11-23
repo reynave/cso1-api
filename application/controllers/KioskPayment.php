@@ -111,7 +111,7 @@ class KioskPayment extends CI_Controller
                     "transactionId" => $id,
                     "promotionId" => $row['promotionId'],
                     "promotionItemId" => $row['promotionItemId'],
-
+                    "barcode" => $row['barcode'],
                     "itemId" => $row['itemId'],
                     "originPrice" => $row['originPrice'],
                     "price" => $row['price'],
@@ -137,6 +137,7 @@ class KioskPayment extends CI_Controller
 
                 $insertDetail = array(
                     "transactionId" => $id,
+                    "barcode" => $row['barcode'],
                     "itemId" => $row['freeItemId'],
                     "promotionId" => $row['promotionId'],
                     "promotionFreeId" => $row['promotionFreeId'],
@@ -260,7 +261,7 @@ class KioskPayment extends CI_Controller
                     "transactionId" => $id,
                     "promotionId" => $row['promotionId'],
                     "promotionItemId" => $row['promotionItemId'],
-
+                    "barcode" => $row['barcode'],
                     "itemId" => $row['itemId'],
                     "originPrice" => $row['originPrice'],
                     "price" => $row['price'],
@@ -285,6 +286,7 @@ class KioskPayment extends CI_Controller
 
                 $insertDetail = array(
                     "transactionId" => $id,
+                    "barcode" => $row['barcode'],
                     "itemId" => $row['freeItemId'],
                     "promotionId" => $row['promotionId'],
                     "promotionFreeId" => $row['promotionFreeId'],

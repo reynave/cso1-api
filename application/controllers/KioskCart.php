@@ -154,6 +154,7 @@ class KioskCart extends CI_Controller
                         "id" => $id,
                         "kioskUuid" => $post['kioskUuid'],
                         "itemId" => $itemId,
+                        "barcode" => $post['barcode'],
                         "price" => $price*$weight,
                         "originPrice" => $price,
                         "promotionId" => "",
@@ -196,6 +197,7 @@ class KioskCart extends CI_Controller
                             for ($i = 0; $i <  $a['freeQty']; $i++) {
                                 $insert = array(
                                     "kioskCartId" => $id,
+                                    "barcode" => $post['barcode'],
                                     "kioskUuid" => $post['kioskUuid'],
                                     "useBykioskUuidId" => 0,
                                     "promotionFreeId" => $a['id'],
@@ -222,6 +224,7 @@ class KioskCart extends CI_Controller
                                 for ($i = 0; $i <  $a['freeQty']; $i++) {
                                     $insert = array(
                                         "kioskCartId" => $id,
+                                        "barcode" => $post['barcode'],
                                         "kioskUuid" => $post['kioskUuid'],
                                         "useBykioskUuidId" => 0,
                                         "promotionFreeId" => $a['id'],

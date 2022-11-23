@@ -14,34 +14,44 @@ class Cmd extends CI_Controller
         $this->promo_free = "promo_free.txt";
         date_default_timezone_set('Asia/Jakarta');
         error_reporting(E_ERROR | E_PARSE);
-        $this->time = ["04:00:00"];
+        $this->time = array(
+            "promo" => "04:00:10",
+            "item" => "05:00:10",
+            "transaction" => "01:00:10",
+        );
     }
     // CALL cmd : php index.php Cmd
     function index()
     {
-        echo "\n";
-        echo "Server Run ver 1.0.3";
-
-        echo "\n";
-        echo "\n";
+        echo "\n" . "Server Run ver 1.0.3" . "\n \n";
         $i = 0;
         do {
             $i++;
-            echo  $i . ' ' . date("D Y-m-d H:i:s") . "  |  Schadule " . " \n";
+            echo  $i . ' ' . date("D Y-m-d H:i:s") . "  | Next Schadule " . " \n";
             print_r($this->time);
-            echo "\n";
+            echo "\n\n";
 
-            $time = array_search(date("H:i:s"), $this->time);
-            echo 'time : ' . $time;
 
-            if (date("H:i:s")  == $this->time[$time]) {
+            if ($this->time['promo'] == date("H:i:s")) {
+                echo $this->time['promo'];
                 self::promoHeader();
                 self::promoDetail();
                 self::promoFree();
+            }
 
+            if ($this->time['item'] == date("H:i:s")) {
+                echo $this->time['item'];
                 self::masterItem();
                 self::masterItemBarcode();
             }
+
+            if ($this->time['transaction'] == date("H:i:s")) {
+                echo $this->time['transaction'];
+                self::transaction();
+            }
+
+
+
             sleep(1);
         } while (true);
     }
@@ -53,6 +63,22 @@ class Cmd extends CI_Controller
     }
 
 
+    function fixBarcode()
+    {
+        echo "FIX BARCODE ITEM";
+        $sql = "SELECT * from cso1_transactionDetail";
+
+        foreach ($this->model->sql($sql) as $row) {
+            print_r($row);
+            $update = array(
+                "barcode" => $this->model->select("barcode", "cso1_itemBarcode", "id=" . $row['itemId'] . " order by barcode DESC")
+            );
+            $this->db->update("cso1_transactionDetail", $update, "id=" . $row['id']);
+            // $this->db->update("cso1_transactionDetail",$update,"(barcode is null  or barcode = ''  ) and id=".$row['id']);
+        }
+    }
+
+
     function promo()
     {
         self::promoHeader();
@@ -60,13 +86,14 @@ class Cmd extends CI_Controller
         self::promoFree();
     }
 
-    function transaction(){
+    function transaction()
+    {
         $this->load->model('transaction');
-        echo $this->transaction->sync('2022-08-12');
+        echo $this->transaction->sync(date("Y-m-d"));
     }
 
     function total()
-    { 
+    {
         $fileName =   $this->promo_detail;
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
@@ -89,7 +116,7 @@ class Cmd extends CI_Controller
         $file->key();
 
         if ($file->key() > 0) {
-           
+
             $handle = fopen("../sync/$fileName", "r");
             if ($handle) {
                 while (($line = fgets($handle)) !== false) {
@@ -138,16 +165,16 @@ class Cmd extends CI_Controller
             echo "\n $fileName NO DATA";
         }
     }
- 
+
     function masterItemBarcode()
     {
- 
-        $fileName =   $this->barcode; 
+
+        $fileName =   $this->barcode;
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
         $file->key();
 
-        if ($file->key() > 0) { 
+        if ($file->key() > 0) {
             $this->db->query("Truncate table cso1_itemBarcode");
             echo $this->db->last_query() . "\n\m";
             $handle = fopen("../sync/$fileName", "r");
@@ -181,7 +208,7 @@ class Cmd extends CI_Controller
                 $this->db->insert("cso1_sync", $insert);
                 fclose($handle);
             }
-        }else{
+        } else {
             echo "\n $fileName NO DATA";
         }
     }
