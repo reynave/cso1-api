@@ -41,11 +41,11 @@ class KioskCart extends CI_Controller
                 ) : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
                 "items" =>  $this->model->sql("SELECT t1.*, i.shortDesc, i.description, i.price1 as 'price', i.images
                     from 
-                        (select count(k.itemId) as 'qty', k.itemId, 
+                        (select count(k.itemId) as 'qty', k.itemId,  k.barcode,
                         sum(k.price - k.discount) as 'totalPrice', sum(k.discount)*-1 as 'totalDiscount'
                         from cso1_kioskCart as k
                         where k.presence = 1 and k.kioskUuid = '$uuid'
-                        group by k.itemId ) as t1
+                        group by k.barcode, k.itemId ) as t1
                     left join cso1_item as i  on t1.itemId = i.id
                 "),
                 "itemsList" => $this->model->sql("SELECT c.id, c.kioskUuid, c.itemId, c.price, c.discount, i.description, i.shortDesc, i.images
@@ -150,12 +150,20 @@ class KioskCart extends CI_Controller
                     $price  = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
                     $id =  $this->model->number("kiosk");
 
+                    $finalPrice = $price*$weight;
+                    $coma =   (float)$finalPrice - (int)$finalPrice;
+                    if( $coma > 0.5) { 
+                        $finalPrice = ceil( $finalPrice);
+                    }else{
+                        $finalPrice = (int)$finalPrice;
+                    }
+
                     $insert = array(
                         "id" => $id,
                         "kioskUuid" => $post['kioskUuid'],
                         "itemId" => $itemId,
                         "barcode" => $post['barcode'],
-                        "price" => $price*$weight,
+                        "price" => $finalPrice ,
                         "originPrice" => $price,
                         "promotionId" => "",
                         "discount" => 0,

@@ -43,21 +43,21 @@ class KioskPrint extends CI_Controller
                 "date" => $this->model->select("endDate","cso1_transaction","id=".$id),
                 "detail" =>   $this->model->sql("select * from cso1_transaction where id='".$id."' ")[0],
                 "items" =>  $this->model->sql("SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
-                    FROM (
-                        SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price,
-                        sum(td.isSpecialPrice) as 'isSpecialPrice', sum(td.discount) as 'totalDiscount', td.note
-                        from cso1_transactionDetail as td
-                        where td.presence = 1 and td.transactionId = '$id' and td.isFreeItem = 0
-                        group by td.itemId, td.price, td.note
-                    ) as t1
-                    JOIN cso1_item as i on i.id = t1.itemId
-                    ORDER BY i.description ASC
+                FROM (
+                    SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price, td.barcode,
+                    sum(td.isSpecialPrice) as 'isSpecialPrice', sum(td.discount) as 'totalDiscount', td.note
+                    from cso1_transactionDetail as td
+                    where td.presence = 1 and td.void = 0 and td.transactionId = '$id' and td.isFreeItem = 0
+                    group by td.itemId, td.price, td.note , td.barcode
+                ) as t1
+                JOIN cso1_item as i on i.id = t1.itemId
+                ORDER BY i.description ASC
                 "),
                 "freeItem" => $this->model->sql(" SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
                     from (
                         select count(td.itemId) as qty, td.itemId, sum(td.isPrintOnBill) as printOnBill
                         from cso1_transactionDetail as td
-                        where td.presence = 1 and td.transactionId = '$id' and td.isFreeItem = 1
+                        where td.presence = 1 and td.void = 0 and td.transactionId = '$id' and td.isFreeItem = 1
                         group by td.itemId, td.price, td.isPrintOnBill
                     ) as t1
                     JOIN cso1_item as i on i.id = t1.itemId

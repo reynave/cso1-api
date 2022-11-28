@@ -44,12 +44,12 @@ class KioskBill extends CI_Controller
                 "member" =>  !$memberId ? [] : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
                 "items" =>  $this->model->sql("SELECT t1.*, i.shortDesc, i.description
                 from 
-                    (select count(k.itemId) as 'qty', k.itemId, sum(k.isSpecialPrice) as 'isSpecialPrice',
+                    (select count(k.itemId) as 'qty', k.itemId, sum(k.isSpecialPrice) as 'isSpecialPrice', k.barcode,
                     sum(k.price - k.discount) as 'totalPrice', sum(k.discount) as 'totalDiscount', k.price,
                     sum(k.isFreeItem) as 'isFreeItem', k.note
                     from cso1_kioskCart as k
                     where k.presence = 1 and k.kioskUuid =  '$uuid'
-                    group by k.price, k.itemId, k.note ) as t1
+                    group by k.price, k.itemId, k.note, k.barcode ) as t1
                 join cso1_item as i  on t1.itemId = i.id 
                 order by i.description DESC
                 "),
