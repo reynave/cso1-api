@@ -1,0 +1,23 @@
+API TOKEN :
+End point : https://app.chandrasuperstore.co.id/rest/deploy/oauth/token
+Method : POST
+Body : 
+{
+    "client_id": "19e8fgtc2a204226a5da987197c1a8b2",
+    "client_secret": "tteKPMVPWfiKjxfD"
+}
+
+API VIP VOUCHER : 
+End Point :  https://app.chandrasuperstore.co.id/rest/voucher
+Method : GET
+Header : 
+“vipno:<nomorvip>” 
+“Authorization:<token_type><spasi><access_token>”
+
+
+API VIP : 
+End Point :  https://app.chandrasuperstore.co.id/rest/vip
+Method : GET
+Header : 
+“vipno:<nomorvip>” 
+“Authorization:<token_type><spasi><access_token>”

@@ -183,17 +183,17 @@ class kioskPaymentBca extends CI_Controller
         $post = $this->model->sql("select * from cso1_paymentBcaQris where kioskUuid = '$kioskUuid' ")[0];
 
         // print_r($post );
-        // $refNo = (string)preg_replace('/\s\s+/', ' ', $post['asciiString']);
-        // echo $refNo;
-        // $refNo = (explode(" ", $refNo));
-        // print_r( $refNo);
-        // $refNo = $refNo[1];
-        // echo substr( $refNo, 2, 12);
+        // $reffNo = (string)preg_replace('/\s\s+/', ' ', $post['asciiString']);
+        // echo $reffNo;
+        // $reffNo = (explode(" ", $reffNo));
+        // print_r( $reffNo);
+        // $reffNo = $reffNo[1];
+        // echo substr( $reffNo, 2, 12);
 
-        $refNo = (string)preg_replace('/\s\s+/', ' ', $post['asciiString']);
+        $reffNo = (string)preg_replace('/\s\s+/', ' ', $post['asciiString']);
 
-        $refNo = substr($refNo, 0, 45);
-        echo  'hasil ' . $refNo;
+        $reffNo = substr($reffNo, 0, 45);
+        echo  'hasil ' . $reffNo;
     }
 
     function fnBcaCashDEL()
@@ -308,17 +308,17 @@ class kioskPaymentBca extends CI_Controller
 
             $this->db->delete("cso1_paymentBcaQris", "kioskUuid = '" . $post['kioskUuid'] . "'");
 
-            $refNo = preg_replace('/\s\s+/', ' ', $post['data']['ascii']);
-            $refNo  = substr($refNo, 33, 12);
+            $reffNo = preg_replace('/\s\s+/', ' ', $post['data']['ascii']);
+            $reffNo  = substr($reffNo, 33, 12);
             $insert = array(
                 "kioskUuid" =>  $post['kioskUuid'],
-                "reffNo" =>   $refNo,
+                "reffNo" =>   $reffNo,
                 "hex" =>  $post['data']['hex'],
                 "asciiString"  =>  $post['data']['ascii'],
                 "inputDate"  => time(),
                 "updateDate"  => time(),
             );
-            $id = $this->model->select("id", "cso1_paymentBcaQris", "kioskUuid = '" . $post['kioskUuid'] . "'  and reffNo = '" . $refNo . "'");
+            $id = $this->model->select("id", "cso1_paymentBcaQris", "kioskUuid = '" . $post['kioskUuid'] . "'  and reffNo = '" . $reffNo . "'");
             if (!$id) {
                 $this->db->insert("cso1_paymentBcaQris", $insert);
             } else {
@@ -328,7 +328,39 @@ class kioskPaymentBca extends CI_Controller
             $data = array(
                 "error" => false,
                 "insert" => $insert,
-                "refNo" => $refNo,
+                "reffNo" => $reffNo,
+                "id" =>  $id,
+            );
+        } else {
+            $data = array(
+                "error" => true,
+            );
+        }
+        echo json_encode($data);
+    }
+
+    function fnQrisUpdate()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        
+        if ($post && $post['data']['respCode'] == '00' ) { 
+            $update = array( 
+                "status" => 1,
+                "respAscii" =>  $post['data']['hex'],
+                "respHex"  =>  $post['data']['ascii'], 
+                "updateDate"  => time(),
+            );
+            $id = $this->model->select("id", "cso1_paymentBcaQris", "kioskUuid = '" . $post['kioskUuid'] . "'  and reffNo = '" . $post['reffNo'] . "'");
+            if ($id) {
+                $this->db->update("cso1_paymentBcaQris", $update, "id=". $id );
+            } else {
+                $update = false;
+            }
+
+            $data = array(
+                "error" => false,
+                "update" => $update,
+                "reffNo" => $post['reffNo'],
                 "id" =>  $id,
             );
         } else {

@@ -347,4 +347,6 @@ class Cmd extends CI_Controller
     function transactionToTxt()
     {
     }
+  
+
 }
