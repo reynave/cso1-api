@@ -345,4 +345,25 @@ class Spv_terminal extends CI_Controller
         echo json_encode($data);
     }
 
+    function fnRemove(){
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $kioskUuid = $post['kioskUuid'];
+            $this->db->delete("cso1_kioskUuid","kioskUuid = '$kioskUuid' ");
+            $this->db->delete("cso1_kioskCart","kioskUuid = '$kioskUuid' ");
+            $this->db->delete("cso1_kioskCartFreeItem","kioskUuid = '$kioskUuid' ");
+            $data = array(
+                "error" => false,
+            ); 
+          
+        }else{
+            $data = array(
+                "error" => true,
+            ); 
+        } 
+
+        echo json_encode($data);
+    }
 }
+ 
