@@ -457,7 +457,13 @@ class KioskCart extends CI_Controller
     {
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
-        if ($post) {
+        if ($post) { 
+            $terminalId = $this->terminalId;
+
+            $deleteID = array(
+                'terminalId' => $terminalId,
+            );
+            $this->db->delete('cso1_kioskUuid', $deleteID);
             $delete = array(
                 'kioskUuid' => $post['kioskUuid'],
             );

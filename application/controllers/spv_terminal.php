@@ -27,7 +27,7 @@ class Spv_terminal extends CI_Controller
             FROM cso1_terminal as t 
             left join cso1_storeOutles as so on t.storeOutlesId = so.id
             left join cso1_kioskUuid as k on k.terminalId = t.id
-            WHERE  t.presence = 1 
+            WHERE  t.presence = 1 and t.status = 1
             order by t.name ASC "),
 
             "storeOutles" =>  $this->model->sql("SELECT *  FROM cso1_storeOutles  WHERE  status = 1 and presence = 1 order by id ASC"),

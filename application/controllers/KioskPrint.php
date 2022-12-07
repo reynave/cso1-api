@@ -37,11 +37,12 @@ class KioskPrint extends CI_Controller
     {
         $id = str_replace(["'", '"', "-"], "", $this->input->get("id"));
         if ($id) {
-
+            $isId = $this->model->select("endDate","cso1_transaction","id='".$id."'");
             $data = array(
                 "id" => $id,
-                "date" => $this->model->select("endDate","cso1_transaction","id=".$id),
-                "detail" =>   $this->model->sql("select * from cso1_transaction where id='".$id."' ")[0],
+                "printable" =>   $isId ? true : false,
+                "date" => $this->model->select("endDate","cso1_transaction","id='".$id."'"),
+                "detail" =>  $isId ?  $this->model->sql("select * from cso1_transaction where id='".$id."' ")[0] : [],
                 "items" =>  $this->model->sql("SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
                 FROM (
                     SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price, td.barcode,
@@ -74,15 +75,15 @@ class KioskPrint extends CI_Controller
                     ORDER BY i.description
                 "),
                 "summary" => array(
-                    "nonBkp" => (int)$this->model->select("nonBkp", "cso1_transaction", "id=$id"),
-                    "bkp" => (int)$this->model->select("bkp", "cso1_transaction", "id=$id"),
-                    "discount" => (int)$this->model->select("discount", "cso1_transaction", "id=$id"),
-                    "dpp" => (int)$this->model->select("dpp", "cso1_transaction", "id=$id"),
-                    "discountMember" => (int)$this->model->select("discountMember", "cso1_transaction", "id=$id"),
-                    "ppn" => (int)$this->model->select("ppn", "cso1_transaction", "id=$id"),
-                    "total" => (int)$this->model->select("total", "cso1_transaction", "id=$id"),
-                    "voucher" => (int)$this->model->select("voucher", "cso1_transaction", "id=$id"),
-                    "final" => (int)$this->model->select("finalPrice", "cso1_transaction", "id=$id"),
+                    "nonBkp" => (int)$this->model->select("nonBkp", "cso1_transaction", "id='$id'"),
+                    "bkp" => (int)$this->model->select("bkp", "cso1_transaction", "id='$id'"),
+                    "discount" => (int)$this->model->select("discount", "cso1_transaction", "id='$id'"),
+                    "dpp" => (int)$this->model->select("dpp", "cso1_transaction", "id='$id'"),
+                    "discountMember" => (int)$this->model->select("discountMember", "cso1_transaction", "id='$id'"),
+                    "ppn" => (int)$this->model->select("ppn", "cso1_transaction", "id='$id'"),
+                    "total" => (int)$this->model->select("total", "cso1_transaction", "id='$id'"),
+                    "voucher" => (int)$this->model->select("voucher", "cso1_transaction", "id='$id'"),
+                    "final" => (int)$this->model->select("finalPrice", "cso1_transaction", "id='$id'"),
                 ),
                 "template" => array(
                     "companyName" => $this->model->select("value", "cso1_account", "name='companyName'"),

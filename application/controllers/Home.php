@@ -24,9 +24,10 @@ class Home extends CI_Controller
         $data = array(
             "error" => false,
             "ServerTime" => date("Y-m-d H:i:s"), 
-           // "itemUomId" =>$this->model->sql("select  id,description from cso1_itemUom where presence = 1 order by ID"),
-          //  "itemCategoryId" =>$this->model->sql("select  id, name from cso1_itemCategory where presence = 1 order by ID"), 
-           // "itemTaxId" =>$this->model->sql("select  id, name from cso1_taxCode where presence = 1 order by ID"),
+           //  "itemUomId" =>$this->model->sql("select  id,description from cso1_itemUom where presence = 1 order by ID"),
+           //  "itemCategoryId" =>$this->model->sql("select  id, name from cso1_itemCategory where presence = 1 order by ID"), 
+           //  "itemTaxId" =>$this->model->sql("select  id, name from cso1_taxCode where presence = 1 order by ID"), 
+              
         );
 
         echo json_encode($data,JSON_PRETTY_PRINT);

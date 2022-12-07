@@ -171,28 +171,31 @@ class KioskPayment extends CI_Controller
             }
 
             // DEBIT BCA
-            if ($post['paymentTypeId'] == 'BCA01' ||  $post['paymentTypeId'] == 'BCA31' ) {
+            if ($post['paymentTypeId'] == 'BCA01' ||  $post['paymentTypeId'] == 'BCA31') {
                 $insert = array(
                     "transactionId" => $id,
                     "paymentTypeId" => $post['paymentTypeId'],
-                    "kioskUuid"     => $kioskUuid, 
-                    "respCode"      => $post['data']['respCode'],  
-                    "hex"           => $post['data']['hex'],  
-                    "asciiString"         => $post['data']['ascii'],  
+                    "kioskUuid"     => $kioskUuid,
+                    "respCode"      => $post['data']['respCode'],
+                    "hex"           => $post['data']['hex'],
+                    "asciiString"         => $post['data']['ascii'],
                     "updateDate"    => time(),
                     "inputDate"     => time(),
                 );
                 $this->db->insert("cso1_paymentBcaEcr",   $insert);
-            }  
+            }
             $this->db->trans_complete();
             $trans_status = true;
             if ($this->db->trans_status() === FALSE) {
                 $trans_status = false;
             } else {
-
                 // REMOVE CART
+                $deleteID = array(
+                    'terminalId' => $terminalId,
+                );
+                $this->db->delete('cso1_kioskUuid', $deleteID);
                 $delete = array(
-                    'kioskUuid' => $kioskUuid
+                    'kioskUuid' => $kioskUuid,
                 );
                 $this->db->delete('cso1_kioskUuid', $delete);
                 $this->db->delete('cso1_kioskCart', $delete);
@@ -310,10 +313,13 @@ class KioskPayment extends CI_Controller
             if ($this->db->trans_status() === FALSE) {
                 $trans_status = false;
             } else {
-
-                // REMOVE CART
+                // REMOVE CART 
+                $deleteID = array(
+                    'terminalId' => $terminalId,
+                );
+                $this->db->delete('cso1_kioskUuid', $deleteID);
                 $delete = array(
-                    'kioskUuid' => $kioskUuid
+                    'kioskUuid' => $kioskUuid,
                 );
                 $this->db->delete('cso1_kioskUuid', $delete);
                 $this->db->delete('cso1_kioskCart', $delete);
