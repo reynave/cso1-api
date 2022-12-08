@@ -211,7 +211,9 @@ class KioskPayment extends CI_Controller
                     "trans_status" =>  $trans_status,
                 );
             } else {
-                $data = [];
+                $data = array(
+                    "id" => 0,
+                );
             }
         }
         echo json_encode($data);
@@ -339,7 +341,9 @@ class KioskPayment extends CI_Controller
                     "trans_status" =>  $trans_status,
                 );
             } else {
-                $data = [];
+                $data = array(
+                    "id" => 0,
+                );
             }
         }
         echo json_encode($data);

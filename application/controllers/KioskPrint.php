@@ -34,7 +34,7 @@ class KioskPrint extends CI_Controller
     }
 
     function printDetail()
-    {
+    { $data = [];
         $id = str_replace(["'", '"', "-"], "", $this->input->get("id"));
         if ($id) {
             $isId = $this->model->select("endDate","cso1_transaction","id='".$id."'");
@@ -93,7 +93,7 @@ class KioskPrint extends CI_Controller
                 ),
               
             );
-        }
+        } 
         echo json_encode($data);
     }
 
