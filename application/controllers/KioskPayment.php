@@ -64,151 +64,155 @@ class KioskPayment extends CI_Controller
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $this->db->trans_start();
-            $id =  $this->model->number("transaction");
 
             $kioskUuid =  $post['kioskUuid'];
             $summary = $this->model->summary($kioskUuid);
+            $finalPrice = (int)$summary['final'];
+            if ($finalPrice > 0) {
 
-            $storeOutlesId = $this->storeOutlesId;
-            $terminalId = $this->terminalId;
+                $this->db->trans_start();
+                $id =  $this->model->number("transaction");
+                $storeOutlesId = $this->storeOutlesId;
+                $terminalId = $this->terminalId;
 
-            $insert = array(
-                "id" => $id,
-                "transactionDate" => time(),
-                "kioskUuid" =>  $kioskUuid,
-                "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
-                "paymentTypeId" => $post['paymentTypeId'],
+                $insert = array(
+                    "id" => $id,
+                    "transactionDate" => time(),
+                    "kioskUuid" =>  $kioskUuid,
+                    "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                    "paymentTypeId" => $post['paymentTypeId'],
 
-                "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
-                "endDate" => date("Y-m-d H:i:s"),
-                "storeOutlesId" =>  $storeOutlesId,
-                "terminalId" =>   $terminalId,
-                "struk" => $id,
-                "cashierId" => "",
-                "pthType" => 1,
+                    "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                    "endDate" => date("Y-m-d H:i:s"),
+                    "storeOutlesId" =>  $storeOutlesId,
+                    "terminalId" =>   $terminalId,
+                    "struk" => $id,
+                    "cashierId" => "",
+                    "pthType" => 1,
 
-                "total" => (int)$summary['total'],
-                "discount" => (int)$summary['discount'],
-                "discountMember" => (int)$summary['memberDiscount'],
-                "voucher" => (int)$summary['voucer'],
-                "bkp" => (int)$summary['bkp'],
-                "dpp" => (int)$summary['dpp'],
-                "ppn" => (int)$summary['ppn'],
-                "nonBkp" => (int)$summary['nonBkp'],
-                "finalPrice" => (int)$summary['final'],
+                    "total" => (int)$summary['total'],
+                    "discount" => (int)$summary['discount'],
+                    "discountMember" => (int)$summary['memberDiscount'],
+                    "voucher" => (int)$summary['voucer'],
+                    "bkp" => (int)$summary['bkp'],
+                    "dpp" => (int)$summary['dpp'],
+                    "ppn" => (int)$summary['ppn'],
+                    "nonBkp" => (int)$summary['nonBkp'],
+                    "finalPrice" => (int)$summary['final'],
 
-                "locked" => 1,
-                "presence" => 1,
-                "inputDate" => time(),
-                "updateDate" =>  time(),
-            );
-            $this->db->insert('cso1_transaction', $insert);
-
-            $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
-            foreach ($q as $row) {
-                $insertDetail = array(
-                    "transactionId" => $id,
-                    "promotionId" => $row['promotionId'],
-                    "promotionItemId" => $row['promotionItemId'],
-                    "barcode" => $row['barcode'],
-                    "itemId" => $row['itemId'],
-                    "originPrice" => $row['originPrice'],
-                    "price" => $row['price'],
-                    "discount" => $row['discount'],
-                    "isPriceEdit" => $row['isPriceEdit'],
-                    "isFreeItem" => $row['isFreeItem'],
-                    "isSpecialPrice" => $row['isSpecialPrice'],
-                    "isPrintOnBill" => $row['isPrintOnBill'],
-                    "note" => $row['note'],
-
-                    "void" => $row['void'],
+                    "locked" => 1,
                     "presence" => 1,
                     "inputDate" => time(),
                     "updateDate" =>  time(),
-                    "updateBy" => $row['updateBy'],
                 );
-                $this->db->insert('cso1_transactionDetail', $insertDetail);
-            }
+                $this->db->insert('cso1_transaction', $insert);
 
-            $q = $this->model->sql("SELECT * FROM cso1_kioskCartFreeItem
-             WHERE presence = 1 AND status = 0 AND kioskUuid = '$kioskUuid' ");
-            foreach ($q as $row) {
+                $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
+                foreach ($q as $row) {
+                    $insertDetail = array(
+                        "transactionId" => $id,
+                        "promotionId" => $row['promotionId'],
+                        "promotionItemId" => $row['promotionItemId'],
+                        "barcode" => $row['barcode'],
+                        "itemId" => $row['itemId'],
+                        "originPrice" => $row['originPrice'],
+                        "price" => $row['price'],
+                        "discount" => $row['discount'],
+                        "isPriceEdit" => $row['isPriceEdit'],
+                        "isFreeItem" => $row['isFreeItem'],
+                        "isSpecialPrice" => $row['isSpecialPrice'],
+                        "isPrintOnBill" => $row['isPrintOnBill'],
+                        "note" => $row['note'],
 
-                $insertDetail = array(
-                    "transactionId" => $id,
-                    "barcode" => $row['barcode'],
-                    "itemId" => $row['freeItemId'],
-                    "promotionId" => $row['promotionId'],
-                    "promotionFreeId" => $row['promotionFreeId'],
-                    "originPrice" => 0,
-                    "price" => 0,
-                    "discount" => 0,
-                    "isPriceEdit" => 0,
-                    "isFreeItem" => 1,
-                    "isSpecialPrice" => 0,
-                    "isPrintOnBill" => $row['printOnBill'],
-                    "void" => 0,
-                    "presence" => $row['scanFree'] == true ? 1 : 2,
-                    "inputDate" => time(),
-                    "updateDate" =>  time(),
-                    "updateBy" => $row['updateBy'],
+                        "void" => $row['void'],
+                        "presence" => 1,
+                        "inputDate" => time(),
+                        "updateDate" =>  time(),
+                        "updateBy" => $row['updateBy'],
+                    );
+                    $this->db->insert('cso1_transactionDetail', $insertDetail);
+                }
+
+                $q = $this->model->sql("SELECT * FROM cso1_kioskCartFreeItem  
+                 WHERE presence = 1 AND status = 0 AND kioskUuid = '$kioskUuid' ");
+                foreach ($q as $row) {
+
+                    $insertDetail = array(
+                        "transactionId" => $id,
+                        "barcode" => $row['barcode'],
+                        "itemId" => $row['freeItemId'],
+                        "promotionId" => $row['promotionId'],
+                        "promotionFreeId" => $row['promotionFreeId'],
+                        "originPrice" => 0,
+                        "price" => 0,
+                        "discount" => 0,
+                        "isPriceEdit" => 0,
+                        "isFreeItem" => 1,
+                        "isSpecialPrice" => 0,
+                        "isPrintOnBill" => $row['printOnBill'],
+                        "void" => 0,
+                        "presence" => $row['scanFree'] == true ? 1 : 2,
+                        "inputDate" => time(),
+                        "updateDate" =>  time(),
+                        "updateBy" => $row['updateBy'],
+                    );
+                    $this->db->insert('cso1_transactionDetail', $insertDetail);
+                }
+
+                // QRIS TELKOM
+                if ($post['paymentTypeId'] == 'QRT001') {
+                    $updateQris = array(
+                        "qris_status" => $post['qris']['data']['qris_status'],
+                        "qris_payment_customername" => $post['qris']['data']['qris_payment_customername'],
+                        "qris_payment_methodby" => $post['qris']['data']['qris_payment_methodby'],
+                        "transactionId" => $id,
+                        "status" => 10,
+                        "updateDate" => time(),
+                    );
+                    $this->db->update("cso1_paymentQrisTelkom",   $updateQris, "kioskUuid = '$kioskUuid'");
+                }
+
+                // DEBIT BCA
+                if ($post['paymentTypeId'] == 'BCA01' ||  $post['paymentTypeId'] == 'BCA31') {
+                    $insert = array(
+                        "transactionId" => $id,
+                        "paymentTypeId" => $post['paymentTypeId'],
+                        "kioskUuid"     => $kioskUuid,
+                        "respCode"      => $post['data']['respCode'],
+                        "hex"           => $post['data']['hex'],
+                        "asciiString"         => $post['data']['ascii'],
+                        "updateDate"    => time(),
+                        "inputDate"     => time(),
+                    );
+                    $this->db->insert("cso1_paymentBcaEcr",   $insert);
+                }
+                $this->db->trans_complete();
+                $trans_status = true;
+                if ($this->db->trans_status() === FALSE) {
+                    $trans_status = false;
+                } else {
+                    // REMOVE CART
+                    $deleteID = array(
+                        'terminalId' => $terminalId,
+                    );
+                    $this->db->delete('cso1_kioskUuid', $deleteID);
+                    $delete = array(
+                        'kioskUuid' => $kioskUuid,
+                    );
+                    $this->db->delete('cso1_kioskUuid', $delete);
+                    $this->db->delete('cso1_kioskCart', $delete);
+                    $this->db->delete('cso1_kioskCartFreeItem', $delete);
+                }
+
+                $data = array(
+                    "id" => $id,
+                    "insert" => $insert,
+                    "post" => $post,
+                    "trans_status" =>  $trans_status,
                 );
-                $this->db->insert('cso1_transactionDetail', $insertDetail);
-            }
-
-            // QRIS TELKOM
-            if ($post['paymentTypeId'] == 'QRT001') {
-                $updateQris = array(
-                    "qris_status" => $post['qris']['data']['qris_status'],
-                    "qris_payment_customername" => $post['qris']['data']['qris_payment_customername'],
-                    "qris_payment_methodby" => $post['qris']['data']['qris_payment_methodby'],
-                    "transactionId" => $id,
-                    "status" => 10,
-                    "updateDate" => time(),
-                );
-                $this->db->update("cso1_paymentQrisTelkom",   $updateQris, "kioskUuid = '$kioskUuid'");
-            }
-
-            // DEBIT BCA
-            if ($post['paymentTypeId'] == 'BCA01' ||  $post['paymentTypeId'] == 'BCA31') {
-                $insert = array(
-                    "transactionId" => $id,
-                    "paymentTypeId" => $post['paymentTypeId'],
-                    "kioskUuid"     => $kioskUuid,
-                    "respCode"      => $post['data']['respCode'],
-                    "hex"           => $post['data']['hex'],
-                    "asciiString"         => $post['data']['ascii'],
-                    "updateDate"    => time(),
-                    "inputDate"     => time(),
-                );
-                $this->db->insert("cso1_paymentBcaEcr",   $insert);
-            }
-            $this->db->trans_complete();
-            $trans_status = true;
-            if ($this->db->trans_status() === FALSE) {
-                $trans_status = false;
             } else {
-                // REMOVE CART
-                $deleteID = array(
-                    'terminalId' => $terminalId,
-                );
-                $this->db->delete('cso1_kioskUuid', $deleteID);
-                $delete = array(
-                    'kioskUuid' => $kioskUuid,
-                );
-                $this->db->delete('cso1_kioskUuid', $delete);
-                $this->db->delete('cso1_kioskCart', $delete);
-                $this->db->delete('cso1_kioskCartFreeItem', $delete);
+                $data = [];
             }
-
-
-            $data = array(
-                "id" => $id,
-                "insert" => $insert,
-                "post" => $post,
-                "trans_status" =>  $trans_status,
-            );
         }
         echo json_encode($data);
     }
@@ -218,121 +222,125 @@ class KioskPayment extends CI_Controller
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $this->db->trans_start();
-            $id =  $this->model->number("transaction");
-
             $kioskUuid =  $post['kioskUuid'];
             $summary = $this->model->summary($kioskUuid);
+            $finalPrice = (int)$summary['final'];
+            if ($finalPrice > 0) {
+                $this->db->trans_start();
+                $id =  $this->model->number("transaction");
+ 
+                $storeOutlesId = $this->storeOutlesId;
+                $terminalId = $this->terminalId;
 
-            $storeOutlesId = $this->storeOutlesId;
-            $terminalId = $this->terminalId;
+                $insert = array(
+                    "id" => $id,
+                    "transactionDate" => time(),
+                    "kioskUuid" =>  $kioskUuid,
+                    "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                    "storeOutlesId" =>  $storeOutlesId,
+                    "terminalId" =>   $terminalId,
 
-            $insert = array(
-                "id" => $id,
-                "transactionDate" => time(),
-                "kioskUuid" =>  $kioskUuid,
-                "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
-                "storeOutlesId" =>  $storeOutlesId,
-                "terminalId" =>   $terminalId,
+                    "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                    "endDate" => date("Y-m-d H:i:s"),
 
-                "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
-                "endDate" => date("Y-m-d H:i:s"),
+                    "struk" => $id,
+                    "cashierId" => "",
+                    "pthType" => 1,
 
-                "struk" => $id,
-                "cashierId" => "",
-                "pthType" => 1,
+                    "total" => (int)$summary['total'],
+                    "discount" => (int)$summary['discount'],
+                    "discountMember" => (int)$summary['memberDiscount'],
+                    "voucher" => (int)$summary['voucer'],
+                    "bkp" => (int)$summary['bkp'],
+                    "dpp" => (int)$summary['dpp'],
+                    "ppn" => (int)$summary['ppn'],
+                    "nonBkp" => (int)$summary['nonBkp'],
+                    "finalPrice" => (int)$summary['final'],
 
-                "total" => (int)$summary['total'],
-                "discount" => (int)$summary['discount'],
-                "discountMember" => (int)$summary['memberDiscount'],
-                "voucher" => (int)$summary['voucer'],
-                "bkp" => (int)$summary['bkp'],
-                "dpp" => (int)$summary['dpp'],
-                "ppn" => (int)$summary['ppn'],
-                "nonBkp" => (int)$summary['nonBkp'],
-                "finalPrice" => (int)$summary['final'],
-
-                "locked" => 1,
-                "presence" => 1,
-                "inputDate" => time(),
-                "updateDate" =>  time(),
-            );
-            $this->db->insert('cso1_transaction', $insert);
-            $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
-            foreach ($q as $row) {
-                $insertDetail = array(
-                    "transactionId" => $id,
-                    "promotionId" => $row['promotionId'],
-                    "promotionItemId" => $row['promotionItemId'],
-                    "barcode" => $row['barcode'],
-                    "itemId" => $row['itemId'],
-                    "originPrice" => $row['originPrice'],
-                    "price" => $row['price'],
-                    "discount" => $row['discount'],
-                    "isPriceEdit" => $row['isPriceEdit'],
-                    "isFreeItem" => $row['isFreeItem'],
-                    "isSpecialPrice" => $row['isSpecialPrice'],
-                    "isPrintOnBill" => $row['isPrintOnBill'],
-                    "void" => $row['void'],
+                    "locked" => 1,
                     "presence" => 1,
                     "inputDate" => time(),
                     "updateDate" =>  time(),
-                    "updateBy" => $row['updateBy'],
-                    "note" => $row['note'],
                 );
-                $this->db->insert('cso1_transactionDetail', $insertDetail);
-            }
+                $this->db->insert('cso1_transaction', $insert);
+                $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
+                foreach ($q as $row) {
+                    $insertDetail = array(
+                        "transactionId" => $id,
+                        "promotionId" => $row['promotionId'],
+                        "promotionItemId" => $row['promotionItemId'],
+                        "barcode" => $row['barcode'],
+                        "itemId" => $row['itemId'],
+                        "originPrice" => $row['originPrice'],
+                        "price" => $row['price'],
+                        "discount" => $row['discount'],
+                        "isPriceEdit" => $row['isPriceEdit'],
+                        "isFreeItem" => $row['isFreeItem'],
+                        "isSpecialPrice" => $row['isSpecialPrice'],
+                        "isPrintOnBill" => $row['isPrintOnBill'],
+                        "void" => $row['void'],
+                        "presence" => 1,
+                        "inputDate" => time(),
+                        "updateDate" =>  time(),
+                        "updateBy" => $row['updateBy'],
+                        "note" => $row['note'],
+                    );
+                    $this->db->insert('cso1_transactionDetail', $insertDetail);
+                }
 
-            $q = $this->model->sql("SELECT * FROM cso1_kioskCartFreeItem
+                $q = $this->model->sql("SELECT * FROM cso1_kioskCartFreeItem
              WHERE presence = 1 AND status = 0 AND kioskUuid = '$kioskUuid' ");
-            foreach ($q as $row) {
+                foreach ($q as $row) {
 
-                $insertDetail = array(
-                    "transactionId" => $id,
-                    "barcode" => $row['barcode'],
-                    "itemId" => $row['freeItemId'],
-                    "promotionId" => $row['promotionId'],
-                    "promotionFreeId" => $row['promotionFreeId'],
-                    "originPrice" => 0,
-                    "price" => 0,
-                    "discount" => 0,
-                    "isPriceEdit" => 0,
-                    "isFreeItem" => 1,
-                    "isSpecialPrice" => 0,
-                    "isPrintOnBill" => $row['printOnBill'],
-                    "void" => 0,
-                    "presence" => $row['scanFree'] == true ? 1 : 2,
-                    "inputDate" => time(),
-                    "updateDate" =>  time(),
-                    "updateBy" => $row['updateBy'],
+                    $insertDetail = array(
+                        "transactionId" => $id,
+                        "barcode" => $row['barcode'],
+                        "itemId" => $row['freeItemId'],
+                        "promotionId" => $row['promotionId'],
+                        "promotionFreeId" => $row['promotionFreeId'],
+                        "originPrice" => 0,
+                        "price" => 0,
+                        "discount" => 0,
+                        "isPriceEdit" => 0,
+                        "isFreeItem" => 1,
+                        "isSpecialPrice" => 0,
+                        "isPrintOnBill" => $row['printOnBill'],
+                        "void" => 0,
+                        "presence" => $row['scanFree'] == true ? 1 : 2,
+                        "inputDate" => time(),
+                        "updateDate" =>  time(),
+                        "updateBy" => $row['updateBy'],
+                    );
+                    $this->db->insert('cso1_transactionDetail', $insertDetail);
+                }
+                $this->db->trans_complete();
+                $trans_status = true;
+                if ($this->db->trans_status() === FALSE) {
+                    $trans_status = false;
+                } else {
+                    // REMOVE CART 
+                    $deleteID = array(
+                        'terminalId' => $terminalId,
+                    );
+                    $this->db->delete('cso1_kioskUuid', $deleteID);
+                    $delete = array(
+                        'kioskUuid' => $kioskUuid,
+                    );
+                    $this->db->delete('cso1_kioskUuid', $delete);
+                    $this->db->delete('cso1_kioskCart', $delete);
+                    $this->db->delete('cso1_kioskCartFreeItem', $delete);
+                }
+
+
+                $data = array(
+                    "id" => $id,
+                    "insert" => $insert,
+                    "post" => $post,
+                    "trans_status" =>  $trans_status,
                 );
-                $this->db->insert('cso1_transactionDetail', $insertDetail);
-            }
-            $this->db->trans_complete();
-            $trans_status = true;
-            if ($this->db->trans_status() === FALSE) {
-                $trans_status = false;
             } else {
-                // REMOVE CART 
-                $deleteID = array(
-                    'terminalId' => $terminalId,
-                );
-                $this->db->delete('cso1_kioskUuid', $deleteID);
-                $delete = array(
-                    'kioskUuid' => $kioskUuid,
-                );
-                $this->db->delete('cso1_kioskUuid', $delete);
-                $this->db->delete('cso1_kioskCart', $delete);
-                $this->db->delete('cso1_kioskCartFreeItem', $delete);
+                $data = [];
             }
-
-
-            $data = array(
-                "id" => $id,
-                "insert" => $insert,
-                "post" => $post,
-                "trans_status" =>  $trans_status,
-            );
         }
         echo json_encode($data);
     }
