@@ -47,7 +47,7 @@ class KioskPayment extends CI_Controller
                 "storeOutlesPaymentType" => $this->model->sql("SELECT s.id, s.paymentTypeId, p.*
                     from cso1_storeOutlesPaymentType as s
                     join cso1_paymentType as p on p.id = s.paymentTypeId
-                    where s.storeOutlesId =  '$storeOutlesId' and s.presence = 1 and s.status = 1"),
+                    where s.storeOutlesId =  '$storeOutlesId' and p.status = 1 and  s.presence = 1 and s.status = 1"),
 
                 "kioskUuid" =>  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ?  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "member" =>  !$memberId ? [] : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
