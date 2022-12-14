@@ -272,6 +272,15 @@ class KioskCart extends CI_Controller
             }
         }
 
+        if(!$this->model->select("kioskUuid","cso1_kioskUuid","kioskUuid =  '".$post['kioskUuid']."' ") ){
+
+            $data = array( 
+                "error" => true,
+                "note" => "session expired",
+                "relogin" => true,
+            );
+        }
+
 
         echo   json_encode($data);
     }
