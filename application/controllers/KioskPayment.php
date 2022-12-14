@@ -68,7 +68,7 @@ class KioskPayment extends CI_Controller
             $kioskUuid =  $post['kioskUuid'];
             $summary = $this->model->summary($kioskUuid);
             $finalPrice = (int)$summary['final'];
-            if ($finalPrice > 0) {
+            if ($finalPrice > 0 && !$this->model->select("id", "cso1_transaction","kioskUuid = '$kioskUuid'")  ) {
 
                 $this->db->trans_start();
                 $id =  $this->model->number("transaction");
