@@ -241,6 +241,7 @@ class KioskPayment extends CI_Controller
                     "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
                     "storeOutlesId" =>  $storeOutlesId,
                     "terminalId" =>   $terminalId,
+                    "paymentTypeId" => 'FP01',
 
                     "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
                     "endDate" => date("Y-m-d H:i:s"),

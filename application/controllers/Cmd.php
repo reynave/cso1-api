@@ -100,6 +100,15 @@ class Cmd extends CI_Controller
         echo $file->key();;
     }
 
+    function bulfInsert(){
+        /**
+         * HOW TO CALL :
+         * php index.php Cmd masterItem
+         */
+        $this->db->query("EXEC TableSP2"); 
+        echo $this->db->last_query();
+    }
+
     function masterItem()
     {
         /**
