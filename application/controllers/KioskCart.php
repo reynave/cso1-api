@@ -401,7 +401,7 @@ class KioskCart extends CI_Controller
                                 );
                             }
 
-                            $this->db->update("cso1_kioskCart", $update, "id = " . $i['id']);
+                            $this->db->update("cso1_kioskCart", $update, "isPriceEdit = 0 and id = " . $i['id']);
                         }
                     }
 
