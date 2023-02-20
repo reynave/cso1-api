@@ -86,6 +86,30 @@ class Cmd extends CI_Controller
         self::promoFree();
     }
 
+     //php index.php Cmd syncTransactionManual
+    function syncTransactionManual($date)
+    {
+        $this->load->model('transaction');
+        echo $this->transaction->sync( $date );
+    }
+
+     //php index.php Cmd syncTransactionManual
+     function transactionAll()
+     {
+         $this->load->model('transaction');
+        // echo $this->transaction->sync( $date );
+        $q = "SELECT  FORMAT (endDate, 'yyyy-MM-dd') as date from cso1_transaction 
+        where presence = 1 and locked = 1
+        group by FORMAT (endDate, 'yyyy-MM-dd')";
+
+        foreach($this->model->sql($q) as $row){
+            echo $this->transaction->sync($row['date']);
+           // echo $row['date']."\n";
+
+        }
+
+     }
+
     function transaction()
     {
         $this->load->model('transaction');

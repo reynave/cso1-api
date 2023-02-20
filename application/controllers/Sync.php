@@ -31,51 +31,51 @@ class Sync extends CI_Controller
 
 
 
-    function uploadItem()
-    {
+    // function uploadItem()
+    // {
 
-        $data = array(
-            "error" => true,
-        );
-        if ($this->input->post('token')) {
-            $this->load->helper('url', 'form');
-            $config['upload_path']          = './uploads/items';
-            $config['allowed_types']        = 'txt';
-            $config['max_size']             = 10000;
-            $new_name = time() . $_FILES["item"]['name'];
-            $config['file_name'] = $new_name;
-            $data = array(
-                "error" => false,
-                "upload_data" => [],
-                "token" => apache_request_headers(),
-                "post" => $this->input->post(),
-            );
-            $this->load->library('upload', $config);
+    //     $data = array(
+    //         "error" => true,
+    //     );
+    //     if ($this->input->post('token')) {
+    //         $this->load->helper('url', 'form');
+    //         $config['upload_path']          = './uploads/items';
+    //         $config['allowed_types']        = 'txt';
+    //         $config['max_size']             = 10000;
+    //         $new_name = time() . $_FILES["item"]['name'];
+    //         $config['file_name'] = $new_name;
+    //         $data = array(
+    //             "error" => false,
+    //             "upload_data" => [],
+    //             "token" => apache_request_headers(),
+    //             "post" => $this->input->post(),
+    //         );
+    //         $this->load->library('upload', $config);
 
-            if (!$this->upload->do_upload('item')) {
-                $data['error'] =  $this->upload->display_errors();
-            } else {
-                $data['upload_data'] =  $this->upload->data();
-                $insert = array(
-                    "fileSize" => $this->upload->data()['file_size'],
-                    "fileName" => $this->upload->data()['file_name'],
-                    "module" => "item",
-                    "status" => 0,
-                    "presence" => 1,
-                    "inputDate" => time(),
-                    "inputBy" => $this->model->userId(),
-                );
-                $this->db->insert("cso1_syncLog", $insert);
-                $error = false;
-                $data = array(
-                    "error" => $error,
-                    "insert" => $insert,
-                );
-            }
-        }
+    //         if (!$this->upload->do_upload('item')) {
+    //             $data['error'] =  $this->upload->display_errors();
+    //         } else {
+    //             $data['upload_data'] =  $this->upload->data();
+    //             $insert = array(
+    //                 "fileSize" => $this->upload->data()['file_size'],
+    //                 "fileName" => $this->upload->data()['file_name'],
+    //                 "module" => "item",
+    //                 "status" => 0,
+    //                 "presence" => 1,
+    //                 "inputDate" => time(),
+    //                 "inputBy" => $this->model->userId(),
+    //             );
+    //             $this->db->insert("cso1_syncLog", $insert);
+    //             $error = false;
+    //             $data = array(
+    //                 "error" => $error,
+    //                 "insert" => $insert,
+    //             );
+    //         }
+    //     }
 
-        echo json_encode($data);
-    }
+    //     echo json_encode($data);
+    // }
 
 
 
@@ -90,60 +90,60 @@ class Sync extends CI_Controller
         );
         echo json_encode($data);
     }
-    function uploadPromo()
-    {
+    // function uploadPromo()
+    // {
 
-        $data = array(
-            "error" => true,
-        );
-        if ($this->input->post('token')) {
-            $this->load->helper('url', 'form');
-            $config['upload_path']          = './uploads/promo';
-            $config['allowed_types']        = 'txt';
-            $config['max_size']             = 10000;
-            $new_name = time() . $_FILES["item"]['name'];
-            $config['file_name'] = $new_name;
-            $data = array(
-                "error" => false,
-                "upload_data" => [],
-                "token" => apache_request_headers(),
-                "post" => $this->input->post(),
-            );
-            $this->load->library('upload', $config);
+    //     $data = array(
+    //         "error" => true,
+    //     );
+    //     if ($this->input->post('token')) {
+    //         $this->load->helper('url', 'form');
+    //         $config['upload_path']          = './uploads/promo';
+    //         $config['allowed_types']        = 'txt';
+    //         $config['max_size']             = 10000;
+    //         $new_name = time() . $_FILES["item"]['name'];
+    //         $config['file_name'] = $new_name;
+    //         $data = array(
+    //             "error" => false,
+    //             "upload_data" => [],
+    //             "token" => apache_request_headers(),
+    //             "post" => $this->input->post(),
+    //         );
+    //         $this->load->library('upload', $config);
 
-            if (!$this->upload->do_upload('item')) {
-                $data['error'] =  $this->upload->display_errors();
-            } else {
-                $data['upload_data'] =  $this->upload->data();
-                $insert = array(
-                    "fileSize" => $this->upload->data()['file_size'],
-                    "fileName" => $this->upload->data()['file_name'],
-                    "module" => "promo",
-                    "status" => 0,
-                    "presence" => 1,
-                    "inputDate" => time(),
-                    "inputBy" => $this->model->userId(),
-                );
-                $this->db->insert("cso1_syncLog", $insert);
-                $error = false;
-                $data = array(
-                    "error" => $error,
-                    "insert" => $insert,
-                );
-            }
-        }
+    //         if (!$this->upload->do_upload('item')) {
+    //             $data['error'] =  $this->upload->display_errors();
+    //         } else {
+    //             $data['upload_data'] =  $this->upload->data();
+    //             $insert = array(
+    //                 "fileSize" => $this->upload->data()['file_size'],
+    //                 "fileName" => $this->upload->data()['file_name'],
+    //                 "module" => "promo",
+    //                 "status" => 0,
+    //                 "presence" => 1,
+    //                 "inputDate" => time(),
+    //                 "inputBy" => $this->model->userId(),
+    //             );
+    //             $this->db->insert("cso1_syncLog", $insert);
+    //             $error = false;
+    //             $data = array(
+    //                 "error" => $error,
+    //                 "insert" => $insert,
+    //             );
+    //         }
+    //     }
 
-        echo json_encode($data);
-    }
+    //     echo json_encode($data);
+    // }
 
     // TRANSACTION   
     function transaction()
     {
 
         $data = array(
-            "items" => $this->model->sql("SELECT * 
+            "items" => $this->model->sql("SELECT TOP 200 * 
              FROM cso1_syncLog 
-             where  presence = 1 and module = 'transaction' order by inputDate DESC"),
+             where  presence = 1 and module = 'POSTRAHEADER' or module = 'POSTRASALESITEM' order by inputDate DESC"),
         );
         echo json_encode($data);
     }
