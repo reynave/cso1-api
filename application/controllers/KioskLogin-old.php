@@ -114,22 +114,22 @@ class KioskLogin extends CI_Controller
             $name  = "";
             $memberId = false;
 
-            // $oauth = "https://app.chandrasuperstore.co.id/rest/deploy/oauth/token";
-            // $fields = array(
-                // "client_id" => "19e8fgtc2a204226a5da987197c1a8b2",
-                // "client_secret" => "tteKPMVPWfiKjxfD",
-            // );
-            // $fields = json_encode($fields);
-            // $ch = curl_init();
-            // curl_setopt($ch, CURLOPT_URL, $oauth);
-            // curl_setopt($ch, CURLOPT_POST, 1);
-            // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-            // curl_setopt($ch, CURLOPT_POSTFIELDS,   $fields);
-            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            // $server_output = curl_exec($ch);
-            // curl_close($ch);
+            $oauth = "https://app.chandrasuperstore.co.id/rest/deploy/oauth/token";
+            $fields = array(
+                "client_id" => "19e8fgtc2a204226a5da987197c1a8b2",
+                "client_secret" => "tteKPMVPWfiKjxfD",
+            );
+            $fields = json_encode($fields);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $oauth);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            curl_setopt($ch, CURLOPT_POSTFIELDS,   $fields);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $server_output = curl_exec($ch);
+            curl_close($ch);
          
-            //$token = (array)json_decode($server_output);
+            $token = (array)json_decode($server_output);
           
 
             // VIP member
@@ -137,52 +137,51 @@ class KioskLogin extends CI_Controller
             // 88888888
             // 99999999
             $memberId =  $post['memberId'];
-            $url_vip = "http://192.168.202.111:8080/uploads/android/getpoint.php?txtPoint=".$memberId;
+            $url_vip = "https://app.chandrasuperstore.co.id/rest/vip";
 
-           // $headers[] = 'Content-Type:application/json';
-           // $headers[] = "Authorization: Bearer " . $token['access_token'];
-           // $headers[] = "vipno: " . $memberId;
+            $headers[] = 'Content-Type:application/json';
+            $headers[] = "Authorization: Bearer " . $token['access_token'];
+            $headers[] = "vipno: " . $memberId;
 
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $url_vip);
-           // curl_setopt($ch, CURLOPT_HTTPHEADER,  $headers);
+            curl_setopt($ch, CURLOPT_HTTPHEADER,  $headers);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             $member = curl_exec($ch); 
             curl_close($ch);
+            $member = (array)json_decode($member, true);
             
           
             $memberInsert = false;
-            if ($member != 'gagal') {
-				$member = (array)json_decode($member, true);
-				//print_r($member);
+            if ($member['data']['card_id']) {
                 $error = false;
                 $kioskUuid = $this->model->number('kioskUuid');
                 $insert = array(
-                    "kioskUuid" 	=> $kioskUuid,
-                    "memberId"  	=> $memberId,
-                    "terminalId" 	=> $this->terminalId,
+                    "kioskUuid" => $kioskUuid,
+                    "memberId"  =>   $member['data']['card_id'],
+                    "terminalId" => $this->terminalId,
                     "storeOutlesId" => $this->storeOutlesId,
-                    "inputDate" 	=> time(),
-                    "startDate" 	=> date("Y-m-d H:i:s"),
-                    "presence" 		=> 1,
-                    "status" 		=> 1,
+                    "inputDate" => time(),
+                    "startDate" => date("Y-m-d H:i:s"),
+                    "presence" => 1,
+                    "status" => 1,
                 );
                 $this->db->insert("cso1_kioskUuid", $insert);
 
-                $this->db->delete("cso1_member","id='". $memberId."'");
+                $this->db->delete("cso1_member","id='". $member['data']['card_id']."'");
 
 
                 $memberInsert = array(
-                    "firstName" =>  $member[0]['name'],
-                    "id" =>  $memberId,
+                    "firstName" =>  $member['data']['name'],
+                    "id" =>  $member['data']['card_id'],
                     "inputDate" => time(),
                     "status" => 1,
                     "presence" => 1,
                 );
                 $this->db->insert("cso1_member", $memberInsert);
 
-                $name = $member[0]['name'];
+                $name = $member['data']['name'];
                 $branches = $this->model->sql("SELECT t.storeOutlesId, o.name as 'outlet', b.name as 'branches'
                                                 FROM cso1_terminal as  t 
                                                 join cso1_storeOutles as o on o.id = t.storeOutlesId
@@ -190,7 +189,7 @@ class KioskLogin extends CI_Controller
                                                 WHERE t.id='" . $this->terminalId . "'")[0]['branches'];
 
                 $data = array(
-                    "token" => "",
+                    "token" => $token,
                     "welcomeMember" => $name ? "Welcome " . ucwords($name) . " <br>Ke cabang kami $branches" : 'Member not found',
                     "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=15"),
                     "memberId" => $post['memberId'],
