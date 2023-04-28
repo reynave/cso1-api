@@ -13,8 +13,8 @@ class Spv_reset extends CI_Controller
         header('Content-Type: application/json');
         error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-        //    echo $this->model->error("Error auth");
-        //    exit;
+            echo $this->model->error("Error auth");
+            exit;
         }
     }
 
@@ -69,7 +69,6 @@ class Spv_reset extends CI_Controller
 
     function fnSubmit()
     {
-        
         $post =   json_decode(file_get_contents('php://input'), true);
         if ($post) {
             $data = array(

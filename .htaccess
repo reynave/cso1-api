@@ -1,5 +1,5 @@
 RewriteEngine on
-RewriteBase /application/cso/api/
+RewriteBase /app/cso/cso1-api/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /application/cso/api/index.php?/$1 [L]
+RewriteRule ^(.*)$ /app/cso/cso1-api/index.php?/$1 [L]
