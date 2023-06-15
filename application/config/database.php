@@ -6,7 +6,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'DESKTOP-S284B2I',
+	'hostname' => 'DESKTOP-S284B2I\SQLEXPRESS',
 	'username' => '',
 	'password' => '',
 	'database' => 'cso1',

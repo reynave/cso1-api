@@ -59,11 +59,11 @@ class Master extends CI_Controller
         $search = $this->input->get('search');
         $data = array(
             "data" =>  strlen($search) >= 3  ? $this->model->sql("SELECT 
-            i.id, i.price1 , i.description, i.shortDesc, i.status, i.shortDesc,
+            i.id, i.price1 , i.description, i.shortDesc, i.status, i.barcode, i.ppnFlag, 
             c.name  'category'
             FROM cso1_item as i
             left join cso1_itemCategory as c on c.id = i.itemCategoryId
-            where  i.presence = 1 and (i.description like '%" . $search . "%' OR i.shortDesc = '" . $search . "')
+            where  i.presence = 1 and (i.description like '%" . $search . "%' OR i.barcode = '" . $search . "')
             order by i.description ASC 
             ") : [],
         );

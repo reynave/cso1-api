@@ -356,10 +356,7 @@ class KioskCart extends CI_Controller
             $q = $this->model->sql($q1);
             foreach ($q as $row) {
 
-                $promotionItemId = $this->model->select("id", 
-                "cso1_promotionItem", "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion);
-                
-                $last_quert = $this->db->last_query();
+                $promotionItemId = $this->model->select("id", "cso1_promotionItem", "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion);
                 $promoItem = [];
                 if ($promotionItemId) {
                     $promoItem = $this->model->sql("select * from cso1_promotionItem where id = $promotionItemId ")[0];
@@ -409,9 +406,8 @@ class KioskCart extends CI_Controller
                     }
 
                     array_push($result, array(
-                        "promotionItemId"   => $promotionItemId,
-                        "promoItem"         => $promoItem,
-                        "last_quert"        => $last_quert,
+                        "promotionItemId" => $promotionItemId,
+                        "promoItem" =>  $promoItem,
                     ));
                 }
             }

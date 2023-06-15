@@ -63,15 +63,15 @@ class Promotion extends CI_Controller
             FORMAT ( dateadd(S, endDate, '1970-01-01 00:00:00')  , 'yyyy-MM-dd') as endDate 
             from cso1_promotion where id = '" . $id . "' and presence = 1 ")[0],
 
-            "promotionItem" => $this->model->sql("SELECT p.*,    i.description as 'description' ,  i.price1
+            "promotionItem" => $this->model->sql("SELECT p.*,  i.barcode as 'barcode',  i.description as 'description' ,  i.price1
             From  cso1_promotionItem AS p
             left JOIN cso1_item AS i ON i.id = p.itemId
             WHERE p.promotionId = '$id' AND  p.presence = 1 
             order BY p.inputDate ASC"),
 
             "promotionFree" => $this->model->sql("SELECT p.*,
-            i1.description as 'description' , i2.description as 'description2'
-          
+            i1.description as 'description' , i2.description as 'description2',
+            i1.barcode as 'barcodeItem', i2.barcode as 'barcodeItemFree'
             From cso1_promotionFree p 
             left JOIN cso1_item AS i1 ON i1.id = p.itemId 
             left JOIN cso1_item AS i2 ON i2.id = p.freeItemId 

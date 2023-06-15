@@ -64,21 +64,19 @@ class kioskPaymentBca extends CI_Controller
             $erc_ETX            = "03";
             $erc_transType      =  $post['transType'];
 
-           
-            // if ($erc_transType == '01') {
-            //     // DEBIT CC 
-            //     if ($dummyCC == true) {
-            //         $erc_cc             = "4556330000000191   250300000000000000  ";
-            //     } else {
-            //         $erc_cc             = "                       00000000000000  ";
-            //     }
-            // }
-            // if ($erc_transType == '31') {
-            //     // QRIS  
-            //     $erc_cc             = "                       00000000000000  ";
-            // }
-            
-            $erc_cc             = "5409120012345684   251000000000000000  ";
+            if ($erc_transType == '01') {
+                // DEBIT CC 
+                if ($dummyCC == true) {
+                    $erc_cc             = "4556330000000191   250300000000000000  ";
+                } else {
+                    $erc_cc             = "                       00000000000000  ";
+                }
+            }
+            if ($erc_transType == '31') {
+                // QRIS  
+                $erc_cc             = "                       00000000000000  ";
+            }
+
 
 
 
