@@ -94,6 +94,15 @@ class Spv_terminal extends CI_Controller
         );
         echo   json_encode($data);
     }
+    
+    function recheck($kiosUuid = "")
+    {
+        $storeOutlesId = $this->model->select("storeOutlesId","cso1_kioskUuid","kioskUuid = '$kiosUuid'");
+        $data = array(
+            "ilock" => $this->model->select("ilock","cso1_kioskUuid"," kioskUuid = '" . $kiosUuid . "' "), 
+        );
+        echo   json_encode($data);
+    }
 
     function addItems()
     {
