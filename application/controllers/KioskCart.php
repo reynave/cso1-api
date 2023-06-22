@@ -362,7 +362,7 @@ class KioskCart extends CI_Controller
                 $last_quert = $this->db->last_query();
                 $promoItem = [];
                 if ($promotionItemId) {
-                    $promoItem = $this->model->sql("select * from cso1_promotionItem where id = $promotionItemId ")[0];
+                    $promoItem = $this->model->sql("SELECT * from cso1_promotionItem WHERE  status = 1 and id = $promotionItemId ")[0];
 
                     $promotionId = $this->model->select("promotionId", "cso1_promotionItem", "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion);
 

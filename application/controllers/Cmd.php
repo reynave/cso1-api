@@ -20,6 +20,10 @@ class Cmd extends CI_Controller
             "transaction" => "01:00:10",
         );
     }
+    function test()
+    {
+        echo "ok";
+    }
     // CALL cmd : php index.php Cmd
     function index()
     {
@@ -27,7 +31,7 @@ class Cmd extends CI_Controller
         $i = 0;
         do {
             $i++;
-            echo  $i . ' ' . date("D Y-m-d H:i:s") . "  | Next Schadule " . " \n";
+            echo $i . ' ' . date("D Y-m-d H:i:s") . "  | Next Schadule " . " \n";
             print_r($this->time);
             echo "\n\n";
 
@@ -82,33 +86,34 @@ class Cmd extends CI_Controller
     function promo()
     {
         self::promoHeader();
+        self::promoHeaderDisableFilter();
         self::promoDetail();
         self::promoFree();
     }
 
-     //php index.php Cmd syncTransactionManual
+    //php index.php Cmd syncTransactionManual
     function syncTransactionManual($date)
     {
         $this->load->model('transaction');
-        echo $this->transaction->sync( $date );
+        echo $this->transaction->sync($date);
     }
 
-     //php index.php Cmd syncTransactionManual
-     function transactionAll()
-     {
-         $this->load->model('transaction');
+    //php index.php Cmd syncTransactionManual
+    function transactionAll()
+    {
+        $this->load->model('transaction');
         // echo $this->transaction->sync( $date );
         $q = "SELECT  FORMAT (endDate, 'yyyy-MM-dd') as date from cso1_transaction 
         where presence = 1 and locked = 1
         group by FORMAT (endDate, 'yyyy-MM-dd')";
 
-        foreach($this->model->sql($q) as $row){
+        foreach ($this->model->sql($q) as $row) {
             echo $this->transaction->sync($row['date']);
-           // echo $row['date']."\n";
+            // echo $row['date']."\n";
 
         }
 
-     }
+    }
 
     function transaction()
     {
@@ -118,18 +123,20 @@ class Cmd extends CI_Controller
 
     function total()
     {
-        $fileName =   $this->promo_detail;
+        $fileName = $this->promo_detail;
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
-        echo $file->key();;
+        echo $file->key();
+        ;
     }
 
-    function bulfInsert(){
+    function bulfInsert()
+    {
         /**
          * HOW TO CALL :
          * php index.php Cmd masterItem
          */
-        $this->db->query("EXEC TableSP2"); 
+        $this->db->query("EXEC TableSP2");
         echo $this->db->last_query();
     }
 
@@ -142,7 +149,7 @@ class Cmd extends CI_Controller
         $i = 0;
 
         // $this->db->trans_start();
-        $fileName =   $this->item;
+        $fileName = $this->item;
 
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
@@ -153,28 +160,28 @@ class Cmd extends CI_Controller
             $handle = fopen("../sync/$fileName", "r");
             if ($handle) {
                 while (($line = fgets($handle)) !== false) {
-                    $ar =  explode("|", $line);
+                    $ar = explode("|", $line);
                     $this->db->delete("cso1_item", "id='$ar[0]'");
                     $i++;
                     $insert = array(
                         "id" => $ar[0],
                         "description" => $ar[1],
-                        "shortDesc" =>  $ar[2],
-                        "price1" =>  (int)$ar[3],
-                        "price2" =>  (int)$ar[4],
-                        "price3" =>  (int)$ar[5],
-                        "price4" =>  (int)$ar[6],
-                        "price5" =>  (int)$ar[7],
-                        "price6" =>  (int)$ar[8],
-                        "price7" =>  (int)$ar[9],
-                        "price8" =>  (int)$ar[10],
-                        "price9" =>  (int)$ar[11],
-                        "price10" => (int)$ar[12],
+                        "shortDesc" => $ar[2],
+                        "price1" => (int) $ar[3],
+                        "price2" => (int) $ar[4],
+                        "price3" => (int) $ar[5],
+                        "price4" => (int) $ar[6],
+                        "price5" => (int) $ar[7],
+                        "price6" => (int) $ar[8],
+                        "price7" => (int) $ar[9],
+                        "price8" => (int) $ar[10],
+                        "price9" => (int) $ar[11],
+                        "price10" => (int) $ar[12],
 
-                        "itemUomId"         =>   $ar[13],
-                        "itemCategoryId"    =>   $ar[14],
-                        "itemTaxId"         =>   $ar[15],
-                        "images"            =>   $ar[16],
+                        "itemUomId" => $ar[13],
+                        "itemCategoryId" => $ar[14],
+                        "itemTaxId" => $ar[15],
+                        "images" => $ar[16],
 
                         "status" => 1,
                         "presence" => 1,
@@ -202,7 +209,7 @@ class Cmd extends CI_Controller
     function masterItemBarcode()
     {
 
-        $fileName =   $this->barcode;
+        $fileName = $this->barcode;
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
         $file->key();
@@ -215,19 +222,19 @@ class Cmd extends CI_Controller
             if ($handle) {
                 while (($line = fgets($handle)) !== false) {
                     $i++;
-                    $ar =  explode("|", $line);
+                    $ar = explode("|", $line);
                     $id = $this->model->select("id", "cso1_itemBarcode", "itemId='$ar[0]' and barcode = '$ar[1]' ");
                     if (!$id) {
                         $insert = array(
                             "itemId" => $ar[0],
-                            "barcode" =>  trim(preg_replace('/\s\s+/', ' ', $ar[1])),
+                            "barcode" => trim(preg_replace('/\s\s+/', ' ', $ar[1])),
                             "status" => 1,
                             "presence" => 1,
                             "inputDate" => time(),
                             "updateDate" => time(),
                         );
                         $this->db->insert("cso1_itemBarcode", $insert);
-                        echo $i . " barcode INSERT " . $ar[0] . '|' . $ar[1]  . "\n";
+                        echo $i . " barcode INSERT " . $ar[0] . '|' . $ar[1] . "\n";
                     } else {
                         echo $i . " barcode SKIP " . $ar[0] . '|' . $ar[1] . "\n";
                     }
@@ -254,30 +261,30 @@ class Cmd extends CI_Controller
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 $i++;
-                $ar =  explode("|", $line);
+                $ar = explode("|", $line);
                 $this->db->delete("cso1_promotion", "id='$ar[0]'");
                 $insert = array(
-                    "id"                => $ar[0],
-                    "typeOfPromotion"   => (int)$ar[1],
-                    "storeOutlesId"     => $ar[2],
-                    "code"              => $ar[3],
-                    "description"       => $ar[4],
-                    "startDate"         => (int)$ar[5],
-                    "endDate"           => (int)$ar[6],
-                    "discountPercent"   => (float)$ar[7],
-                    "discountAmount"    => (float)$ar[8],
-                    "status"            => (int)$ar[9],
+                    "id" => $ar[0],
+                    "typeOfPromotion" => (int) $ar[1],
+                    "storeOutlesId" => $ar[2],
+                    "code" => $ar[3],
+                    "description" => $ar[4],
+                    "startDate" => (int) $ar[5],
+                    "endDate" => (int) $ar[6],
+                    "discountPercent" => (float) $ar[7],
+                    "discountAmount" => (float) $ar[8],
+                    "status" => (int) $ar[9],
 
-                    "Mon"          => (int)$ar[10],
-                    "Tue"          => (int)$ar[11],
-                    "Wed"          => (int)$ar[12],
-                    "Thur"         => (int)$ar[13],
-                    "Fri"          => (int)$ar[14],
-                    "Sat"          => (int)$ar[15],
-                    "Sun"          => (int)$ar[16],
-                    "presence"          => 1,
+                    "Mon" => (int) $ar[10],
+                    "Tue" => (int) $ar[11],
+                    "Wed" => (int) $ar[12],
+                    "Thur" => (int) $ar[13],
+                    "Fri" => (int) $ar[14],
+                    "Sat" => (int) $ar[15],
+                    "Sun" => (int) $ar[16],
+                    "presence" => 1,
 
-                    "inputDate"         => time(),
+                    "inputDate" => time(),
 
                 );
                 $this->db->insert("cso1_promotion", $insert);
@@ -296,6 +303,30 @@ class Cmd extends CI_Controller
         }
     }
 
+    function promoHeaderDisableFilter()
+    {
+        $q = "SELECT id, endDate, updateDate, updateBy
+            from cso1_promotion where status = 1 and 
+              presence = 1";
+
+        foreach ($this->model->sql($q) as $row) {
+            $exp = ((int) $row['endDate'] - (int) time()) > 0 ? 1 : 0;
+            $update = array(
+                "status" => $exp,
+                "updateBy" => 2,
+                "updateDate" => time(),
+            );
+            $this->db->update("cso1_promotion", $update, "  id= '" . $row['id'] . "' ");
+        
+            $this->db->update("cso1_promotionItem", $update, "  promotionId= '" . $row['id'] . "' ");
+    
+
+            print_r($update);
+
+
+        }
+    }
+
     function promoDetail()
     {
         $i = 0;
@@ -304,21 +335,21 @@ class Cmd extends CI_Controller
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 $i++;
-                $ar =  explode("|", $line);
+                $ar = explode("|", $line);
                 $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
-                    "promotionId"   => $ar[0],
-                    "itemId"        => $ar[1],
-                    "qtyFrom"       =>  (int)$ar[2],
-                    "qtyTo"         => (int)$ar[3],
-                    "specialPrice"  => (float)$ar[4],
-                    "disc1"         => (float)$ar[5],
-                    "disc2"         => (float)$ar[6],
-                    "disc3"         => (float)$ar[7],
-                    "discountPrice" => (float)$ar[8],
-                    "status"        => (int)$ar[9],
-                    "presence"      => 1,
-                    "inputDate"     => time(),
+                    "promotionId" => $ar[0],
+                    "itemId" => $ar[1],
+                    "qtyFrom" => (int) $ar[2],
+                    "qtyTo" => (int) $ar[3],
+                    "specialPrice" => (float) $ar[4],
+                    "disc1" => (float) $ar[5],
+                    "disc2" => (float) $ar[6],
+                    "disc3" => (float) $ar[7],
+                    "discountPrice" => (float) $ar[8],
+                    "status" => (int) $ar[9],
+                    "presence" => 1,
+                    "inputDate" => time(),
 
                 );
                 $this->db->insert("cso1_promotionItem", $insert);
@@ -345,20 +376,20 @@ class Cmd extends CI_Controller
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 $i++;
-                $ar =  explode("|", $line);
+                $ar = explode("|", $line);
                 $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
-                    "promotionId"   => $ar[0],
-                    "itemId"        => $ar[1],
-                    "qty"           => (int)$ar[2],
-                    "freeItemId"    => $ar[3],
-                    "freeQty"       => (int)$ar[4],
-                    "applyMultiply"  => (int)$ar[5],
-                    "scanFree"       => (int)$ar[6],
-                    "printOnBill"    => (int)$ar[7],
-                    "status"        => (int)$ar[8],
-                    "presence"      => 1,
-                    "inputDate"     => time(),
+                    "promotionId" => $ar[0],
+                    "itemId" => $ar[1],
+                    "qty" => (int) $ar[2],
+                    "freeItemId" => $ar[3],
+                    "freeQty" => (int) $ar[4],
+                    "applyMultiply" => (int) $ar[5],
+                    "scanFree" => (int) $ar[6],
+                    "printOnBill" => (int) $ar[7],
+                    "status" => (int) $ar[8],
+                    "presence" => 1,
+                    "inputDate" => time(),
 
                 );
                 $this->db->insert("cso1_promotionFree", $insert);
@@ -380,6 +411,6 @@ class Cmd extends CI_Controller
     function transactionToTxt()
     {
     }
-  
+
 
 }
