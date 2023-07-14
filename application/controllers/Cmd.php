@@ -302,15 +302,18 @@ class Cmd extends CI_Controller
             fclose($handle);
         }
     }
-
+    //php index.php Cmd syncTransactionManual
     function promoHeaderDisableFilter()
     {
-        $q = "SELECT id, endDate, updateDate, updateBy
-            from cso1_promotion where status = 1 and 
-              presence = 1";
+        $q = "SELECT p.id, p.endDate,
+        i.id as 'detailId', p.status, i.itemId, i.specialPrice, i.status as 'detailStatus'
+        from cso1_promotionItem i 
+        join cso1_promotion as p on p.id = i.promotionId
+        where i.status = 1 or p.status = 1  ";
 
         foreach ($this->model->sql($q) as $row) {
             $exp = ((int) $row['endDate'] - (int) time()) > 0 ? 1 : 0;
+           
             $update = array(
                 "status" => $exp,
                 "updateBy" => 2,

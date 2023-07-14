@@ -113,7 +113,7 @@ class Dashboard extends CI_Controller
 
         $paymentWhere = "";
         foreach ($this->model->sql("SELECT * from cso1_paymentType where presence = 1") as $row) {
-            $paymentWhere .= " SUM(CASE WHEN paymentTypeId = '" . $row['id'] . "' THEN finalPrice ELSE 0 END) as '" . $row['label'] . "', ";
+            $paymentWhere .= " SUM(CASE WHEN paymentTypeId = '" . $row['id'] . "' THEN finalPrice ELSE 0 END) as '" . $row['name'] . "', ";
         }
 
         $sql = "SELECT CAST(DATEADD(SECOND, transactionDate
@@ -135,10 +135,10 @@ class Dashboard extends CI_Controller
 
         $paymentTotalWhere = "";
         foreach ($this->model->sql("SELECT * from cso1_paymentType where presence = 1") as $row) {
-            $paymentTotalWhere .= " SUM(a.[" . $row['label'] . "]) as '".$row['label']."', ";
+            $paymentTotalWhere .= " SUM(a.[" . $row['name'] . "]) as '".$row['name']."', ";
         }
-       // echo "paymentTotalWhere : ".$paymentTotalWhere."\n";
-        //  echo "paymentWhere : ".$paymentWhere;
+        echo "paymentTotalWhere : ".$paymentTotalWhere."\n";
+          echo "paymentWhere : ".$paymentWhere;
        
         $sql2 = "SELECT  $paymentTotalWhere  sum(a.qty) as 'qty' from (SELECT CAST(DATEADD(SECOND, transactionDate
         ,'1970/1/1') AS DATE) as 'date',
@@ -239,27 +239,5 @@ class Dashboard extends CI_Controller
             "topCategory" => $topCategory,
         );
         echo json_encode($data);
-    }
-
-    function removeBugs()  {
-        $q= "SELECT t.id, t.paymentTypeId, p.name 
-        from cso1_transaction as t
-        left join cso1_paymentType as p on p.id = t.paymentTypeId
-        where p.name is null
-        order by t.transactionDate DESC
-        "; 
-        foreach ($this->model->sql($q) as $row) {
-            print_r($row);
-            $delete = array(
-                "id" => $row['id']
-            );
-            $this->db->delete("cso1_transaction",$delete);
-        }
-
-        // $update = array(
-        //     "presence" => '0'
-        // );
-        // $this->db->update("cso1_paymentType",$update, "id = 'ID0010'");
-        
     }
 }
