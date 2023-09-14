@@ -33,7 +33,7 @@ class Promotion extends CI_Controller
         $data = array(
             "itemsPromotion" => $this->model->sql("SELECT p.*, so.description as 'storeOutlet' FROM cso1_promotion  as p 
             left join cso1_storeOutles as so on so.id = p.storeOutlesId
-            where  p.presence = 1"),
+            where  p.presence = 1 and p.status = 1"),
             "storeOutles" => $this->model->sql("SELECT * From  cso1_storeOutles where  presence = 1"),
 
         );

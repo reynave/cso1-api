@@ -13,8 +13,8 @@ class ReportsSalesSummary extends CI_Controller
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
+            //  echo $this->model->error("Error auth");
+            //  exit;
         }
     }
     // START :: ITEMS
@@ -55,7 +55,8 @@ class ReportsSalesSummary extends CI_Controller
             join cso1_item as i on i.id = t1.itemId
             left join cso1_itemCategory as c on c.id = i.itemCategoryId 
         ";
-        $dateFrom = strtotime($this->input->get('dateFrom').' -1 day');
+        $dateFrom = strtotime($this->input->get('dateFrom').' -0 day');
+        $dateTo = strtotime($this->input->get('dateTo')." 23:59:55");
         $paymentSql = "SELECT t1.*, p.name
         from (
         SELECT paymentTypeId, count(paymentTypeId) as 'qty',  sum(finalPrice) as 'totalAmount'
@@ -68,8 +69,10 @@ class ReportsSalesSummary extends CI_Controller
       
         $data = array(
             "dateFrom" =>  $dateFrom,
+            "dateFromWIB" =>  date("Y-m-d H:i:s",$dateFrom),
 
-            "dateTo" => strtotime($this->input->get('dateTo')." 23:59:55"),
+            "dateTo" =>$dateTo,
+            "dateToWIB" =>  date("Y-m-d H:i:s",$dateTo),
 
             "overall" => $this->model->sql("SELECT count(id) as 'totalBill', sum(discount) as 'discount', sum(total-ppn) as 'netSales',
             sum(ppn) as 'tax', sum(finalPrice) as 'grossSales'

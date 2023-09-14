@@ -107,6 +107,7 @@ class Spv_reset extends CI_Controller
             $id = $this->model->number("reset");
             $insert1 = array(
                 "id" =>  $id,
+                "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
                 "totalNumberOfCheck" => $data['overal']['qty'],
                 "summaryTotalVoid" =>  $data['summary']['void'],
                 "summaryTotalTransaction" =>  $data['summary']['transaction'],
