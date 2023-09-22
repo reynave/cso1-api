@@ -19,11 +19,7 @@ class Cmd extends CI_Controller
             "item" => "05:00:10",
             "transaction" => "01:00:10",
         );
-    }
-    function test()
-    {
-        echo "ok";
-    }
+    } 
     // CALL cmd : php index.php Cmd
     function index()
     {
@@ -59,14 +55,36 @@ class Cmd extends CI_Controller
             sleep(1);
         } while (true);
     }
+
+    function runPromo(){
+        self::promoHeader();
+        self::promoDetail();
+        self::promoFree();
+        echo "runPromo :: DONE";
+    }
+
+    function runItem(){
+        self::masterItem();
+        self::masterItemBarcode();
+        echo "Items :: DONE";
+    }
+
+    function runTransaction()
+    {
+       
+        self::transaction();
+        echo "runTransaction :: DONE";
+    }
+
+
+
     //php index.php Cmd item
     function item()
     {
         self::masterItem();
         self::masterItemBarcode();
     }
-
-
+ 
     function fixBarcode()
     {
         echo "FIX BARCODE ITEM";
@@ -81,8 +99,7 @@ class Cmd extends CI_Controller
             // $this->db->update("cso1_transactionDetail",$update,"(barcode is null  or barcode = ''  ) and id=".$row['id']);
         }
     }
-
-
+ 
     function promo()
     {
         self::promoHeader();
