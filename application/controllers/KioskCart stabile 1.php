@@ -174,32 +174,85 @@ class KioskCart extends CI_Controller
                     );
                     $this->db->insert("cso1_kioskCart", $insert);
 
-                   
-                    $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
+                    $time = time();
+                    $wherePromotion = "";
+                    $or = "";
+                    $q2 = $this->model->sql("SELECT id FROM cso1_promotion  WHERE startDate <= $time  AND endDate  >= $time  
+                    AND presence =1 AND status = 1 AND typeOfPromotion = 2");
+                    foreach ($q2 as $d) {
+                        $wherePromotion .= $or . "  promotionId =  '" . $d['id'] . "' ";
+                        $or = " OR ";
+                    }
 
-                    // ver 2 base on POS2
-                    $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
-                    $promo = $this->promo->getPromo($itemId, $qty);
-                    if ($promo['promotionItemId'] > 0) {
-                        $update = [
-                            "kioskUuid" => $post['kioskUuid'],
-                            "price" => $promo['newPrice'],
-                            "isSpecialPrice" => isset($promo['isSpecialPrice']),
-                            "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
-                            "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
-                            "discount" => $promo['discount'],
-                        ];
-                        $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
-                        $price = $promo['newPrice'];
+                    if ($wherePromotion != "") {
+                        $wherePromotion =  " AND ( " . $wherePromotion . " )";
                     }
 
 
+                    $aq = "SELECT * from cso1_promotionFree 
+                    Where itemId = '" . $itemId . "' AND presence = 1 AND status = 1 " . $wherePromotion;
 
+                    $qty = $this->model->sql("SELECT count(id) as 'totalCart' From  cso1_kioskCart 
+                    WHERE presence = 1  AND kioskUuid = '" . $post['kioskUuid'] . "'   AND itemId = '" . $itemId . "' ")[0]['totalCart'];
 
-                    $sql = "select *,   '$price'  as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
+                    foreach ($this->model->sql($aq) as $a) {
+                        /**
+                         * APPLY MULTIPLY
+                         */
+                        if ($a['applyMultiply'] == true && $a['id'] &&  ($qty % $a['qty']) == 0) {
 
+                            for ($i = 0; $i <  $a['freeQty']; $i++) {
+                                $insert = array(
+                                    "kioskCartId" => $id,
+                                    "barcode" => $post['barcode'],
+                                    "kioskUuid" => $post['kioskUuid'],
+                                    "useBykioskUuidId" => 0,
+                                    "promotionFreeId" => $a['id'],
+                                    "promotionId" => $a['promotionId'],
+                                    "freeItemId" => $a['freeItemId'],
+                                    "scanFree" =>  $a['scanFree'],
+                                    "printOnBill" => $a['printOnBill'],
+                                    "presence" => 1,
+                                    "status" => 0,
+                                    "inputDate" => time(),
+                                    "updateDate" => time(),
+                                );
+                                $this->db->insert("cso1_kioskCartFreeItem", $insert);
+                            }
+                        } else if ($a['applyMultiply'] == false && $a['id'] &&  ($qty % $a['qty']) == 0) {
+                            /**
+                             * SINGLE
+                             */
+
+                            $qtyFreeTemp = (int)$this->model->sql("SELECT count(id) as 'qtyFreeTemp' From  cso1_kioskCartFreeItem 
+                            WHERE presence = 1 AND status = 0 AND kioskUuid = '" . $post['kioskUuid'] . "' AND freeItemId = '" . $a['freeItemId'] . "' ")[0]['qtyFreeTemp'];
+
+                            if ($qtyFreeTemp < $a['freeQty']) {
+                                for ($i = 0; $i <  $a['freeQty']; $i++) {
+                                    $insert = array(
+                                        "kioskCartId" => $id,
+                                        "barcode" => $post['barcode'],
+                                        "kioskUuid" => $post['kioskUuid'],
+                                        "useBykioskUuidId" => 0,
+                                        "promotionFreeId" => $a['id'],
+                                        "promotionId" => $a['promotionId'],
+
+                                        "freeItemId" => $a['freeItemId'],
+                                        "scanFree" =>  $a['scanFree'],
+                                        "printOnBill" => $a['printOnBill'],
+                                        "presence" => 1,
+                                        "status" => 0,
+                                        "inputDate" => time(),
+                                        "updateDate" => time(),
+                                    );
+                                    $this->db->insert("cso1_kioskCartFreeItem", $insert);
+                                }
+                            }
+                        }
+                    };
+
+                    $sql = "select *, price$priceLevel as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
                     $data = array(
-                        "promo" => $promo,
                         "totalQty" =>  $totalQty,
                         "admin" => false,
                         "error" => false,

@@ -248,7 +248,9 @@ class Cmd extends CI_Controller
                             "status" => 1,
                             "presence" => 1,
                             "inputDate" => time(),
+							"input_date" => date("Y-m-d H:i:s"),
                             "updateDate" => time(),
+							
                         );
                         $this->db->insert("cso1_itemBarcode", $insert);
                         echo $i . " barcode INSERT " . $ar[0] . '|' . $ar[1] . "\n";

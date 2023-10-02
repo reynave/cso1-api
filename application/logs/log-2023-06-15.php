@@ -6165,3 +6165,434 @@ DEBUG - 2023-06-15 10:10:26 --> Session: "sess_save_path" is empty; using "sessi
 DEBUG - 2023-06-15 10:10:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
 DEBUG - 2023-06-15 15:10:26 --> Total execution time: 0.0764
 DEBUG - 2023-06-15 15:10:26 --> Total execution time: 0.1170
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:41 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:49:41 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:49:41 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:41 --> Total execution time: 0.1379
+DEBUG - 2023-06-15 10:49:41 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:41 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:41 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:41 --> Total execution time: 0.1357
+DEBUG - 2023-06-15 15:49:42 --> Total execution time: 0.3141
+DEBUG - 2023-06-15 10:49:42 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:42 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:42 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:42 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:42 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:42 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:42 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:42 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 15:49:42 --> Total execution time: 0.1141
+DEBUG - 2023-06-15 10:49:42 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:42 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:42 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:42 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:42 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:42 --> Total execution time: 0.1217
+DEBUG - 2023-06-15 15:49:42 --> Total execution time: 0.0894
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:46 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:46 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:46 --> Total execution time: 0.1844
+DEBUG - 2023-06-15 15:49:46 --> Total execution time: 0.1360
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:46 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 15:49:46 --> Total execution time: 0.2067
+DEBUG - 2023-06-15 10:49:46 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:46 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:46 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:47 --> Total execution time: 0.0881
+DEBUG - 2023-06-15 15:49:47 --> Total execution time: 0.1497
+DEBUG - 2023-06-15 10:49:47 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:47 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:47 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:47 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:47 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:47 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:47 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:47 --> Total execution time: 0.1198
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 10:49:48 --> Severity: Notice --> Undefined offset: 0 C:\xampp7\htdocs\app\cso\cso1-api\application\controllers\spv_terminal.php 91
+DEBUG - 2023-06-15 10:49:48 --> Total execution time: 0.1830
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:48 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:48 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:48 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:49:48 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:49:48 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:48 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:48 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:49 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:49 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:49 --> Total execution time: 0.1852
+DEBUG - 2023-06-15 10:49:49 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:49 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:49 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:49 --> Total execution time: 0.1095
+DEBUG - 2023-06-15 15:49:49 --> Total execution time: 0.3380
+DEBUG - 2023-06-15 10:49:50 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:50 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:50 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:49:50 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:49:50 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:50 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:50 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:50 --> Total execution time: 0.1758
+DEBUG - 2023-06-15 10:49:51 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:51 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:51 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:51 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:51 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:51 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 10:49:51 --> Severity: Notice --> Undefined offset: 0 C:\xampp7\htdocs\app\cso\cso1-api\application\controllers\spv_terminal.php 91
+DEBUG - 2023-06-15 10:49:51 --> Total execution time: 0.1088
+DEBUG - 2023-06-15 15:49:51 --> Total execution time: 0.1964
+DEBUG - 2023-06-15 10:49:51 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:52 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:52 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:49:52 --> Total execution time: 0.1611
+DEBUG - 2023-06-15 10:49:52 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:52 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:52 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:49:52 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:49:52 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:49:52 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 10:49:52 --> Severity: Notice --> Undefined offset: 0 C:\xampp7\htdocs\app\cso\cso1-api\application\controllers\spv_terminal.php 91
+DEBUG - 2023-06-15 10:49:52 --> Total execution time: 0.1084
+DEBUG - 2023-06-15 15:49:52 --> Total execution time: 0.1787
+DEBUG - 2023-06-15 10:50:00 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:00 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:00 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:00 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:00 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:00 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:00 --> Total execution time: 0.0852
+DEBUG - 2023-06-15 10:50:03 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:03 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:03 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:03 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:03 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:03 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:03 --> Total execution time: 0.1153
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> Total execution time: 0.0470
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> Total execution time: 0.0710
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:11 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:11 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:11 --> Total execution time: 0.0580
+DEBUG - 2023-06-15 15:50:11 --> Total execution time: 0.0663
+DEBUG - 2023-06-15 10:50:14 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:14 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:14 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:14 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:14 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:14 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:14 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:14 --> Total execution time: 0.0842
+DEBUG - 2023-06-15 10:50:14 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:14 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:14 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:14 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:14 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:14 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:14 --> Total execution time: 0.1082
+DEBUG - 2023-06-15 10:50:14 --> Total execution time: 0.1007
+DEBUG - 2023-06-15 10:50:15 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:15 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:15 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:15 --> Total execution time: 0.0665
+DEBUG - 2023-06-15 10:50:15 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:15 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:15 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:15 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:15 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:15 --> Total execution time: 0.0767
+DEBUG - 2023-06-15 10:50:15 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:15 --> Total execution time: 0.0782
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:17 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:17 --> Total execution time: 0.0919
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:17 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:50:17 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:50:17 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:17 --> Total execution time: 0.0608
+DEBUG - 2023-06-15 10:50:17 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:17 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 15:50:17 --> Total execution time: 0.0825
+DEBUG - 2023-06-15 10:50:17 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:17 --> Total execution time: 0.0838
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:22 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:22 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:22 --> Total execution time: 0.0527
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:22 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:22 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:22 --> Total execution time: 0.2038
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:22 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:22 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:22 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:23 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:23 --> Total execution time: 0.0514
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:26 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:50:26 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:26 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:50:26 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 15:50:26 --> Total execution time: 0.1327
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:26 --> Total execution time: 0.1203
+DEBUG - 2023-06-15 15:50:26 --> Total execution time: 0.1199
+DEBUG - 2023-06-15 15:50:26 --> Total execution time: 0.0954
+DEBUG - 2023-06-15 10:50:26 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:26 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:26 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:26 --> Total execution time: 0.0669
+DEBUG - 2023-06-15 10:50:28 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:28 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:28 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:28 --> Total execution time: 0.0798
+DEBUG - 2023-06-15 10:50:30 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:30 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:30 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:30 --> Total execution time: 0.0516
+DEBUG - 2023-06-15 10:50:30 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:30 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:30 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:30 --> Total execution time: 0.0890
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:40 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+ERROR - 2023-06-15 15:50:40 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:40 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:50:40 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:40 --> Total execution time: 0.0851
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 15:50:40 --> Total execution time: 0.3275
+DEBUG - 2023-06-15 10:50:40 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:40 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:40 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:50:41 --> Total execution time: 0.2691
+DEBUG - 2023-06-15 15:50:41 --> Total execution time: 0.2118
+DEBUG - 2023-06-15 15:50:41 --> Total execution time: 0.2056
+DEBUG - 2023-06-15 10:50:44 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:44 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:44 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:44 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:44 --> Total execution time: 0.0723
+DEBUG - 2023-06-15 10:50:44 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:44 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:44 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:50:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:50:44 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:50:44 --> Total execution time: 0.1480
+DEBUG - 2023-06-15 10:51:02 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:02 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:02 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:02 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:02 --> Total execution time: 0.0438
+DEBUG - 2023-06-15 10:51:04 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:04 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:04 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:04 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:04 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:04 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:04 --> Total execution time: 0.0965
+DEBUG - 2023-06-15 10:51:04 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:04 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:04 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:04 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Total execution time: 0.0662
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.4380
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+ERROR - 2023-06-15 15:51:05 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.2213
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.1764
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.2413
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.0948
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.1523
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:05 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:05 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.0906
+DEBUG - 2023-06-15 15:51:05 --> Total execution time: 0.1163
+DEBUG - 2023-06-15 10:51:08 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:08 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:08 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:08 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:08 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:08 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+ERROR - 2023-06-15 15:51:08 --> Severity: Notice --> Undefined index: Token C:\xampp7\htdocs\app\cso\cso1-api\application\models\Model.php 59
+DEBUG - 2023-06-15 10:51:08 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:08 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 15:51:08 --> Total execution time: 0.1571
+DEBUG - 2023-06-15 10:51:08 --> UTF-8 Support Enabled
+DEBUG - 2023-06-15 10:51:08 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2023-06-15 10:51:08 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 10:51:08 --> Session: "sess_save_path" is empty; using "session.save_path" value from php.ini.
+DEBUG - 2023-06-15 15:51:08 --> Total execution time: 0.1262
+DEBUG - 2023-06-15 15:51:08 --> Total execution time: 0.0575
