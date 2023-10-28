@@ -23,7 +23,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost/app/cso/cso1-api/';
+$config['base_url'] = 'http://localhost:7433/app/cso1-api/';
 
 /*
 |--------------------------------------------------------------------------

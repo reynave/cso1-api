@@ -17,7 +17,14 @@ class Spv_bill extends CI_Controller
             //    exit;
         }
     }
-
+    function list()
+    {
+        $data = array(
+            "items" => $this->model->sql("select top 50 *
+            from cso1_transaction where presence = 1 order by id DESC"),
+        );
+        echo   json_encode($data);
+    }
 
     function index()
     {

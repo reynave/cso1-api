@@ -25,6 +25,8 @@ class KioskBill extends CI_Controller
         }
     }
 
+   
+
     function index()
     {
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
