@@ -20,29 +20,33 @@ class Spv_bill extends CI_Controller
     function list()
     {
         $data = array(
-            "items" => $this->model->sql("select top 50 *
-            from cso1_transaction where presence = 1 order by id DESC"),
+            "items" => $this->model->sql("select top 50 c.endDate, c.id, c.struk, c.finalPrice, c.paymentTypeId,
+            t.name as 'terminalId'
+                        from cso1_transaction as c
+                        left join cso1_terminal as t on t.id = c.terminalId
+                        where c.presence = 1 order by c.id DESC
+            
+"),
         );
         echo   json_encode($data);
     }
 
     function index()
     {
-        
     }
     function httpSelectOutlet()
-    {  
-        $data = array( 
-            "storeOutlet" => $this->model->sql("select * from cso1_storeOutles where presence = 1"),  
-        ); 
+    {
+        $data = array(
+            "storeOutlet" => $this->model->sql("select * from cso1_storeOutles where presence = 1"),
+        );
         echo   json_encode($data);
-    }  
+    }
 
     function datatables()
     {
-        $dateFrom = strtotime($this->input->get('dateFrom').' -1 day');
-        $where = " and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
-        and (t.transactionDate  >=  ". $dateFrom." and t.transactionDate <= ".strtotime($this->input->get('dateTo').'+1 day' ).")";
+        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
+        $where = " and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+        and (t.transactionDate  >=  " . $dateFrom . " and t.transactionDate <= " . strtotime($this->input->get('dateTo') . '+1 day') . ")";
         $data = array(
             "data" => $this->model->sql("SELECT t.*, p.name as 'payment' , x.totalPrint
             from cso1_transaction as t
