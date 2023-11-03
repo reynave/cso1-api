@@ -21,62 +21,70 @@ class Voucher extends CI_Controller
 
     function index()
     {
-       echo 'masuk';
+        $data = array(
+            "items" => $this->model->sql("select Top 10 * from voucher_master order by input_date DESC"),
+        );
+        echo   json_encode($data);
     }
     function generate()
     {
-
-
+ 
         $post['data'] = array(
             "name" =>"testing",
             "prefix" => 'C'.date("Y"),
-            "startNumber" => 100,
-            "endNumber" => 910,   
-            "digitNumber" => 4
+            "expDate" => "2025-01-01",
+            "startNumber" => 1,
+            "endNumber" => 99999,   
+            "digitNumber" => 6,
+            "amount" => 10000, 
         );
         $this->db->trans_start();
-
-
+        $id = $this->model->number("voucher"); 
+        $filename = "$id.txt";
         $insert = array( 
+            "id" =>  $id,
             "name" => $post['data']['name'],
             "prefix" => $post['data']['prefix'],
+            "amount" => $post['data']['amount'],
             "startNumber" => $post['data']['startNumber'], 
             "endNumber" => $post['data']['endNumber'], 
-            "digitNumber" => $post['data']['digitNumber'],  
+            "digitNumber" => $post['data']['digitNumber'], 
+            "expDate" => $post['data']['expDate'], 
+            "filename" =>   $filename,
             "input_date" => date("Y-m-d H:i:s"),
         );
         $this->db->insert("voucher_master", $insert);
 
-        $date = date("Ymd");
-
-        $fp = fopen("uploads/voucher/file$date.txt", 'w');
+        
+        $fp = fopen("uploads/voucher/$filename", 'w');
         $id = $this->model->select('id',"voucher_master"," startNumber > 0  order by input_date DESC ");
         for($i = $post['data']['startNumber']; $i <= $post['data']['endNumber'] ; $i++){
             $new_number = $id.$post['data']['prefix'].str_pad($i, $post['data']['digitNumber'] , "0", STR_PAD_LEFT);
 
             $insert = array( 
-                "voucherMasterId" =>  $id ,
-                //"status" => 0, 
+                "id"=> uniqid(),
+                "voucherMasterId" =>  $id , 
                 "number" =>  $new_number,
+                "amount" => 100000, 
                 "input_date" => date("Y-m-d H:i:s"),
-               
+                
             );
-            fputcsv($fp, $insert);
+            fputcsv($fp, $insert,";");
 
-            echo $id.';'.$new_number.';'.date("Y-m-d H:i:s")."\n";
+          //  echo $id.';'.$new_number.';'.date("Y-m-d H:i:s")."\n";
            // $this->db->insert("voucher", $insert);
         }
+ 
+       $this->db->trans_complete();
+       $trans_status = true;
+       if ($this->db->trans_status() === FALSE) {
+           $trans_status = false;
+       }
 
-
-       // $this->db->trans_complete();
-      //  $trans_status = true;
-      //  if ($this->db->trans_status() === FALSE) {
-      //      $trans_status = false;
-     //   }
-
-       // $data = array(
-      //      "trans_status" => $trans_status,
-      //  );
+       $data = array(
+           "trans_status" => $trans_status,
+       );
+       echo   json_encode($data);
     }
 
 
