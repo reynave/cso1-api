@@ -40,7 +40,8 @@ class Cmd extends CI_Controller
             }
 
             if ($this->time['item'] == date("H:i:s")) {
-                echo $this->time['item']; 
+                echo $this->time['item'];
+                //  self::masterItem();
                 self::cso1_itemBarcode();
                 self::cso1_item();
             }
@@ -84,7 +85,7 @@ class Cmd extends CI_Controller
             die("Gagal menyimpan file output");
         }
 
-        echo " :: Konversi selesai. Hasil disimpan dalam $outputFile\n";
+        echo "Konversi selesai. Hasil disimpan dalam $outputFile\n";
     }
 
     function cso1_itemBarcode()
@@ -116,7 +117,8 @@ class Cmd extends CI_Controller
     }
 
     function runItem()
-    { 
+    {
+        //self::masterItem();
         self::cso1_itemBarcode();
         self::cso1_item();
         echo "Items :: DONE";
@@ -129,11 +131,28 @@ class Cmd extends CI_Controller
     }
 
 
+
     //php index.php Cmd item
     function item()
-    { 
+    {
+        //self::masterItem();
         self::cso1_itemBarcode();
         self::cso1_item();
+    }
+
+    function fixBarcode()
+    {
+        echo "FIX BARCODE ITEM";
+        $sql = "SELECT * from cso1_transactionDetail";
+
+        foreach ($this->model->sql($sql) as $row) {
+            print_r($row);
+            $update = array(
+                "barcode" => $this->model->select("barcode", "cso1_itemBarcode", "id=" . $row['itemId'] . " order by barcode DESC")
+            );
+            $this->db->update("cso1_transactionDetail", $update, "id=" . $row['id']);
+            // $this->db->update("cso1_transactionDetail",$update,"(barcode is null  or barcode = ''  ) and id=".$row['id']);
+        }
     }
 
     function promo()
@@ -182,8 +201,133 @@ class Cmd extends CI_Controller
         echo $file->key();
         ;
     }
- 
-  
+
+    function bulfInsert()
+    {
+        /**
+         * HOW TO CALL :
+         * php index.php Cmd masterItem
+         */
+        $this->db->query("EXEC TableSP2");
+        echo $this->db->last_query();
+    }
+
+    function masterItem()
+    {
+        /**
+         * HOW TO CALL :
+         * php index.php Cmd masterItem
+         */
+        $i = 0;
+
+        // $this->db->trans_start();
+        $fileName = $this->item;
+
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        $file->key();
+
+        if ($file->key() > 0) {
+
+            $handle = fopen("../sync/$fileName", "r");
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $ar = explode("|", $line);
+                    $this->db->delete("cso1_item", "id='$ar[0]'");
+                    $i++;
+                    $insert = array(
+                        "id" => $ar[0],
+                        "description" => $ar[1],
+                        "shortDesc" => $ar[2],
+                        "price1" => (int) $ar[3],
+                        "price2" => (int) $ar[4],
+                        "price3" => (int) $ar[5],
+                        "price4" => (int) $ar[6],
+                        "price5" => (int) $ar[7],
+                        "price6" => (int) $ar[8],
+                        "price7" => (int) $ar[9],
+                        "price8" => (int) $ar[10],
+                        "price9" => (int) $ar[11],
+                        "price10" => (int) $ar[12],
+
+                        "itemUomId" => $ar[13],
+                        "itemCategoryId" => $ar[14],
+                        "itemTaxId" => $ar[15],
+                        "images" => $ar[16],
+
+                        "status" => 1,
+                        "presence" => 1,
+                        "inputDate" => time(),
+                        "updateDate" => time(),
+                    );
+                    $this->db->insert("cso1_item", $insert);
+                    echo "masterItem INSERT " . $ar[0] . "\n";
+                }
+                $insert = array(
+                    "fileName" => $fileName,
+                    "totalInsert" => $i,
+                    "lastSycn" => date("Y-m-d H:i:s"),
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_sync", $insert);
+                print_r($insert);
+                fclose($handle);
+            }
+        } else {
+            echo "\n $fileName NO DATA";
+        }
+    }
+
+    function masterItemBarcode()
+    {
+
+        $fileName = $this->barcode;
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        $file->key();
+
+        if ($file->key() > 0) {
+            $this->db->query("Truncate table cso1_itemBarcode");
+            echo $this->db->last_query() . "\n\m";
+            $handle = fopen("../sync/$fileName", "r");
+            $i = 0;
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $i++;
+                    $ar = explode("|", $line);
+                    $id = $this->model->select("id", "cso1_itemBarcode", "itemId='$ar[0]' and barcode = '$ar[1]' ");
+                    if (!$id) {
+                        $insert = array(
+                            "itemId" => $ar[0],
+                            "barcode" => trim(preg_replace('/\s\s+/', ' ', $ar[1])),
+                            "status" => 1,
+                            "presence" => 1,
+                            "inputDate" => time(),
+                            "input_date" => date("Y-m-d H:i:s"),
+                            "updateDate" => time(),
+
+                        );
+                        $this->db->insert("cso1_itemBarcode", $insert);
+                        echo $i . " barcode INSERT " . $ar[0] . '|' . $ar[1] . "\n";
+                    } else {
+                        echo $i . " barcode SKIP " . $ar[0] . '|' . $ar[1] . "\n";
+                    }
+                }
+                $insert = array(
+                    "fileName" => $fileName,
+                    "totalInsert" => $i,
+                    "lastSycn" => date("Y-m-d H:i:s"),
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_sync", $insert);
+                fclose($handle);
+            }
+        } else {
+            echo "\n $fileName NO DATA";
+        }
+    }
+
+
 
     function editItem()
     {
@@ -212,7 +356,7 @@ class Cmd extends CI_Controller
             die("Gagal menyimpan file output");
         }
 
-        echo " :: Penambahan nilai selesai. Hasil disimpan dalam $outputFile\n";
+        echo "Penambahan nilai selesai. Hasil disimpan dalam $outputFile\n";
 
     }
 
@@ -391,6 +535,10 @@ class Cmd extends CI_Controller
 
             fclose($handle);
         }
+    }
+
+    function transactionToTxt()
+    {
     }
 
 
