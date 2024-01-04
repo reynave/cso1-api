@@ -138,8 +138,7 @@ class Cmd extends CI_Controller
 
     function promo()
     {
-        self::promoHeader();
-        self::promoHeaderDisableFilter();
+        self::promoHeader(); 
         self::promoDetail();
         self::promoFree();
     }
@@ -241,10 +240,11 @@ class Cmd extends CI_Controller
         $fileName = $this->promo_header;
         $handle = fopen("../sync/$fileName", "r");
         if ($handle) {
+            $this->db->query("Truncate table cso1_promotion");
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-                $this->db->delete("cso1_promotion", "id='$ar[0]'");
+              //  $this->db->delete("cso1_promotion", "id='$ar[0]'");
                 $insert = array(
                     "id" => $ar[0],
                     "typeOfPromotion" => (int) $ar[1],
@@ -284,44 +284,18 @@ class Cmd extends CI_Controller
             fclose($handle);
         }
     }
-    //php index.php Cmd syncTransactionManual
-    function promoHeaderDisableFilter()
-    {
-        $q = "SELECT p.id, p.endDate,
-        i.id as 'detailId', p.status, i.itemId, i.specialPrice, i.status as 'detailStatus'
-        from cso1_promotionItem i 
-        join cso1_promotion as p on p.id = i.promotionId
-        where i.status = 1 or p.status = 1  ";
-
-        foreach ($this->model->sql($q) as $row) {
-            $exp = ((int) $row['endDate'] - (int) time()) > 0 ? 1 : 0;
-
-            $update = array(
-                "status" => $exp,
-                "updateBy" => 2,
-                "updateDate" => time(),
-            );
-            $this->db->update("cso1_promotion", $update, "  id= '" . $row['id'] . "' ");
-
-            $this->db->update("cso1_promotionItem", $update, "  promotionId= '" . $row['id'] . "' ");
-
-
-            print_r($update);
-
-
-        }
-    }
-
+   
     function promoDetail()
     {
         $i = 0;
         $fileName = $this->promo_detail;
         $handle = fopen("../sync/$fileName", "r");
         if ($handle) {
+            $this->db->query("Truncate table cso1_promotionItem");
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-                $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+             //   $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
                     "promotionId" => $ar[0],
                     "itemId" => $ar[1],
@@ -359,10 +333,11 @@ class Cmd extends CI_Controller
         $fileName = $this->promo_free;
         $handle = fopen("../sync/$fileName", "r");
         if ($handle) {
+            $this->db->query("Truncate table cso1_promotionFree");
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-                $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+              //  $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
                     "promotionId" => $ar[0],
                     "itemId" => $ar[1],

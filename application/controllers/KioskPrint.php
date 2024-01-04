@@ -41,6 +41,13 @@ class KioskPrint extends CI_Controller
         $id = str_replace(["'", '"', "-"], "", $this->input->get("id"));
         if ($id) {
             $isId = $this->model->select("endDate", "cso1_transaction", "id='" . $id . "'");
+
+            $update = array( 
+                "discount" => 0, 
+            ); 
+            $this->db->update("cso1_transactionDetail", $update, "discount is null and transactionId = '$id' ");
+
+
             $data = array(
                 "id" => $id,
                 "printable" =>   $isId ? true : false,
