@@ -260,7 +260,7 @@ class Cmd extends CI_Controller
                     "Mon" => (int) $ar[10],
                     "Tue" => (int) $ar[11],
                     "Wed" => (int) $ar[12],
-                    "Thur" => (int) $ar[13],
+                    "Thu" => (int) $ar[13],
                     "Fri" => (int) $ar[14],
                     "Sat" => (int) $ar[15],
                     "Sun" => (int) $ar[16],
