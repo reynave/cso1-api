@@ -51,7 +51,7 @@ class Transaction extends CI_Model
                 "\n";
             fwrite($myfile, $txt);
         }
-      //  fclose($myfile);
+        fclose($myfile);
 
         $fileNameTrg = "postraheader$ymd.trg";
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
@@ -126,7 +126,7 @@ class Transaction extends CI_Model
                 "\n";
             fwrite($myfile, $txt);
         }
-        //fclose($myfile);
+        fclose($myfile);
 
         $fileNameTrg = "postrasalesitem$ymd.trg";
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");

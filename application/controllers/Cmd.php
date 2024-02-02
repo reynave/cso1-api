@@ -40,7 +40,7 @@ class Cmd extends CI_Controller
             }
 
             if ($this->time['item'] == date("H:i:s")) {
-                echo $this->time['item']; 
+                echo $this->time['item'];
                 self::cso1_itemBarcode();
                 self::cso1_item();
             }
@@ -116,7 +116,7 @@ class Cmd extends CI_Controller
     }
 
     function runItem()
-    { 
+    {
         self::cso1_itemBarcode();
         self::cso1_item();
         echo "Items :: DONE";
@@ -131,23 +131,64 @@ class Cmd extends CI_Controller
 
     //php index.php Cmd item
     function item()
-    { 
+    {
         self::cso1_itemBarcode();
         self::cso1_item();
     }
 
     function promo()
     {
-        self::promoHeader(); 
+        self::promoHeader();
         self::promoDetail();
         self::promoFree();
     }
 
     //php index.php Cmd syncTransactionManual
-    function syncTransactionManual($date)
+    function syncTransactionManual()
     {
         $this->load->model('transaction');
-        echo $this->transaction->sync($date);
+        $startDate = '2023-09-01';
+        $endDate = '2024-02-03';
+        
+		
+		// Konversi string tanggal menjadi objek DateTime
+		$start = new DateTime($startDate);
+		$end = new DateTime($endDate);
+
+		// Tambahkan 1 hari ke tanggal end untuk mengikutsertakan tanggal tersebut
+		$end->modify('+1 day');
+
+		// Loop untuk menghasilkan tanggal-tanggal di antara dua tanggal
+		$dateRange = [];
+		while ($start < $end) {
+			$dateRange[] = $start->format('Y-m-d');
+			$start->modify('+1 day');
+		}
+
+		// Tampilkan hasil
+		foreach ($dateRange as $date) {
+			echo $date . "\n";
+			 $this->transaction->sync($date);
+		}
+
+       
+    }
+
+    function createDateRangeArray($startDate, $endDate)
+    {
+        // Array untuk menyimpan tanggal
+        $dates = [];
+
+        // Konversi string menjadi objek Time
+        $startDateObj = new \CodeIgniter\I18n\Time($startDate);
+        $endDateObj = new \CodeIgniter\I18n\Time($endDate);
+
+        // Tambahkan tanggal-tanggal ke dalam array
+        for ($date = $startDateObj; $date->lessThanOrEqualTo($endDateObj); $date = $date->addDay()) {
+            $dates[] = $date->toDateString();
+        }
+
+        return $dates;
     }
 
     //php index.php Cmd syncTransactionManual
@@ -181,16 +222,16 @@ class Cmd extends CI_Controller
         echo $file->key();
         ;
     }
- 
-  
+
+
 
     function editItem()
     {
         // Nama file input dan output
         $inputFile = '../sync/' . $this->item;
         $outputFile = '../sync/edit_' . $this->item;
- 
- 
+
+
         // Baca isi file input ke dalam array
         $lines = file($inputFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
@@ -201,7 +242,7 @@ class Cmd extends CI_Controller
         // Iterasi melalui setiap baris dan menambahkan nilai di belakangnya
         foreach ($lines as &$line) {
             // Tambahkan nilai di belakang setiap baris
-            $line .= '|||1|1|1|'.time().'|1|'.time().'|';
+            $line .= '|||1|1|1|' . time() . '|1|' . time() . '|';
         }
 
         // Menyimpan hasil ke dalam file output
@@ -228,7 +269,7 @@ class Cmd extends CI_Controller
         FROM '$file/edit_item.txt' 
         WITH (FIELDTERMINATOR = '|' , ROWTERMINATOR = '\n');
         ");
-        
+
 
     }
 
@@ -244,7 +285,7 @@ class Cmd extends CI_Controller
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-              //  $this->db->delete("cso1_promotion", "id='$ar[0]'");
+                //  $this->db->delete("cso1_promotion", "id='$ar[0]'");
                 $insert = array(
                     "id" => $ar[0],
                     "typeOfPromotion" => (int) $ar[1],
@@ -284,7 +325,7 @@ class Cmd extends CI_Controller
             fclose($handle);
         }
     }
-   
+
     function promoDetail()
     {
         $i = 0;
@@ -295,7 +336,7 @@ class Cmd extends CI_Controller
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-             //   $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+                //   $this->db->delete("cso1_promotionItem", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
                     "promotionId" => $ar[0],
                     "itemId" => $ar[1],
@@ -337,7 +378,7 @@ class Cmd extends CI_Controller
             while (($line = fgets($handle)) !== false) {
                 $i++;
                 $ar = explode("|", $line);
-              //  $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
+                //  $this->db->delete("cso1_promotionFree", "promotionId='$ar[0]' and itemId = '$ar[1]' ");
                 $insert = array(
                     "promotionId" => $ar[0],
                     "itemId" => $ar[1],
