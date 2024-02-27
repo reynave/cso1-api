@@ -111,19 +111,16 @@ class KioskPayment extends CI_Controller
                 foreach ($q as $row) {
 
 
-                    // request REVISI
-                    // $qty = $row['PTSQTY'];
-                    // $barcode = str_split($row['barcode']);
-                    // $arrItem = $this->model->barcode($row['barcode']);
-                    // if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
-                    //     $arrItem = $this->model->barcode($row['barcode']);
-
-                    //     // BARCODE DINAMIC  
-                    //     $barcode = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $arrItem['itemId'] . "' and presence = 1");
-                    //     $qty = (float) $arrItem['weight'];
-                    //     //$note = number_format($arrItem['weight'], $arrItem['config']['digitFloat']) . " Kg";
-
-                    // }
+                    $qty = 1;
+                    $barcode = str_split($row['barcode']);
+                    $arrItem = $this->model->barcode($row['barcode']);
+                    if (count($barcode) >= 13 && $arrItem['prefix'] == 2) { 
+                        // BARCODE DINAMIC  
+                        $barcode = $arrItem['itemId'];
+                        $qty = $arrItem['weight'];
+                    } else {
+                        $barcode = $row['barcode'];
+                    }
 
 
 
@@ -131,7 +128,7 @@ class KioskPayment extends CI_Controller
                         "transactionId" => $id,
                         "promotionId" => $row['promotionId'],
                         "promotionItemId" => $row['promotionItemId'],
-                        "barcode" => $row['barcode'],
+                        "barcode" => $barcode,
                         "itemId" => $row['itemId'],
                         "originPrice" => $row['originPrice'],
                         "price" => $row['price'],
@@ -147,6 +144,7 @@ class KioskPayment extends CI_Controller
                         "inputDate" => time(),
                         "updateDate" => time(),
                         "updateBy" => $row['updateBy'],
+                        "qty" => $qty,
                     );
                     $this->db->insert('cso1_transactionDetail', $insertDetail);
                 }
