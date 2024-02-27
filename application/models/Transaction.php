@@ -87,7 +87,7 @@ class Transaction extends CI_Model
         from ( 
             SELECT 
                 td.transactionId as 'PTSTXNUM',  
-                count(td.id) as 'PTSQTY',
+                sum(td.qty) as 'PTSQTY',
                 sum(td.originPrice) as 'PTSTOTALPRICE',
                 sum(td.discount) as 'PTSTOTALDISC',
                 td.barcode as 'PTSTILLCODE',
@@ -108,6 +108,12 @@ class Transaction extends CI_Model
         $PTSCASHIER = '';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
+            
+            
+            $qty = $row['PTSQTY'];
+            $barcode = str_split( $row['PTSTILLCODE']);
+            
+
             $txt =
                 $i . '|' .      //1
                 $row['PTSTXNUM'] . '|' . //2
@@ -116,10 +122,10 @@ class Transaction extends CI_Model
                 $PTSCASHIER . '|' . //5
                 date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE'])) . '|' .  //6
                 $PTSQTY . '|' . //7
-                $row['PTSQTY'] . '|' . //8
+                $qty . '|' . //8
                 $row['PTSTOTALPRICE'] . '|' . //9
                 $row['PTSTOTALDISC'] . '|' . //10
-                '"' . $row['PTSTILLCODE'] . '"|' . //11
+                '"' . $barcode . '"|' . //11
                 '"' . $row['PTIPROMOCODE'] . '"|' . //12
                 $row['PTIUNITPRICE'] . '|' . //13  
                 $row['USERSPG'] . //14

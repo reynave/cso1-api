@@ -9,7 +9,6 @@ class Cmd extends CI_Controller
         $this->item = "item.txt";
         $this->barcode = "barcode.txt";
         $this->file = 'C:/xampp7433/htdocs/app/sync';
-       // $this->file = 'E:/xampp/htdocs/sync';
         $this->promo_header = "promo_header.txt";
         $this->promo_detail = "promo_detail.txt";
         $this->promo_free = "promo_free.txt";
@@ -125,9 +124,7 @@ class Cmd extends CI_Controller
 
     function runTransaction()
     {
-        //self::transaction();
-		$date = date("Y-m-d");
-		$this->transaction->sync(date('Y-m-d', strtotime($date. ' - 1 days')));
+        self::transaction();
         echo "runTransaction :: DONE";
     }
 
@@ -150,41 +147,50 @@ class Cmd extends CI_Controller
     function syncTransactionManual()
     {
         $this->load->model('transaction');
-        // $startDate = '2024-01-01';
-        // $endDate = '2024-02-03';
-        // $dateRange = self::createDateRangeArray($startDate, $endDate);
-        // foreach ($dateRange as $date) {
-            // echo $date . '<br>';
-            // $this->transaction->sync($date);
-        // }
-		
-		$startDate = '2024-02-01';
-		$endDate = '2024-02-04';
+        $startDate = '2023-09-01';
+        $endDate = '2024-02-03';
 
-		// Konversi string tanggal menjadi objek DateTime
-		$start = new DateTime($startDate);
-		$end = new DateTime($endDate);
 
-		// Tambahkan 1 hari ke tanggal end untuk mengikutsertakan tanggal tersebut
-		$end->modify('+1 day');
+        // Konversi string tanggal menjadi objek DateTime
+        $start = new DateTime($startDate);
+        $end = new DateTime($endDate);
 
-		// Loop untuk menghasilkan tanggal-tanggal di antara dua tanggal
-		$dateRange = [];
-		while ($start < $end) {
-			$dateRange[] = $start->format('Y-m-d');
-			$start->modify('+1 day');
-		}
+        // Tambahkan 1 hari ke tanggal end untuk mengikutsertakan tanggal tersebut
+        $end->modify('+1 day');
 
-		// Tampilkan hasil
-		foreach ($dateRange as $date) {
-			echo $date . "\n";
-			$this->transaction->sync($date);
-		}
+        // Loop untuk menghasilkan tanggal-tanggal di antara dua tanggal
+        $dateRange = [];
+        while ($start < $end) {
+            $dateRange[] = $start->format('Y-m-d');
+            $start->modify('+1 day');
+        }
 
-       
+        // Tampilkan hasil
+        foreach ($dateRange as $date) {
+            echo $date . "\n";
+            $this->transaction->sync($date);
+        }
+
+
     }
 
-     
+    function createDateRangeArray($startDate, $endDate)
+    {
+        // Array untuk menyimpan tanggal
+        $dates = [];
+
+        // Konversi string menjadi objek Time
+        $startDateObj = new \CodeIgniter\I18n\Time($startDate);
+        $endDateObj = new \CodeIgniter\I18n\Time($endDate);
+
+        // Tambahkan tanggal-tanggal ke dalam array
+        for ($date = $startDateObj; $date->lessThanOrEqualTo($endDateObj); $date = $date->addDay()) {
+            $dates[] = $date->toDateString();
+        }
+
+        return $dates;
+    }
+
     //php index.php Cmd syncTransactionManual
     function transactionAll()
     {
@@ -196,8 +202,7 @@ class Cmd extends CI_Controller
 
         foreach ($this->model->sql($q) as $row) {
             echo $this->transaction->sync($row['date']);
-            // echo $row['date']."\n";
-
+            // echo $row['date']."\n"; 
         }
 
     }
@@ -214,17 +219,13 @@ class Cmd extends CI_Controller
         $file = new SplFileObject("../sync/$fileName", 'r');
         $file->seek(PHP_INT_MAX);
         echo $file->key();
-        ;
     }
-
-
 
     function editItem()
     {
         // Nama file input dan output
         $inputFile = '../sync/' . $this->item;
         $outputFile = '../sync/edit_' . $this->item;
-
 
         // Baca isi file input ke dalam array
         $lines = file($inputFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -238,7 +239,6 @@ class Cmd extends CI_Controller
             // Tambahkan nilai di belakang setiap baris
             $line .= '|||1|1|1|' . time() . '|1|' . time() . '|';
         }
-		$lines[] = "0000000000001|null|null|0||||||||||181|680037|0||||1|1|1|1708941755|1|1708941755|";
 
         // Menyimpan hasil ke dalam file output
         $result = file_put_contents($outputFile, implode("\n", $lines));
@@ -267,8 +267,6 @@ class Cmd extends CI_Controller
 
 
     }
-
-
 
     function promoHeader()
     {
@@ -404,53 +402,50 @@ class Cmd extends CI_Controller
         }
     }
 
-    // function transactionConvert()
-    // {
-    //     $sql = "SELECT   *
-    //     FROM cso1_transactionDetail
-    //     WHERE barcode IS NOT NULL
-    //     ORDER BY id DESC
-    //     OFFSET 0 ROWS
-    //     FETCH NEXT 1000 ROWS ONLY ";
-    //     foreach ($this->model->sql($sql) as $row) {
+
+    function transactionConvert()
+    {
+        $sql = "SELECT * FROM cso1_transactionDetail 
+        WHERE  barcode
+        order by id DESC;
+        ";
+        foreach ($this->model->sql($sql) as $row) {
              
-    //         $qty = 1;
-    //         $barcode = str_split($row['barcode']);
-    //         $arrItem = $this->model->barcode($row['barcode']);
-    //         if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
+            $qty = 1;
+            $barcode = str_split($row['barcode']);
+            $arrItem = $this->model->barcode($row['barcode']);
+            if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
               
-    //             // BARCODE DINAMIC  
-    //             $barcode =  $arrItem['itemId'];
-    //             $qty = $arrItem['weight'];  
-    //         }else{
-    //             $barcode = $row['barcode'];
-    //         }  
+                // BARCODE DINAMIC  
+                $barcode =  $arrItem['itemId'];
+                $qty = $arrItem['weight'];  
+            }  
 
 
-    //         $insertDetail = array( 
-    //             "transactionId" => $row['transactionId'],
-    //             "promotionId" => $row['promotionId'],
-    //             "promotionItemId" => $row['promotionItemId'],
-    //             "barcode" => $barcode,
-    //             "itemId" => $row['itemId'],
-    //             "originPrice" => $row['originPrice'],
-    //             "price" => $row['price'],
-    //             "discount" => $row['discount'],
-    //             "isPriceEdit" => $row['isPriceEdit'],
-    //             "isFreeItem" => $row['isFreeItem'],
-    //             "isSpecialPrice" => $row['isSpecialPrice'],
-    //             "isPrintOnBill" => $row['isPrintOnBill'],
-    //             "note" => $row['note'],
-    //             "void" => $row['void'],
-    //             "presence" => 1,
-    //             "inputDate" => $row['inputDate'],
-    //             "updateDate" => $row['updateDate'],
-    //             "updateBy" => $row['updateBy'],
+            $insertDetail = array( 
+                "transactionId" => $row['transactionId'],
+                "promotionId" => $row['promotionId'],
+                "promotionItemId" => $row['promotionItemId'],
+                "barcode" => $barcode,
+                "itemId" => $row['itemId'],
+                "originPrice" => $row['originPrice'],
+                "price" => $row['price'],
+                "discount" => $row['discount'],
+                "isPriceEdit" => $row['isPriceEdit'],
+                "isFreeItem" => $row['isFreeItem'],
+                "isSpecialPrice" => $row['isSpecialPrice'],
+                "isPrintOnBill" => $row['isPrintOnBill'],
+                "note" => $row['note'],
+                "void" => $row['void'],
+                "presence" => 1,
+                "inputDate" => $row['inputDate'],
+                "updateDate" => $row['updateDate'],
+                "updateBy" => $row['updateBy'],
 
-    //             "qty" => $qty,
-    //         );
-    //         $this->db->insert('cso2_transactionDetail', $insertDetail);
-    //         print_r( $insertDetail);
-    //     }
-    // }
+                "qty" => $qty,
+            );
+            $this->db->insert('cso2_transactionDetail', $insertDetail);
+            print_r( $insertDetail);
+        }
+    }
 }
