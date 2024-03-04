@@ -112,7 +112,7 @@ class Spv_reset extends CI_Controller
                 "summaryTotalVoid" =>  $data['summary']['void'],
                 "summaryTotalTransaction" =>  $data['summary']['transaction'],
                 "summaryTotalCart" =>  $data['summary']['cart'],
-                "overalitemSales" => $data['overal']['itemSales'],
+                "overalitemSales" => $data['overal']['itemSales'], //
                 "overalDiscount" => $data['overal']['discount'],
                 "overalNetSales" => $data['overal']['netSales'],
                 "overalFinalPrice" => $data['overal']['finalPrice'],

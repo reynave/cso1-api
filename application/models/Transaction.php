@@ -44,7 +44,7 @@ class Transaction extends CI_Model
                 '"' . $row['storeOutlesId'] . '"|' .
                 '"' . $row['terminalId'] . '"|' .
                 '"' . $row['id'] . '"|' .
-                '""' . '|' .
+                '"' . $row['terminalId'] . '"|' .
                 $row['memberId'] . '|' .
                 $row['finalPrice'] . '|' .
                 '0|1' .
@@ -125,7 +125,7 @@ class Transaction extends CI_Model
                 $qty . '|' . //8
                 $row['PTSTOTALPRICE'] . '|' . //9
                 $row['PTSTOTALDISC'] . '|' . //10
-                '"' . $barcode . '"|' . //11
+                '"' . $row['PTSTILLCODE'] . '"|' . //11
                 '"' . $row['PTIPROMOCODE'] . '"|' . //12
                 $row['PTIUNITPRICE'] . '|' . //13  
                 $row['USERSPG'] . //14
@@ -172,16 +172,18 @@ class Transaction extends CI_Model
 
         //echo   "\n" . $sql . "\n" . "\n"; 
         $i = 0;
-        $PTSCASHIER = '';
+        $PTSCASHIER = 'ID ';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
+            $QR = $this->model->select('qr','cso1_paymentType',"id = '".$row['paymentTypeId']."' ");
+
             $txt =
                 $i . '|' .      //1
                 $row['id'] . '|' . //2
                 '"' . $row['terminalId'] . '"|' .   //3
                 '"' . $row['storeOutlesId'] . '"|' . //4
-                $PTSCASHIER . '|' . //5
-                $row['paymentTypeId'] . '|' .  //6
+                '"'.$row['terminalId'] . '"|' . //5
+                $QR . '|' .  //6
                 date("d/m/Y H:i:s", strtotime($row['endDate'])) . '|' . //7
                 $row['finalPrice'] . '|' . //8
                 '|' . //9
