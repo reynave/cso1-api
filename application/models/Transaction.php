@@ -83,11 +83,11 @@ class Transaction extends CI_Model
         $fileName = "POSTRASALESITEM$ymd.txt";
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
-        $sql = "SELECT s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.endDate as 'PTSBUSDATE'
+        $sql = "SELECT  s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.endDate as 'PTSBUSDATE'
         from ( 
             SELECT 
                 td.transactionId as 'PTSTXNUM',  
-                sum(td.qty) as 'PTSQTY',
+                count(td.id) as 'PTSQTY',
                 sum(td.originPrice) as 'PTSTOTALPRICE',
                 sum(td.discount) as 'PTSTOTALDISC',
                 td.barcode as 'PTSTILLCODE',
@@ -95,7 +95,8 @@ class Transaction extends CI_Model
                 td.promotionId as 'PTIPROMOCODE'
             from cso1_transaction as t
             join cso1_transactionDetail as td on td.transactionId = t.id
-            where  year(t.endDate) = '$year' and  month(t.endDate) = '$month' and day(t.endDate) = '$day'
+            where  
+            year(t.endDate) = '$year' and  month(t.endDate) = '$month' and day(t.endDate) = '$day'
             and t.presence = 1 
             group by td.barcode, td.transactionId, td.promotionId, td.price
             ) as s 
@@ -105,14 +106,21 @@ class Transaction extends CI_Model
         //echo   "\n" . $sql . "\n" . "\n";
         $PTSQTY = 1;
         $i = 0;
-        $PTSCASHIER = '';
+        $PTSCASHIER = '"SPVKSR"';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
             
             
             $qty = $row['PTSQTY'];
-            $barcode = str_split( $row['PTSTILLCODE']);
-            
+            $barcode =  $row['PTSTILLCODE'];  
+            $arrItem = $this->model->barcode($row['PTSTILLCODE']);
+               print_r( $arrItem);
+            if ( $arrItem['prefix'] == '2') { 
+                // BARCODE DINAMIC  
+                $barcode = $arrItem['itemId'];
+                $qty = (float)$arrItem['weight'];
+             
+            } 
 
             $txt =
                 $i . '|' .      //1
@@ -121,13 +129,13 @@ class Transaction extends CI_Model
                 '"' . $row['PTSSITE'] . '"|' . //4
                 $PTSCASHIER . '|' . //5
                 date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE'])) . '|' .  //6
-                $PTSQTY . '|' . //7
+                '1' . '|' . //7
                 $qty . '|' . //8
-                $row['PTSTOTALPRICE'] . '|' . //9
+                $row['PTIUNITPRICE'] . '|' . //9
                 $row['PTSTOTALDISC'] . '|' . //10
-                '"' . $row['PTSTILLCODE'] . '"|' . //11
+                '"' . $barcode . '"|' . //11
                 '"' . $row['PTIPROMOCODE'] . '"|' . //12
-                $row['PTIUNITPRICE'] . '|' . //13  
+                $row['PTSTOTALPRICE'] . '|' . //13  
                 $row['USERSPG'] . //14
                 "\n";
             fwrite($myfile, $txt);
@@ -172,7 +180,7 @@ class Transaction extends CI_Model
 
         //echo   "\n" . $sql . "\n" . "\n"; 
         $i = 0;
-        $PTSCASHIER = 'ID ';
+        $PTSCASHIER = 'SPVKSR';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
             $QR = $this->model->select('qr','cso1_paymentType',"id = '".$row['paymentTypeId']."' ");
