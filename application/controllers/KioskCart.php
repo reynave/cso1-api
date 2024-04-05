@@ -117,7 +117,7 @@ class KioskCart extends CI_Controller
                 );
             } else { 
                 // SCAN ITEM
-                $weight = 1;
+                $weight = 1.0;
                 $note = "";
                 // CHECK BARCODE 
                 $barcode = str_split($post['barcode']); 
@@ -127,7 +127,7 @@ class KioskCart extends CI_Controller
                    
                         // BARCODE DINAMIC  
                         $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" .  $arrItem['itemId'] . "' and presence = 1"); 
-                        $weight = $arrItem['weight']; 
+                        $weight = (float)$arrItem['weight']; 
                         $note = number_format($arrItem['weight'],$arrItem['config']['digitFloat'])." Kg";
                     
                   
@@ -183,7 +183,7 @@ class KioskCart extends CI_Controller
                     if ($promo['promotionItemId'] > 0) {
                         $update = [
                             "kioskUuid" => $post['kioskUuid'],
-                            "price" => $promo['newPrice'],
+                            "price" => $promo['newPrice'] * $weight,
                             "isSpecialPrice" => isset($promo['isSpecialPrice']),
                             "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                             "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",

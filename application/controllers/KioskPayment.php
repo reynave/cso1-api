@@ -91,6 +91,8 @@ class KioskPayment extends CI_Controller
                     "pthType" => 1,
 
                     "total" => (int) $summary['total'],
+                   // "total" => (int) $this->model->select("sum(price)", "cso1_kioskUuid", "presence = 1 and kioskUuid = '" . $kioskUuid . "'"),,
+                   
                     "discount" => (int) $summary['discount'],
                     "discountMember" => (int) $summary['memberDiscount'],
                     "voucher" => (int) $summary['voucer'],
@@ -102,7 +104,7 @@ class KioskPayment extends CI_Controller
 
                     "locked" => 1,
                     "presence" => 1,
-                    "inputDate" => time(),
+                    "inputDate" => $this->model->select("inputDate", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
                     "updateDate" => time(),
                 );
                 $this->db->insert('cso1_transaction', $insert);
@@ -141,8 +143,8 @@ class KioskPayment extends CI_Controller
 
                         "void" => $row['void'],
                         "presence" => 1,
-                        "inputDate" => time(),
-                        "updateDate" => time(),
+                        "inputDate" => $row['inputDate'],
+                        "updateDate" => $row['updateDate'],
                         "updateBy" => $row['updateBy'],
                         "qty" => $qty,
                     );
