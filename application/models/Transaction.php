@@ -30,7 +30,7 @@ class Transaction extends CI_Model
 
         $fileName = "POSTRAHEADER$ymd.txt";
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
-
+        $PTSCASHIER = 'SPVKSR';
         $sql = "SELECT * from cso1_transaction  
         where   year(endDate) = '$year' and  month(endDate) = '$month' and day(endDate) = '$day'
         and presence = 1";
@@ -38,16 +38,17 @@ class Transaction extends CI_Model
         $i = 0;
         foreach ($this->model->sql($sql) as $row) {
             $i++;
-            $txt = date("d/m/Y H:i:s", strtotime($row['startDate'])) . "|" .
-                date("d/m/Y H:i:s", strtotime($row['endDate'])) . '|' .
-                date("d/m/Y", strtotime($row['endDate'])) . '|' .
-                '"' . $row['storeOutlesId'] . '"|' .
-                '"' . $row['terminalId'] . '"|' .
-                '"' . $row['id'] . '"|' .
-                '"' . $row['terminalId'] . '"|' .
-                $row['memberId'] . '|' .
-                $row['finalPrice'] . '|' .
-                '0|1' .
+            $txt = date("d/m/Y H:i:s", strtotime($row['startDate'])) . "|" . // 1  
+                date("d/m/Y H:i:s", $row['inputDate']) . '|' .  // 2 
+                date("d/m/Y", strtotime($row['endDate'])) . '|' . // 3 
+                '"' . $row['storeOutlesId'] . '"|' . // 4
+                '"' . $row['terminalId'] . '"|' . // 5
+                '"' . $row['id'] . '"|' . // 6
+                '"' . $PTSCASHIER . '"|' . // 7
+                $row['memberId'] . '|' . // 8
+                $row['finalPrice'] . '|' . // 9
+                '0|1' . // 10  dan 11 
+                
                 "\n";
             fwrite($myfile, $txt);
         }
@@ -83,7 +84,7 @@ class Transaction extends CI_Model
         $fileName = "POSTRASALESITEM$ymd.txt";
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
-        $sql = "SELECT  s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.endDate as 'PTSBUSDATE'
+        $sql = "SELECT  s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.inputDate as 'PTSBUSDATE'
         from ( 
             SELECT 
                 td.transactionId as 'PTSTXNUM',  
@@ -91,14 +92,14 @@ class Transaction extends CI_Model
                 sum(td.originPrice) as 'PTSTOTALPRICE',
                 sum(td.discount) as 'PTSTOTALDISC',
                 td.barcode as 'PTSTILLCODE',
-                td.price as 'PTIUNITPRICE',
+                td.originPrice as 'PTIUNITPRICE',
                 td.promotionId as 'PTIPROMOCODE'
             from cso1_transaction as t
             join cso1_transactionDetail as td on td.transactionId = t.id
             where  
             year(t.endDate) = '$year' and  month(t.endDate) = '$month' and day(t.endDate) = '$day'
             and t.presence = 1 
-            group by td.barcode, td.transactionId, td.promotionId, td.price
+            group by td.barcode, td.transactionId, td.promotionId, td.originPrice
             ) as s 
         join cso1_transaction as t on t.id = s.PTSTXNUM
         where t.presence = 1";
@@ -118,7 +119,7 @@ class Transaction extends CI_Model
             if ( $arrItem['prefix'] == '2') { 
                 // BARCODE DINAMIC  
                 $barcode = $arrItem['itemId'];
-                $qty = (float)$arrItem['weight'];
+                $qty = (float)$arrItem['weight'] * $row['PTSQTY'];
              
             } 
 
@@ -128,14 +129,14 @@ class Transaction extends CI_Model
                 '"' . $row['PTSCR'] . '"|' .   //3
                 '"' . $row['PTSSITE'] . '"|' . //4
                 $PTSCASHIER . '|' . //5
-                date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE'])) . '|' .  //6
+                date("d/m/Y H:i:s", $row['PTSBUSDATE'] ) . '|' .  //6
                 '1' . '|' . //7
                 $qty . '|' . //8
-                $row['PTIUNITPRICE'] . '|' . //9
+                $row['PTSTOTALPRICE'] . '|' . //9
                 $row['PTSTOTALDISC'] . '|' . //10
                 '"' . $barcode . '"|' . //11
                 '"' . $row['PTIPROMOCODE'] . '"|' . //12
-                $row['PTSTOTALPRICE'] . '|' . //13  
+                $row['PTIUNITPRICE'] . '|' . //13  
                 $row['USERSPG'] . //14
                 "\n";
             fwrite($myfile, $txt);
@@ -184,20 +185,20 @@ class Transaction extends CI_Model
         foreach ($this->model->sql($sql) as $row) {
             $i++;
             $QR = $this->model->select('qr','cso1_paymentType',"id = '".$row['paymentTypeId']."' ");
-
+            //$QR = $QR == '' ? '3':$QR;
             $txt =
                 $i . '|' .      //1
                 $row['id'] . '|' . //2
                 '"' . $row['terminalId'] . '"|' .   //3
                 '"' . $row['storeOutlesId'] . '"|' . //4
-                '"'.$row['terminalId'] . '"|' . //5
+                '"'. $PTSCASHIER . '"|' . //5
                 $QR . '|' .  //6
-                date("d/m/Y H:i:s", strtotime($row['endDate'])) . '|' . //7
+                date("d/m/Y H:i:s", $row['inputDate']) . '|' . //7
                 $row['finalPrice'] . '|' . //8
                 '|' . //9
                 '|' . //10
                 '|' . //11
-                '1|' . //12 
+                '1' . //12 
                 "\n";
             fwrite($myfile, $txt);
         }
