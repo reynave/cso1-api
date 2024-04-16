@@ -39,7 +39,7 @@ class Transaction extends CI_Model
         foreach ($this->model->sql($sql) as $row) {
             $i++;
             $txt = date("d/m/Y H:i:s", strtotime($row['startDate'])) . "|" . // 1  
-                date("d/m/Y H:i:s", $row['inputDate']) . '|' .  // 2 
+                date("d/m/Y H:i:s", strtotime($row['endDate'])) . '|' .  // 2 
                 date("d/m/Y", strtotime($row['endDate'])) . '|' . // 3 
                 '"' . $row['storeOutlesId'] . '"|' . // 4
                 '"' . $row['terminalId'] . '"|' . // 5
@@ -72,6 +72,94 @@ class Transaction extends CI_Model
         );
         $this->db->insert("cso1_syncLog", $insert);
         return "POSTRAHEADER CREATED " . $ymd;
+    }
+
+    function postrasalesitem_DEL_1($date)
+    {
+        $ymd = date("ymd", strtotime($date));
+        $year = date("Y", strtotime($date));
+        $month = date("m", strtotime($date));
+        $day = date("d", strtotime($date));
+
+        $fileName = "POSTRASALESITEM$ymd.txt";
+        $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
+
+        $sql = "SELECT  s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.inputDate as 'PTSBUSDATE'
+        from ( 
+            SELECT 
+                td.transactionId as 'PTSTXNUM',  
+                count(td.id) as 'PTSQTY',
+                sum(td.originPrice) as 'PTSTOTALPRICE',
+                sum(td.discount) as 'PTSTOTALDISC',
+                td.barcode as 'PTSTILLCODE',
+                td.originPrice as 'PTIUNITPRICE',
+                td.promotionId as 'PTIPROMOCODE'
+            from cso1_transaction as t
+            join cso1_transactionDetail as td on td.transactionId = t.id
+            where  
+            year(t.endDate) = '$year' and  month(t.endDate) = '$month' and day(t.endDate) = '$day'
+            and t.presence = 1 
+            group by td.barcode, td.transactionId, td.promotionId, td.originPrice
+            ) as s 
+        join cso1_transaction as t on t.id = s.PTSTXNUM
+        where t.presence = 1";
+
+        //echo   "\n" . $sql . "\n" . "\n";
+        $PTSQTY = 1;
+        $i = 0;
+        $PTSCASHIER = '"SPVKSR"';
+        foreach ($this->model->sql($sql) as $row) {
+            $i++;
+            
+            
+            $qty = $row['PTSQTY'];
+            $barcode =  $row['PTSTILLCODE'];  
+            $arrItem = $this->model->barcode($row['PTSTILLCODE']);
+               print_r( $arrItem);
+            if ( $arrItem['prefix'] == '2') { 
+                // BARCODE DINAMIC  
+                $barcode = $arrItem['itemId'];
+                $qty = (float)$arrItem['weight'] * $row['PTSQTY'];
+             
+            } 
+
+            $txt =
+                $i . '|' .      //1
+                $row['PTSTXNUM'] . '|' . //2
+                '"' . $row['PTSCR'] . '"|' .   //3
+                '"' . $row['PTSSITE'] . '"|' . //4
+                $PTSCASHIER . '|' . //5
+                date("d/m/Y H:i:s", $row['PTSBUSDATE'] ) . '|' .  //6
+                '1' . '|' . //7
+                $qty . '|' . //8
+                $row['PTSTOTALPRICE'] . '|' . //9
+                $row['PTSTOTALDISC'] . '|' . //10
+                '"' . $barcode . '"|' . //11
+                '"' . $row['PTIPROMOCODE'] . '"|' . //12
+                $row['PTIUNITPRICE'] . '|' . //13  
+                $row['USERSPG'] . //14
+                "\n";
+            fwrite($myfile, $txt);
+        }
+        fclose($myfile);
+
+        $fileNameTrg = "postrasalesitem$ymd.trg";
+        $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
+        $txt = "end\n";
+        fwrite($myfile, $txt);
+        fclose($myfile);
+
+        $insert = array(
+            "fileSize" =>  $i,
+            "module" => "POSTRASALESITEM",
+            "fileName" => $fileName, 
+            "inputDate" => time(),
+            "syncDate" => date("Y-m-d H:i:s"),
+            "status" => 1, 
+            "presence" => 1, 
+        );
+        $this->db->insert("cso1_syncLog", $insert);
+        return "POSTRASALESITEM CREATED " . $ymd;
     }
 
     function postrasalesitem($date)
@@ -161,8 +249,6 @@ class Transaction extends CI_Model
         $this->db->insert("cso1_syncLog", $insert);
         return "POSTRASALESITEM CREATED " . $ymd;
     }
-
-
     function postratender($date)
     {
         $ymd = date("ymd", strtotime($date));

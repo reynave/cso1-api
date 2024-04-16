@@ -146,6 +146,7 @@ class KioskPayment extends CI_Controller
                         "inputDate" => $row['inputDate'],
                         "updateDate" => $row['updateDate'],
                         "updateBy" => $row['updateBy'],
+                        "transactionDate" => $row['transactionDate'],
                         "qty" => $qty,
                     );
                     $this->db->insert('cso1_transactionDetail', $insertDetail);

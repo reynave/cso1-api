@@ -159,6 +159,7 @@ class KioskCart extends CI_Controller
 
                     $insert = array(
                         "id" => $id,
+                        "transactionDate" => date("Y-m-d H:i:s"),
                         "kioskUuid" => $post['kioskUuid'],
                         "itemId" => $itemId,
                         "barcode" => $post['barcode'],
