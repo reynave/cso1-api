@@ -215,7 +215,7 @@ class KioskPayment extends CI_Controller
         echo json_encode($data);
     }
 
-    function fnProcessPaymentFake()
+    function fnProcessPaymentFake_REMOVE()
     {
         $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
