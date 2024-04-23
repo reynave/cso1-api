@@ -222,7 +222,7 @@ class Transaction extends CI_Model
                 $PTSCASHIER . '|' . //5 Kode kasir
 
                 $PTSBUSDATE . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss)
-                $row['inputDate'] . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss)
+            //    $row['inputDate'] . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss)
               
                 '1' . '|' . //7 Type of sales item: 1=sales, 2=return
                 $row['PTSQTY'] . '|' . //8  Total barang yang terjual per item
