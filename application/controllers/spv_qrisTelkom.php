@@ -19,15 +19,30 @@ class Spv_qrisTelkom extends CI_Controller
     }
     function list()
     {
+
+        $date  = explode('-',$this->input->get("date")); 
+
+       
+
+        $a = "SELECT  
+        q.* ,  t.terminalId , '' as checkStatus
+            from cso1_paymentQrisTelkom   as q
+            left join cso1_transaction as t on t.id = q.transactionId 
+        WHERE   q.presence = 1  AND
+        (year( q.qris_request_date) = ".(int)$date[0]." AND month(q.qris_request_date) = ".(int)$date[1]." AND day( q.qris_request_date) = ".(int)$date[2]."   )
+        order by  q.kioskUuid DESC";
+        
         $data = array(
-            "items" => $this->model->sql("SELECT top 300 * , '' as checkStatus
-                    from cso1_paymentQrisTelkom  
-                WHERE  presence = 1  order by  kioskUuid DESC 
-            "),
+            "q1" => str_replace("\r\n",'',$a),
+            "items" => $this->model->sql($a),
         );
         echo   json_encode($data);
     }
  
+
+    function selectSCO(){
+
+    }
     
 
 
@@ -48,7 +63,7 @@ class Spv_qrisTelkom extends CI_Controller
             $url = $apiUrlResp . "?do=$kioskUuid&apikey=" . $setting['apikey'] . "&mID=" . $setting['mId'] . "&invid=" . $qris['qris_invoiceid'] . "&trxvalue=" . $qris['cliTrxAmount'] . "&trxdate=" . date("Y-m-d", strtotime($qris['qris_request_date']));
 
             // $url = "https://qris.id/restapi/qris/checkpaid_qris.php?do=BILL000000097&apikey=139139211206273&mID=195233984319&invid=50588963759&trxvalue=1000&trxdate=2022-09-30";
-
+ 
             curl_setopt($ch, CURLOPT_URL, $url);
             // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -64,10 +79,39 @@ class Spv_qrisTelkom extends CI_Controller
             $res = curl_exec($ch);
             $resp = json_decode($res, true);
 
+/**
+ *      "qris_status": "paid",
+ *      "qris_payment_customername": "L ANDI YULIANTO",
+ *      "qris_payment_methodby": "Sakuku",
+ *      "qris_paid_date": "2024-06-07 10:28:19"
+ */ 
+            if($resp['status'] == 'success'){ 
+                $update = array( 
+                    "qris_status" => $resp['data']['qris_status'], 
+                    "qris_payment_customername" => $resp['data']['qris_payment_customername'],   
+                    "qris_payment_methodby" => $resp['data']['qris_payment_methodby'],   
+                    "qris_paid_date" => $resp['data']['qris_paid_date'], 
+                    "url" => $url, 
+                ); 
+                $this->db->update("cso1_paymentQrisTelkom", $update, "kioskUuid = '$kioskUuid' ");  
+            }
+
+          
+            $a = "SELECT  
+            q.* ,  t.terminalId , '' as checkStatus
+                from cso1_paymentQrisTelkom   as q
+                left join cso1_transaction as t on t.id = q.transactionId 
+            WHERE   q.presence = 1  AND q.kioskUuid = '".$kioskUuid."'
+            order by  q.kioskUuid DESC";
+             
             $data = array(
                 "error" => false,
                 "qris" => $resp,
+                "item" => $this->model->sql($a)[0],
             );
+
+
+
         } else {
             $data = array(
                 "error" => true,

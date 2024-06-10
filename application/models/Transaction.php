@@ -28,7 +28,9 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-        $fileName = "POSTRAHEADER$ymd.txt";
+       // $fileName = "POSTRAHEADER$ymd.txt";
+         $fileName = "SCOTRAHEADER$ymd.txt";
+        
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
         $PTSCASHIER = 'SPVKSR';
         $sql = "SELECT * from cso1_transaction  
@@ -41,10 +43,10 @@ class Transaction extends CI_Model
             $txt = date("d/m/Y H:i:s", strtotime($row['startDate'])) . "|" . // 1  
                 date("d/m/Y H:i:s", strtotime($row['endDate'])) . '|' .  // 2 
                 date("d/m/Y", strtotime($row['endDate'])) . '|' . // 3 
-                '"' . $row['storeOutlesId'] . '"|' . // 4
-                '"' . $row['terminalId'] . '"|' . // 5
-                '"' . $row['id'] . '"|' . // 6
-                '"' . $PTSCASHIER . '"|' . // 7
+                '' . $row['storeOutlesId'] . '|' . // 4
+                '' . $row['terminalId'] . '|' . // 5
+                '' . $row['id'] . '|' . // 6
+                '' . $PTSCASHIER . '|' . // 7
                 $row['memberId'] . '|' . // 8
                 $row['finalPrice'] . '|' . // 9
                 '0|1' . // 10  dan 11 
@@ -54,7 +56,9 @@ class Transaction extends CI_Model
         }
         fclose($myfile);
 
-        $fileNameTrg = "postraheader$ymd.trg";
+       // $fileNameTrg = "postraheader$ymd.trg";
+        $fileNameTrg = "scotraheader$ymd.trg";
+       
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);
@@ -73,95 +77,7 @@ class Transaction extends CI_Model
         $this->db->insert("cso1_syncLog", $insert);
         return "POSTRAHEADER CREATED " . $ymd;
     }
-
-    function postrasalesitem_DEL_1($date)
-    {
-        $ymd = date("ymd", strtotime($date));
-        $year = date("Y", strtotime($date));
-        $month = date("m", strtotime($date));
-        $day = date("d", strtotime($date));
-
-        $fileName = "POSTRASALESITEM$ymd.txt";
-        $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
-
-        $sql = "SELECT  s.*, t.terminalId as 'PTSCR',   t.storeOutlesId as 'PTSSITE', t.inputDate as 'PTSBUSDATE'
-        from ( 
-            SELECT 
-                td.transactionId as 'PTSTXNUM',  
-                count(td.id) as 'PTSQTY',
-                sum(td.originPrice) as 'PTSTOTALPRICE',
-                sum(td.discount) as 'PTSTOTALDISC',
-                td.barcode as 'PTSTILLCODE',
-                td.originPrice as 'PTIUNITPRICE',
-                td.promotionId as 'PTIPROMOCODE'
-            from cso1_transaction as t
-            join cso1_transactionDetail as td on td.transactionId = t.id
-            where  
-            year(t.endDate) = '$year' and  month(t.endDate) = '$month' and day(t.endDate) = '$day'
-            and t.presence = 1 
-            group by td.barcode, td.transactionId, td.promotionId, td.originPrice
-            ) as s 
-        join cso1_transaction as t on t.id = s.PTSTXNUM
-        where t.presence = 1";
-
-        //echo   "\n" . $sql . "\n" . "\n";
-        $PTSQTY = 1;
-        $i = 0;
-        $PTSCASHIER = '"SPVKSR"';
-        foreach ($this->model->sql($sql) as $row) {
-            $i++;
-            
-            
-            $qty = $row['PTSQTY'];
-            $barcode =  $row['PTSTILLCODE'];  
-            $arrItem = $this->model->barcode($row['PTSTILLCODE']);
-               print_r( $arrItem);
-            if ( $arrItem['prefix'] == '2') { 
-                // BARCODE DINAMIC  
-                $barcode = $arrItem['itemId'];
-                $qty = (float)$arrItem['weight'] * $row['PTSQTY'];
-             
-            } 
-
-            $txt =
-                $i . '|' .      //1
-                $row['PTSTXNUM'] . '|' . //2
-                '"' . $row['PTSCR'] . '"|' .   //3
-                '"' . $row['PTSSITE'] . '"|' . //4
-                $PTSCASHIER . '|' . //5
-                date("d/m/Y H:i:s", $row['PTSBUSDATE'] ) . '|' .  //6
-                '1' . '|' . //7
-                $qty . '|' . //8
-                $row['PTSTOTALPRICE'] . '|' . //9
-                $row['PTSTOTALDISC'] . '|' . //10
-                '"' . $barcode . '"|' . //11
-                '"' . $row['PTIPROMOCODE'] . '"|' . //12
-                $row['PTIUNITPRICE'] . '|' . //13  
-                $row['USERSPG'] . //14
-                "\n";
-            fwrite($myfile, $txt);
-        }
-        fclose($myfile);
-
-        $fileNameTrg = "postrasalesitem$ymd.trg";
-        $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
-        $txt = "end\n";
-        fwrite($myfile, $txt);
-        fclose($myfile);
-
-        $insert = array(
-            "fileSize" =>  $i,
-            "module" => "POSTRASALESITEM",
-            "fileName" => $fileName, 
-            "inputDate" => time(),
-            "syncDate" => date("Y-m-d H:i:s"),
-            "status" => 1, 
-            "presence" => 1, 
-        );
-        $this->db->insert("cso1_syncLog", $insert);
-        return "POSTRASALESITEM CREATED " . $ymd;
-    }
-
+ 
     function postrasalesitem($date)
     {
         $ymd = date("ymd", strtotime($date));
@@ -169,22 +85,24 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-        $fileName = "POSTRASALESITEM$ymd.txt";
+       // $fileName = "POSTRASALESITEM$ymd.txt";
+        $fileName = "SCOTRASALESITEM$ymd.txt";
+
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
         $sql = "SELECT  
-                t.id as 'PTSTXNUM', 
-                t.terminalId as 'PTSCR', 
-                t.storeOutlesId as 'PTSSITE', 
-                'SPVKSR' as 'PTSCASHIER',
-                d.transactionDate as 'PTSBUSDATE' , 
-                d.inputDate, '1' as 'PTSTYPE',
-                d.qty as 'PTSQTY', 
-                d.originPrice as 'PTSTOTALPRICE', 
-                d.price as 'PTSTOTALDISC', 
-                d.barcode as 'PTSTILLCODE', 
-                d.promotionId as 'PTIPROMOCODE',
-            d.price as 'PTIUNITPRICE'
+                    t.id as 'PTSTXNUM', 
+                    t.terminalId as 'PTSCR', 
+                    t.storeOutlesId as 'PTSSITE', 
+                    'SPVKSR' as 'PTSCASHIER',
+                    d.transactionDate as 'PTSBUSDATE' , 
+                    d.inputDate, '1' as 'PTSTYPE',
+                    d.qty as 'PTSQTY', 
+                    d.originPrice as 'PTSTOTALPRICE', 
+                    (d.originPrice - d.price) as 'PTSTOTALDISC', 
+                    d.barcode as 'PTSTILLCODE', 
+                    d.promotionId as 'PTIPROMOCODE',
+                    d.price as 'PTIUNITPRICE'
             from cso1_transaction as t 
             left join cso1_transactionDetail as d on d.transactionId = t.id
             where  t.presence = 1 and d.presence = 1 and d.void = 0 and
@@ -195,7 +113,7 @@ class Transaction extends CI_Model
         //echo   "\n" . $sql . "\n" . "\n";
         //$PTSQTY = 1;
         $i = 0;
-        $PTSCASHIER = '"SPVKSR"';
+        $PTSCASHIER = 'SPVKSR';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
             
@@ -216,20 +134,18 @@ class Transaction extends CI_Model
             $txt =
                 $i . '|' .      //1 Kode unik untuk tiap baris transaksi (ID/no urut per baris transaksi)
                 $row['PTSTXNUM'] . '|' . //2 Nomor struk transaksi
-                '"' . $row['PTSCR'] . '"|' .   //3 Kode PC untuk POS
-                '"' . $row['PTSSITE'] . '"|' . //4 Kode toko
+                '' . $row['PTSCR'] . '|' .   //3 Kode PC untuk POS
+                '' . $row['PTSSITE'] . '|' . //4 Kode toko
 
-                $PTSCASHIER . '|' . //5 Kode kasir
-
-                $PTSBUSDATE . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss)
-            //    $row['inputDate'] . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss)
+                $PTSCASHIER . '|' . //5 Kode kasir 
+                $PTSBUSDATE . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss) 
               
                 '1' . '|' . //7 Type of sales item: 1=sales, 2=return
                 $row['PTSQTY'] . '|' . //8  Total barang yang terjual per item
-                $row['PTSTOTALPRICE'] . '|' . //9 Total harga barang yang terjual per item (Sebelum discount)
-                $row['PTSTOTALDISC'] . '|' . //10 Total diskon barang yang terjual per item (Dalam Rupiah)
-                '"' . $barcode . '"|' . //11 Barcode item
-                '"' . $row['PTIPROMOCODE'] . '"|' . // 12 Kode promo (kode promo yang dari GOLD)
+                ($row['PTSQTY']* $row['PTSTOTALPRICE'] ). '|' . //9 Total harga barang yang terjual per item (Sebelum discount)
+                ($row['PTSQTY']*$row['PTSTOTALDISC']) . '|' . //10 Total diskon barang yang terjual per item (Dalam Rupiah)
+                '' . $barcode . '|' . //11 Barcode item
+                '' . $row['PTIPROMOCODE'] . '|' . // 12 Kode promo (kode promo yang dari GOLD)
     
                 $row['PTIUNITPRICE'] . '|' . //13   Harga per item
 
@@ -239,7 +155,9 @@ class Transaction extends CI_Model
         }
         fclose($myfile);
 
-        $fileNameTrg = "postrasalesitem$ymd.trg";
+       // $fileNameTrg = "postrasalesitem$ymd.trg";
+        $fileNameTrg = "scotrasalesitem$ymd.trg";
+       
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);
@@ -264,7 +182,9 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-        $fileName = "POSTRATENDER$ymd.txt";
+       // $fileName = "POSTRATENDER$ymd.txt";
+        $fileName = "SCOTRATENDER$ymd.txt";
+        
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
         $sql = "SELECT *
@@ -283,22 +203,24 @@ class Transaction extends CI_Model
             $txt =
                 $i . '|' .      //1
                 $row['id'] . '|' . //2
-                '"' . $row['terminalId'] . '"|' .   //3
-                '"' . $row['storeOutlesId'] . '"|' . //4
-                '"'. $PTSCASHIER . '"|' . //5
+                '' . $row['terminalId'] . '|' .   //3
+                '' . $row['storeOutlesId'] . '|' . //4
+                ''. $PTSCASHIER . '|' . //5
                 $QR . '|' .  //6
                 date("d/m/Y H:i:s", $row['inputDate']) . '|' . //7
                 $row['finalPrice'] . '|' . //8
-                '|' . //9
-                '|' . //10
-                '|' . //11
+                '0|' . //9
+                '0|' . //10
+                '0|' . //11
                 '1' . //12 
                 "\n";
             fwrite($myfile, $txt);
         }
         fclose($myfile);
 
-        $fileNameTrg = "postratender$ymd.trg";
+        //$fileNameTrg = "postratender$ymd.trg";
+         $fileNameTrg = "scotratender$ymd.trg";
+        
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);

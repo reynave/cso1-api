@@ -273,6 +273,16 @@ class Spv_terminal extends CI_Controller
             );
             $this->db->insert('cso1_transaction', $insert);
 
+            if( $this->model->select("kioskUuid", "cso1_paymentQrisTelkom", "kioskUuid = '" .  $kioskUuid . "'") ){
+                $update = array(
+                    "qris_status" => "Close by Admin",
+                    "transactionId" => $id,  
+                    "updateDate" =>  time(),
+                );
+                $this->db->update('cso1_paymentQrisTelkom', $update, "kioskUuid = '" .  $kioskUuid . "'");
+            }
+
+
             $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
             foreach ($q as $row) {
                 $insertDetail = array(
