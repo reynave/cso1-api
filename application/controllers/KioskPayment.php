@@ -58,6 +58,174 @@ class KioskPayment extends CI_Controller
 
         echo json_encode($data);
     }
+    function fnPaid()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+
+            $kioskUuid = $post['kioskUuid'];
+            $summary = $this->model->summary($kioskUuid);
+            $finalPrice = (int) $summary['final'];
+            if ($finalPrice > 0 && !$this->model->select("id", "cso1_transaction", "kioskUuid = '$kioskUuid'")) {
+
+                // $this->db->trans_start();
+                $id = $this->model->number("transaction");
+                $storeOutlesId = $this->storeOutlesId;
+                $terminalId = $this->terminalId;
+
+                $insert = array(
+                    "id" => $id,
+                    "transactionDate" => time(),
+                    "kioskUuid" => $kioskUuid,
+                    "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
+                    "paymentTypeId" => $post['paymentTypeId'],
+
+                    "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
+                    "endDate" => date("Y-m-d H:i:s"),
+                    "storeOutlesId" => $storeOutlesId,
+                    "terminalId" => $terminalId,
+                    "struk" => $id,
+                    "cashierId" => "",
+                    "pthType" => 1,
+
+                    "total" => (int) $summary['total'],
+                    // "total" => (int) $this->model->select("sum(price)", "cso1_kioskUuid", "presence = 1 and kioskUuid = '" . $kioskUuid . "'"),,
+
+                    "discount" => (int) $summary['discount'],
+                    "discountMember" => (int) $summary['memberDiscount'],
+                    "voucher" => (int) $summary['voucer'],
+                    "bkp" => (int) $summary['bkp'],
+                    "dpp" => (int) $summary['dpp'],
+                    "ppn" => (int) $summary['ppn'],
+                    "nonBkp" => (int) $summary['nonBkp'],
+                    "finalPrice" => (int) $summary['final'],
+
+                    "locked" => 1,
+                    "presence" => 1,
+                    "inputDate" => $this->model->select("inputDate", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
+                    "updateDate" => time(),
+                );
+                $this->db->insert('cso1_transaction', $insert);
+
+                $q = $this->model->sql("select * from cso1_kioskCart where kioskUuid = '$kioskUuid' ");
+                foreach ($q as $row) {
+
+
+                    $qty = 1;
+                    $barcode = str_split($row['barcode']);
+                    $arrItem = $this->model->barcode($row['barcode']);
+                    if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
+                        // BARCODE DINAMIC  
+                        $barcode = $arrItem['itemId'];
+                        $qty = $arrItem['weight'];
+                    } else {
+                        $barcode = $row['barcode'];
+                    }
+
+
+
+                    $insertDetail = array(
+                        "transactionId" => $id,
+                        "promotionId" => $row['promotionId'],
+                        "promotionItemId" => $row['promotionItemId'],
+                        "barcode" => $barcode,
+                        "itemId" => $row['itemId'],
+                        "originPrice" => $row['originPrice'],
+                        "price" => $row['price'],
+                        "discount" => $row['discount'],
+                        "isPriceEdit" => $row['isPriceEdit'],
+                        "isFreeItem" => $row['isFreeItem'],
+                        "isSpecialPrice" => $row['isSpecialPrice'],
+                        "isPrintOnBill" => $row['isPrintOnBill'],
+                        "note" => $row['note'],
+
+                        "void" => $row['void'],
+                        "presence" => 1,
+                        "inputDate" => $row['inputDate'],
+                        "updateDate" => $row['updateDate'],
+                        "updateBy" => $row['updateBy'],
+                        "transactionDate" => $row['transactionDate'],
+                        "qty" => $qty,
+                    );
+                    $this->db->insert('cso1_transactionDetail', $insertDetail);
+                }
+
+
+
+                // QRIS TELKOM
+                if ($post['paymentTypeId'] == 'QRT001') {
+                    $updateQris = array(
+                        "qris_status" => $post['qris']['data']['qris_status'],
+                        "qris_payment_customername" => $post['qris']['data']['qris_payment_customername'],
+                        "qris_payment_methodby" => $post['qris']['data']['qris_payment_methodby'],
+                        "transactionId" => $id,
+                        "status" => 10,
+                        "updateDate" => time(),
+                    );
+                    $this->db->update("cso1_paymentQrisTelkom", $updateQris, "kioskUuid = '$kioskUuid'");
+                }
+
+                // DEBIT BCA
+                if ($post['paymentTypeId'] == 'BCA01' || $post['paymentTypeId'] == 'BCA31') {
+                    $insert = array(
+                        "transactionId" => $id,
+                        "paymentTypeId" => $post['paymentTypeId'],
+                        "kioskUuid" => $kioskUuid,
+                        "respCode" => $post['data']['resp']['RespCode'],
+                        //    "hex" => $post['data']['hex'],
+                        //   "asciiString" => $post['data']['ascii'], 
+                        //    "dateTime" => $post['data']['resp']['DateTime'],
+
+                        "approvalCode" => $post['data']['resp']['ApprovalCode'],
+                        "merchantId" => $post['data']['resp']['MerchantId'],
+                        "terminalId" => $post['data']['resp']['TerminalId'],
+                        "rrn" => $post['data']['resp']['RRN'], 
+                        //   "offlineFlag" => $post['data']['resp']['OfflineFlag'], 
+                        "pan" => $post['data']['resp']['PAN'],
+
+                        "transType" => $post['data']['resp']['TransType'],
+                        "amount" => ((int) $post['data']['resp']['TransAmount']) / 100,
+
+
+                        "updateDate" => time(),
+                        "inputDate" => time(),
+                    );
+                    $this->db->insert("cso1_paymentBcaEcr", $insert);
+                }
+
+                // $this->db->trans_complete();
+                $trans_status = true;
+                // if ($this->db->trans_status() === FALSE) {
+                //     $trans_status = false;
+                // } else {
+                // REMOVE CART
+                $deleteID = array(
+                    'terminalId' => $terminalId,
+                );
+                $this->db->delete('cso1_kioskUuid', $deleteID);
+                $delete = array(
+                    'kioskUuid' => $kioskUuid,
+                );
+                $this->db->delete('cso1_kioskUuid', $delete);
+                $this->db->delete('cso1_kioskCart', $delete);
+                $this->db->delete('cso1_kioskCartFreeItem', $delete);
+                // }
+
+                $data = array(
+                    "id" => $id,
+                    "insert" => $insert,
+                    "post" => $post,
+                    "trans_status" => $trans_status,
+                );
+            } else {
+                $data = array(
+                    "id" => 0,
+                );
+            }
+        }
+        echo json_encode($data);
+    }
 
     function fnProcessPaymentReal()
     {
@@ -91,8 +259,8 @@ class KioskPayment extends CI_Controller
                     "pthType" => 1,
 
                     "total" => (int) $summary['total'],
-                   // "total" => (int) $this->model->select("sum(price)", "cso1_kioskUuid", "presence = 1 and kioskUuid = '" . $kioskUuid . "'"),,
-                   
+                    // "total" => (int) $this->model->select("sum(price)", "cso1_kioskUuid", "presence = 1 and kioskUuid = '" . $kioskUuid . "'"),,
+
                     "discount" => (int) $summary['discount'],
                     "discountMember" => (int) $summary['memberDiscount'],
                     "voucher" => (int) $summary['voucer'],
@@ -116,7 +284,7 @@ class KioskPayment extends CI_Controller
                     $qty = 1;
                     $barcode = str_split($row['barcode']);
                     $arrItem = $this->model->barcode($row['barcode']);
-                    if (count($barcode) >= 13 && $arrItem['prefix'] == 2) { 
+                    if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
                         // BARCODE DINAMIC  
                         $barcode = $arrItem['itemId'];
                         $qty = $arrItem['weight'];

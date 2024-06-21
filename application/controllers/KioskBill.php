@@ -19,13 +19,13 @@ class KioskBill extends CI_Controller
             echo $this->model->error("Error auth");
             exit;
         } else {
-            $getDeviceObj =  $this->model->getDeviceObj();
-            $this->terminalId =  $getDeviceObj['terminalId'];
-            $this->storeOutlesId =  $getDeviceObj['storeOutlesId'];
+            $getDeviceObj = $this->model->getDeviceObj();
+            $this->terminalId = $getDeviceObj['terminalId'];
+            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
         }
     }
 
-   
+
 
     function index()
     {
@@ -34,7 +34,7 @@ class KioskBill extends CI_Controller
 
             $priceLevel = $this->model->priceLevel($uuid);
 
-            $memberId =  $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
+            $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
 
             $discountMember = $memberId > 0 ? $this->model->sql("SELECT sum(discountAmount) as 'discountAmount', 
             sum(discountPercent) as 'discountPercent'
@@ -42,9 +42,9 @@ class KioskBill extends CI_Controller
 
 
             $data = array(
-                "kioskUuid" =>  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ?  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
-                "member" =>  !$memberId ? [] : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
-                "items" =>  $this->model->sql("SELECT t1.*, i.shortDesc, i.description
+                "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
+                "member" => !$memberId ? [] : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
+                "items" => $this->model->sql("SELECT t1.*, i.shortDesc, i.description
                 from 
                     (select count(k.itemId) as 'qty', k.itemId, sum(k.isSpecialPrice) as 'isSpecialPrice', k.barcode,
                     sum(k.price - k.discount) as 'totalPrice', sum(k.discount) as 'totalDiscount', k.price,
@@ -73,7 +73,7 @@ class KioskBill extends CI_Controller
                     group by k.freeItemId,  k.printOnBill
                     ) as t1 join cso1_item as i	 on i.id = t1.freeItemId"),
 
-                "freeItemLabel" =>  $this->model->sql("SELECT count(k.printOnBill) as 'printOnBill'
+                "freeItemLabel" => $this->model->sql("SELECT count(k.printOnBill) as 'printOnBill'
                 from cso1_kioskCartFreeItem  as k
                 where k.presence = 1 and printOnBill = 0 and  k.scanFree = 1 and kioskUuid = '$uuid'
                 ")[0]['printOnBill'],
@@ -81,7 +81,22 @@ class KioskBill extends CI_Controller
                 FROM cso1_kioskCart as c
                 join cso1_item as i on i.id = c.itemId
                 WHERE c.presence =1 and c.kioskUuid = '$uuid' "),
-                "summary" =>  $this->model->summary($uuid),
+                "summary" => $this->model->summary($uuid),
+            );
+        }
+        echo json_encode($data);
+    }
+
+    function grandTotal()
+    {
+        $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
+        if ($uuid) {
+            $summary = $this->model->summary($uuid);
+            $data = array(
+                "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
+                "summary" =>  $summary,
+                "grandTotal" =>  $summary['total'],
+                
             );
         }
         echo json_encode($data);

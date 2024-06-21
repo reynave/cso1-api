@@ -23,14 +23,16 @@ class KioskPrint extends CI_Controller
     function index()
     {
         $data = array(
-            "items" => $this->model->sql("SELECT t.id, t.startDate, t.memberId, t.finalPrice, p.label as 'paymentName'
-            from cso1_transaction as t 
-            left join cso1_paymentType as p on p.id = t.paymentTypeId
-            where t.presence  = 1 and (  
-                year(t.startDate) = year(GETDATE()) AND  
-                month(t.startDate) = month(GETDATE()) AND  
-                day(t.startDate) = day(GETDATE()) 
-            )")
+            "items" => $this->model->sql("SELECT t.id, t.startDate, t.memberId, t.finalPrice, 
+            p.label as 'paymentName', e.kioskUuid, e.approvalCode
+                from cso1_transaction as t 
+                left join cso1_paymentType as p on p.id = t.paymentTypeId
+                left join cso1_paymentBcaEcr as e on e.transactionId = t.id
+                where t.presence  = 1 and (  
+                    year(t.startDate) = year(GETDATE()) AND  
+                    month(t.startDate) = month(GETDATE()) AND  
+                    day(t.startDate) = day(GETDATE()) 
+                )")
         );
         echo json_encode($data);
     }

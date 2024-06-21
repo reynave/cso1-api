@@ -250,6 +250,18 @@ class KioskCart extends CI_Controller
         }
     }
 
+    function lock(){
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $update = array(
+                "ilock" => 1, 
+            );
+            $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '".$post['kioskUuid']."' ");
+
+            echo   json_encode($update);
+        }
+    }
 
     function fnVoidFreeItem()
     {
