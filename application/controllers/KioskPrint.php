@@ -32,7 +32,7 @@ class KioskPrint extends CI_Controller
                     year(t.startDate) = year(GETDATE()) AND  
                     month(t.startDate) = month(GETDATE()) AND  
                     day(t.startDate) = day(GETDATE()) 
-                )")
+                )"), 
         );
         echo json_encode($data);
     }
@@ -48,7 +48,8 @@ class KioskPrint extends CI_Controller
                 "discount" => 0, 
             ); 
             $this->db->update("cso1_transactionDetail", $update, "discount is null and transactionId = '$id' ");
-
+ 
+            
 
             $data = array(
                 "id" => $id,
@@ -108,7 +109,7 @@ class KioskPrint extends CI_Controller
                     "footer" => $this->model->select("value", "cso1_account", "id='1007'"),
                 ),
                 "copy" => $this->model->sql(" select count(id) as 'copy' from cso1_transactionPrintLog where transactionId ='$id'" )[0]['copy'],
-
+                "rate" => count($this->model->sql(" select * from cso1_rate where transactionId ='$id'" )) <1 ? false : $this->model->sql(" select * from cso1_rate where transactionId ='$id'" ) ,
             );
         }
         echo json_encode($data);
@@ -125,6 +126,24 @@ class KioskPrint extends CI_Controller
                 "inputBy" => $this->model->userId(),
             );
             $this->db->insert("cso1_transactionPrintLog", $insert);
+        }
+        echo json_encode($insert);
+    }
+
+
+    function fnUpdateRate(){
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $insert = array(
+                "transactionId" => $post['transactionId'],
+                "terminalId" => $post['terminalId'],
+                "storeOutlesId" => $post['storeOutlesId'],
+                
+                "rate" => $post['rate'], 
+                "inputDate" => date("Y-m-d H:i:s"), 
+            );
+            $this->db->insert("cso1_rate", $insert);
         }
         echo json_encode($insert);
     }
