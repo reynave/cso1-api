@@ -105,7 +105,7 @@ class KioskPrint extends CI_Controller
                 "template" => array(
                     "companyName" => $this->model->select("value", "cso1_account", "name='companyName'"),
                     "companyAddress" => $this->model->select("value", "cso1_account", "name='companyAddress'"),
-                    "companyPhone" => 'Telp : ' . $this->model->select("value", "cso1_account", "name='companyPhone'"),
+                    "companyPhone" => $this->model->select("value", "cso1_account", "name='companyPhone'") ? 'Telp : ' . $this->model->select("value", "cso1_account", "name='companyPhone'") : '',
                     "footer" => $this->model->select("value", "cso1_account", "id='1007'"),
                 ),
                 "copy" => $this->model->sql(" select count(id) as 'copy' from cso1_transactionPrintLog where transactionId ='$id'" )[0]['copy'],
