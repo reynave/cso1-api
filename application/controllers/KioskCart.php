@@ -6,7 +6,7 @@ class KioskCart extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-         $this->priceLevel = 1;
+        $this->priceLevel = 1;
         $this->terminalId = "";
         $this->storeOutlesId = "";
         header('Access-Control-Allow-Origin: *');
@@ -15,14 +15,14 @@ class KioskCart extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
             $getDeviceObj =  $this->model->getDeviceObj();
             $this->terminalId =  $getDeviceObj['terminalId'];
             $this->storeOutlesId =  $getDeviceObj['storeOutlesId'];
-        }
+        // }
     }
 
     function index()
@@ -30,28 +30,49 @@ class KioskCart extends CI_Controller
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
             $priceLevel = $this->model->priceLevel($uuid);
-            $memberId =  $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
-            $data = array( 
-                "ilock" => (bool)$this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
-                "kioskUuid" =>  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ?  $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
-                "member" =>  !$memberId ? array(
+            $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
+
+            $items = $this->model->sql("SELECT t1.*, i.shortDesc, i.description, i.price1 as 'price', i.images
+                from 
+                    (select count(k.itemId) as 'qty', k.itemId,  k.barcode,
+                    sum(k.price - k.discount) as 'totalPrice', sum(k.discount)*-1 as 'totalDiscount'
+                    from cso1_kioskCart as k
+                    where k.presence = 1 and k.kioskUuid = '$uuid'
+                    group by k.barcode, k.itemId ) as t1
+                left join cso1_item as i  on t1.itemId = i.id
+            ");
+    
+            $i=0;
+            foreach( $items as $rec){
+                if( $items[$i]['barcode'][0] == '2'){
+                    if(  $items[$i]['qty'] > 1){
+                        $items[$i]['shortDesc'] = $items[$i]['shortDesc']." x ". $items[$i]['qty'];
+                        $items[$i]['description'] = $items[$i]['description']." x ". $items[$i]['qty'];
+                        
+                    } 
+                    $qty = $this->model->barcode( $items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+                    $items[$i]['qty'] =  number_format((float) $qty , 3, '.', ''); 
+                }
+                $i++;
+            }
+
+
+            $data = array(
+                "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
+                "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
+                "member" => !$memberId ? array(
                     "firstName" => "Guest",
                     "lastName" => "",
-                    
+
                 ) : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
-                "items" =>  $this->model->sql("SELECT t1.*, i.shortDesc, i.description, i.price1 as 'price', i.images
-                    from 
-                        (select count(k.itemId) as 'qty', k.itemId,  k.barcode,
-                        sum(k.price - k.discount) as 'totalPrice', sum(k.discount)*-1 as 'totalDiscount'
-                        from cso1_kioskCart as k
-                        where k.presence = 1 and k.kioskUuid = '$uuid'
-                        group by k.barcode, k.itemId ) as t1
-                    left join cso1_item as i  on t1.itemId = i.id
-                "),
-                "itemsList" => $this->model->sql("SELECT c.id, c.kioskUuid, c.itemId, c.price, c.discount, i.description, i.shortDesc, i.images
+                "items" =>  $items,
+                "itemsList" => $this->model->sql("SELECT 
+                        c.id, c.kioskUuid, c.itemId, c.price, c.discount, 
+                        i.description, i.shortDesc, i.images
                     FROM cso1_kioskCart as c
                     left join cso1_item as i on i.id = c.itemId
-                    WHERE c.presence =1 and c.kioskUuid = '$uuid' "),
+                    WHERE c.presence =1 and c.kioskUuid = '$uuid' 
+                "),
 
                 "itemsListfreeItem" => $this->model->sql("SELECT a.* , i.description, i.images
                     from cso1_kioskCartFreeItem as a
@@ -74,7 +95,7 @@ class KioskCart extends CI_Controller
 
     function fnUpdate()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $update = array(
@@ -93,14 +114,14 @@ class KioskCart extends CI_Controller
     function scanner()
     {
         $data = [];
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $sqlQty = "select count(id) as 'totalQty' from cso1_kioskCart where  presence = 1 and  kioskUuid =  '".$post['kioskUuid']."' ";
-            $totalQty = $this->model->sql( $sqlQty )[0]['totalQty'];
-         
+            $sqlQty = "select count(id) as 'totalQty' from cso1_kioskCart where  presence = 1 and  kioskUuid =  '" . $post['kioskUuid'] . "' ";
+            $totalQty = $this->model->sql($sqlQty)[0]['totalQty'];
+
             $priceLevel = $this->model->priceLevel($post['kioskUuid']);
-            $limit = (int)$this->model->storeOutlesLimit($post['kioskUuid']);
+            $limit = (int) $this->model->storeOutlesLimit($post['kioskUuid']);
             // SCAN SUPERVISOR
             $userId = $this->model->select("id", "cso1_user", "id='" . $post['barcode'] . "' and presence = 1  and status = 1");
             if ($userId) {
@@ -110,51 +131,51 @@ class KioskCart extends CI_Controller
                     "note" => "Supervisor mode!",
                     "userId" => $userId,
                     "supervisor" => array(
-                        "name" =>  ucwords($this->model->select("name", "cso1_user", "id='" . $post['barcode'] . "' and presence = 1 
+                        "name" => ucwords($this->model->select("name", "cso1_user", "id='" . $post['barcode'] . "' and presence = 1 
                         and status = 1")),
-                        "id" =>  $userId,
+                        "id" => $userId,
                     ),
                 );
-            } else { 
+            } else {
                 // SCAN ITEM
                 $weight = 1.0;
                 $note = "";
                 // CHECK BARCODE 
-                $barcode = str_split($post['barcode']); 
+                $barcode = str_split($post['barcode']);
                 $arrItem = $this->model->barcode($post['barcode']);
-                if(count($barcode) >= 13 &&  $arrItem['prefix'] == 2  ){
-                    $arrItem = $this->model->barcode($post['barcode']); 
-                   
-                        // BARCODE DINAMIC  
-                        $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" .  $arrItem['itemId'] . "' and presence = 1"); 
-                        $weight = (float)$arrItem['weight']; 
-                        $note = number_format($arrItem['weight'],$arrItem['config']['digitFloat'])." Kg";
-                    
-                  
-                }else{
-                    // BARCODE STATIC
-                    $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $post['barcode'] . "' and presence = 1");  
-                }
-               
+                if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
+                    $arrItem = $this->model->barcode($post['barcode']);
 
-                if(   $totalQty  >= $limit ){
+                    // BARCODE DINAMIC  
+                    $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $arrItem['itemId'] . "' and presence = 1");
+                    $weight = (float) $arrItem['weight'];
+                    $note = number_format($arrItem['weight'], $arrItem['config']['digitFloat']) . " Kg";
+
+
+                } else {
+                    // BARCODE STATIC
+                    $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $post['barcode'] . "' and presence = 1");
+                }
+
+
+                if ($totalQty >= $limit) {
                     $data = array(
-                        "sql"=>  $sqlQty ,
-                        "totalQty" =>  $totalQty,
+                        "sql" => $sqlQty,
+                        "totalQty" => $totalQty,
                         "limit" => $limit,
-                        "error" => true, 
+                        "error" => true,
                         "note" => "Maxsimum only $limit items",
                     );
-                }else if ($itemId) {
-                    $price  = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
-                    $id =  $this->model->number("kiosk");
+                } else if ($itemId) {
+                    $price = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
+                    $id = $this->model->number("kiosk");
 
-                    $finalPrice = $price*$weight;
-                    $coma =   (float)$finalPrice - (int)$finalPrice;
-                    if( $coma > 0.5) { 
-                        $finalPrice = ceil( $finalPrice);
-                    }else{
-                        $finalPrice = (int)$finalPrice;
+                    $finalPrice = $price * $weight;
+                    $coma = (float) $finalPrice - (int) $finalPrice;
+                    if ($coma > 0.5) {
+                        $finalPrice = ceil($finalPrice);
+                    } else {
+                        $finalPrice = (int) $finalPrice;
                     }
 
                     $insert = array(
@@ -163,7 +184,7 @@ class KioskCart extends CI_Controller
                         "kioskUuid" => $post['kioskUuid'],
                         "itemId" => $itemId,
                         "barcode" => $post['barcode'],
-                        "price" => $finalPrice ,
+                        "price" => $finalPrice,
                         "originPrice" => $price,
                         "promotionId" => "",
                         "discount" => 0,
@@ -171,11 +192,11 @@ class KioskCart extends CI_Controller
                         "presence" => 1,
                         "inputDate" => time(),
                         "updateDate" => time(),
-                        "note" =>  $note,
+                        "note" => $note,
                     );
                     $this->db->insert("cso1_kioskCart", $insert);
 
-                   
+
                     $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
 
                     // ver 2 base on POS2
@@ -201,17 +222,17 @@ class KioskCart extends CI_Controller
 
                     $data = array(
                         "promo" => $promo,
-                        "totalQty" =>  $totalQty,
+                        "totalQty" => $totalQty,
                         "admin" => false,
                         "error" => false,
                         "note" => "Item add",
-                        "items" => $this->model->sql( $sql)[0],
+                        "items" => $this->model->sql($sql)[0],
                         "priceLevel" => $priceLevel,
                         "sql" => $sql,
                     );
                 } else {
                     $data = array(
-                        "totalQty" =>  $totalQty,
+                        "totalQty" => $totalQty,
                         "error" => true,
                         "note" => "Item not found!",
                     );
@@ -219,9 +240,9 @@ class KioskCart extends CI_Controller
             }
         }
 
-        if(!$this->model->select("kioskUuid","cso1_kioskUuid","kioskUuid =  '".$post['kioskUuid']."' ") ){
+        if (!$this->model->select("kioskUuid", "cso1_kioskUuid", "kioskUuid =  '" . $post['kioskUuid'] . "' ")) {
 
-            $data = array( 
+            $data = array(
                 "error" => true,
                 "note" => "session expired",
                 "relogin" => true,
@@ -229,12 +250,12 @@ class KioskCart extends CI_Controller
         }
 
 
-        echo   json_encode($data);
+        echo json_encode($data);
     }
 
     function fnVoid()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $update = array(
@@ -246,26 +267,27 @@ class KioskCart extends CI_Controller
             );
             $this->db->update("cso1_kioskCart", $update, "id = " . $post['items']['id']);
 
-            echo   json_encode($update);
+            echo json_encode($update);
         }
     }
 
-    function lock(){
-        $post =   json_decode(file_get_contents('php://input'), true);
+    function lock()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $update = array(
-                "ilock" => 1, 
+                "ilock" => 1,
             );
-            $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '".$post['kioskUuid']."' ");
+            $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '" . $post['kioskUuid'] . "' ");
 
-            echo   json_encode($update);
+            echo json_encode($update);
         }
     }
 
     function fnVoidFreeItem()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $update = array(
@@ -274,22 +296,22 @@ class KioskCart extends CI_Controller
                 "updateDate" => time(),
                 "updateBy" => $post['userId']
             );
-            $this->db->update("cso1_kioskCartFreeItem", $update, "id = " . $post['items']['id']); 
-            echo   json_encode($update);
+            $this->db->update("cso1_kioskCartFreeItem", $update, "id = " . $post['items']['id']);
+            echo json_encode($update);
         }
     }
 
 
     function fnCloseCart()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         $result = [];
         $trans_status = null;
 
         if ($post) {
             $trans_status = true;
-            $time   = time();
+            $time = time();
 
             /**
              * CSO1_PROMOTIONITEM
@@ -304,10 +326,10 @@ class KioskCart extends CI_Controller
             }
 
             if ($wherePromotion != "") {
-                $wherePromotion =  " AND ( " . $wherePromotion . " )";
+                $wherePromotion = " AND ( " . $wherePromotion . " )";
             }
 
-            $time   = time();
+            $time = time();
             $q1 = "SELECT count(itemId) as qty, itemId, sum(isFreeItem) as 'freeItemQty'
             from cso1_kioskCart
             WHERE presence = 1 AND kioskUuid = '" . $post['uuid'] . "'
@@ -315,9 +337,12 @@ class KioskCart extends CI_Controller
             $q = $this->model->sql($q1);
             foreach ($q as $row) {
 
-                $promotionItemId = $this->model->select("id", 
-                "cso1_promotionItem", "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion);
-                
+                $promotionItemId = $this->model->select(
+                    "id",
+                    "cso1_promotionItem",
+                    "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion
+                );
+
                 $last_quert = $this->db->last_query();
                 $promoItem = [];
                 if ($promotionItemId) {
@@ -331,7 +356,7 @@ class KioskCart extends CI_Controller
                         $q2 = "SELECT TOP " . $promoItem['qtyTo'] . " * from cso1_kioskCart 
                         WHERE kioskUuid = '" . $post['uuid'] . "' AND itemId = '" . $row['itemId'] . "' AND  presence = 1 ORDER BY inputDate ASC";
 
-                        foreach ($this->model->sql($q2)  as $i) {
+                        foreach ($this->model->sql($q2) as $i) {
                             if ($promoItem['specialPrice'] > 0) {
                                 // Special Price
                                 $update = array(
@@ -345,9 +370,9 @@ class KioskCart extends CI_Controller
                             } else {
                                 // Discount Level
 
-                                $disc1  = $promoItem['disc1'] / 100;
-                                $disc2  = $promoItem['disc2'] / 100;
-                                $disc3  = $promoItem['disc3'] / 100;
+                                $disc1 = $promoItem['disc1'] / 100;
+                                $disc2 = $promoItem['disc2'] / 100;
+                                $disc3 = $promoItem['disc3'] / 100;
 
                                 $discLevel1 = $i['price'] * $disc1;
                                 $discLevel2 = ($i['price'] - $discLevel1) * $disc2;
@@ -368,10 +393,11 @@ class KioskCart extends CI_Controller
                     }
 
                     array_push($result, array(
-                        "promotionItemId"   => $promotionItemId,
-                        "promoItem"         => $promoItem,
-                        "last_quert"        => $last_quert,
-                    ));
+                        "promotionItemId" => $promotionItemId,
+                        "promoItem" => $promoItem,
+                        "last_quert" => $last_quert,
+                    )
+                    );
                 }
             }
 
@@ -410,9 +436,10 @@ class KioskCart extends CI_Controller
                     $this->db->update("cso1_kioskCartFreeItem", $update, "id=" . $row['id']);
                 }
                 array_push($result, array(
-                    "freeItem" =>  $row,
-                    "kiosCardId" =>  $kiosCardId,
-                ));
+                    "freeItem" => $row,
+                    "kiosCardId" => $kiosCardId,
+                )
+                );
             }
         }
 
@@ -427,9 +454,9 @@ class KioskCart extends CI_Controller
 
     function fnLogoutVisitor()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
-        if ($post) { 
+        if ($post) {
             $terminalId = $this->terminalId;
 
             $deleteID = array(

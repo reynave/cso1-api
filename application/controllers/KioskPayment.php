@@ -129,7 +129,7 @@ class KioskPayment extends CI_Controller
                         "transactionId" => $id,
                         "promotionId" => $row['promotionId'],
                         "promotionItemId" => $row['promotionItemId'],
-                        "barcode" => $barcode,
+                        "barcode" => $row['barcode'],
                         "itemId" => $row['itemId'],
                         "originPrice" => $row['originPrice'],
                         "price" => $row['price'],

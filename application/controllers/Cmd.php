@@ -107,7 +107,10 @@ class Cmd extends CI_Controller
         SELECT itemId, barcode FROM gold_barcode;");
 
     }
-
+	function test()
+	{ 
+		echo "Items :: DONE";
+	}
     function runPromo()
     {
         self::promoHeader();

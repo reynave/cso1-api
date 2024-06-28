@@ -14,15 +14,15 @@ class Kiosks extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
         date_default_timezone_set('Asia/Jakarta');
-        // error_reporting(E_ALL);  
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
+        error_reporting(E_ALL);  
+       if (!$this->model->checkDeviceObj()) {
+           echo $this->model->error("Error auth");
+           exit;
+       } else {
             $getDeviceObj =  $this->model->getDeviceObj();
             $this->terminalId =  $getDeviceObj['terminalId'];
             $this->storeOutlesId =  $getDeviceObj['storeOutlesId'];
-        }
+       }
     }
 
     function index()

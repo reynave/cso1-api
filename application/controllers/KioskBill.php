@@ -15,14 +15,14 @@ class KioskBill extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
-            $getDeviceObj = $this->model->getDeviceObj();
-            $this->terminalId = $getDeviceObj['terminalId'];
-            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        }
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
+        //     $getDeviceObj = $this->model->getDeviceObj();
+        //     $this->terminalId = $getDeviceObj['terminalId'];
+        //     $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
+        // }
     }
 
 
@@ -41,20 +41,38 @@ class KioskBill extends CI_Controller
             from cso1_promotion where presence =1 and status =  1 and startDate >= " . time() . "  and endDate <= " . time())[0] : 0;
 
 
+
+            $items = $this->model->sql("SELECT t1.*, i.shortDesc, i.description
+            from 
+                (select count(k.itemId) as 'qty', k.itemId, sum(k.isSpecialPrice) as 'isSpecialPrice', k.barcode,
+                sum(k.price - k.discount) as 'totalPrice', sum(k.discount) as 'totalDiscount', k.price,
+                sum(k.isFreeItem) as 'isFreeItem', k.note
+                from cso1_kioskCart as k
+                where k.presence = 1 and k.kioskUuid =  '$uuid'
+                group by k.price, k.itemId, k.note, k.barcode ) as t1
+            join cso1_item as i  on t1.itemId = i.id 
+            order by i.description DESC
+            ");
+
+
+            $i = 0;
+            foreach ($items as $rec) {
+                if( $items[$i]['barcode'][0] == '2'){
+                    if(  $items[$i]['qty'] > 1){
+                        $items[$i]['shortDesc'] = $items[$i]['shortDesc']." x ". $items[$i]['qty'];
+                        $items[$i]['description'] = $items[$i]['description']." x ". $items[$i]['qty'];
+                        
+                    } 
+                    $qty = $this->model->barcode( $items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+                    $items[$i]['qty'] =  number_format((float) $qty , 3, '.', ''); 
+                }
+                $i++;
+            }
+
             $data = array(
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "member" => !$memberId ? [] : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
-                "items" => $this->model->sql("SELECT t1.*, i.shortDesc, i.description
-                from 
-                    (select count(k.itemId) as 'qty', k.itemId, sum(k.isSpecialPrice) as 'isSpecialPrice', k.barcode,
-                    sum(k.price - k.discount) as 'totalPrice', sum(k.discount) as 'totalDiscount', k.price,
-                    sum(k.isFreeItem) as 'isFreeItem', k.note
-                    from cso1_kioskCart as k
-                    where k.presence = 1 and k.kioskUuid =  '$uuid'
-                    group by k.price, k.itemId, k.note, k.barcode ) as t1
-                join cso1_item as i  on t1.itemId = i.id 
-                order by i.description DESC
-                "),
+                "items" => $items,
                 "freeItemWaitingScan" => $this->model->sql("SELECT t1.*, i.description, i.shortDesc 
                         from (
                             select count(k.freeItemId) as 'qty', k.freeItemId
@@ -94,9 +112,9 @@ class KioskBill extends CI_Controller
             $summary = $this->model->summary($uuid);
             $data = array(
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
-                "summary" =>  $summary,
-                "grandTotal" =>  $summary['total'],
-                
+                "summary" => $summary,
+                "grandTotal" => $summary['total'],
+
             );
         }
         echo json_encode($data);

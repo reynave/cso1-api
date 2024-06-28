@@ -49,7 +49,34 @@ class KioskPrint extends CI_Controller
             ); 
             $this->db->update("cso1_transactionDetail", $update, "discount is null and transactionId = '$id' ");
  
-            
+            $items = $this->model->sql("SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
+            FROM (
+                SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price, td.barcode,
+                sum(td.isSpecialPrice) as 'isSpecialPrice', sum(td.discount) as 'totalDiscount', td.note
+                from cso1_transactionDetail as td
+                where td.presence = 1 and td.void = 0 and td.transactionId = '$id' and td.isFreeItem = 0
+                group by td.itemId, td.price, td.note , td.barcode
+            ) as t1
+            JOIN cso1_item as i on i.id = t1.itemId
+            ORDER BY i.description ASC
+            ");
+            $i = 0;
+            foreach ($items as $rec) {
+                if( $items[$i]['barcode'][0] == '2'){
+                    if(  $items[$i]['qty'] > 1){
+                        $items[$i]['shortDesc'] = $items[$i]['shortDesc']." x ". $items[$i]['qty'];
+                        $items[$i]['description'] = $items[$i]['description']." x ". $items[$i]['qty'];
+                        
+                    } 
+                    $qty = $this->model->barcode( $items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+                    $items[$i]['qty'] =  number_format((float) $qty , 3, '.', ''); 
+                    $items[$i]['barcode'] = $this->model->barcode( $items[$i]['barcode'])['itemId'];
+                    $items[$i]['price'] = $this->model->select("originPrice", "cso1_transactionDetail", "transactionId='" . $id . "' and itemId = '".$items[$i]['itemId']."' ");
+ 
+                }
+                $i++;
+            }
+
 
             $data = array(
                 "id" => $id,
@@ -60,17 +87,7 @@ class KioskPrint extends CI_Controller
                 left join cso1_paymentType as p on p.id = t.paymentTypeId
                 where t.id= '" . $id . "' ")[0] : [],
                 
-                "items" =>  $this->model->sql("SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
-                FROM (
-                    SELECT count(td.itemId) as qty, td.itemId, sum(td.price - td.discount) as 'totalPrice', td.price, td.barcode,
-                    sum(td.isSpecialPrice) as 'isSpecialPrice', sum(td.discount) as 'totalDiscount', td.note
-                    from cso1_transactionDetail as td
-                    where td.presence = 1 and td.void = 0 and td.transactionId = '$id' and td.isFreeItem = 0
-                    group by td.itemId, td.price, td.note , td.barcode
-                ) as t1
-                JOIN cso1_item as i on i.id = t1.itemId
-                ORDER BY i.description ASC
-                "),
+                "items" =>  $items,
                 "freeItem" => $this->model->sql(" SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'
                     from (
                         select count(td.itemId) as qty, td.itemId, sum(td.isPrintOnBill) as printOnBill
