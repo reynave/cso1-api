@@ -14,7 +14,7 @@ class kioskPaymentBca extends CI_Controller
         header('Access-Control-Allow-Methods: GET, POST, PUT');
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
-        /*
+       
         if (!$this->model->checkDeviceObj()) {
             //  echo $this->model->error("Error auth");
             //  exit;
@@ -22,7 +22,7 @@ class kioskPaymentBca extends CI_Controller
             $getDeviceObj =  $this->model->getDeviceObj();
             $this->terminalId =  $getDeviceObj['terminalId'];
             $this->storeOutlesId =  $getDeviceObj['storeOutlesId'];
-        }*/
+        } 
     }
 
     function index()

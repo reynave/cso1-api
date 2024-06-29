@@ -15,14 +15,14 @@ class KioskBill extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        // if (!$this->model->checkDeviceObj()) {
-        //     echo $this->model->error("Error auth");
-        //     exit;
-        // } else {
-        //     $getDeviceObj = $this->model->getDeviceObj();
-        //     $this->terminalId = $getDeviceObj['terminalId'];
-        //     $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        // }
+        if (!$this->model->checkDeviceObj()) {
+            echo $this->model->error("Error auth");
+            exit;
+        } else {
+            $getDeviceObj = $this->model->getDeviceObj();
+            $this->terminalId = $getDeviceObj['terminalId'];
+            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
+        }
     }
 
 
@@ -57,17 +57,19 @@ class KioskBill extends CI_Controller
 
             $i = 0;
             foreach ($items as $rec) {
-                if( $items[$i]['barcode'][0] == '2'){
-                    if(  $items[$i]['qty'] > 1){
-                        $items[$i]['shortDesc'] = $items[$i]['shortDesc']." x ". $items[$i]['qty'];
-                        $items[$i]['description'] = $items[$i]['description']." x ". $items[$i]['qty'];
-                        
-                    } 
-                    $qty = $this->model->barcode( $items[$i]['barcode'])['weight'] * $items[$i]['qty'];
-                    $items[$i]['qty'] =  number_format((float) $qty , 3, '.', ''); 
+                $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
+                if ($items[$i]['barcode'][0] == '2') {
+                    if ($items[$i]['qty'] > 1) {
+                        $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
+                        $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
+                    }
+                    $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+                    $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
                 }
+                $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
                 $i++;
             }
+
 
             $data = array(
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],

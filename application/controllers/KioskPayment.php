@@ -16,8 +16,8 @@ class KioskPayment extends CI_Controller
         date_default_timezone_set('Asia/Jakarta');
 
         if (!$this->model->checkDeviceObj()) {
-            //  echo $this->model->error("Error auth");
-            //  exit;
+             echo $this->model->error("Error auth");
+             exit;
         } else {
             $getDeviceObj = $this->model->getDeviceObj();
             $this->terminalId = $getDeviceObj['terminalId'];
