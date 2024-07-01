@@ -26,7 +26,7 @@ class Spv_bill extends CI_Controller
                         left join cso1_terminal as t on t.id = c.terminalId
                         where c.presence = 1 order by c.id DESC
             
-"),
+            "),
         );
         echo   json_encode($data);
     }
@@ -44,11 +44,10 @@ class Spv_bill extends CI_Controller
 
     function datatables()
     {
-        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
-        $where = " and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-        and (t.transactionDate  >=  " . $dateFrom . " and t.transactionDate <= " . strtotime($this->input->get('dateTo') . '+1 day') . ")";
-        $data = array(
-            "data" => $this->model->sql("SELECT t.*, p.name as 'payment' , x.totalPrint
+        $dateFrom = date("Y-m-d", strtotime($this->input->get('dateFrom')) );
+        $where = " AND FORMAT(t.endDate, 'yyyy-MM-dd') = '" . $dateFrom . "' ";
+
+        $q = "SELECT t.*, p.name as 'payment' , x.totalPrint
             from cso1_transaction as t
             left join cso1_paymentType as p on p.id = t.paymentTypeId
             left join (
@@ -56,7 +55,12 @@ class Spv_bill extends CI_Controller
                 group by transactionId 
             ) as x on x.transactionId = t.id
             where t.presence = 1 $where
-            order by t.transactionDate DESC"),
+            order by t.transactionDate DESC";
+
+
+        $data = array(
+          //  "q" => str_replace("\r\n","",$q),
+            "data" => $this->model->sql($q),
         );
         echo   json_encode($data);
     }
