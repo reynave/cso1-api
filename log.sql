@@ -1,7 +1,7 @@
 USE [cso1]
 GO
 
-/****** Object:  Table [dbo].[cso1_rate]    Script Date: 6/24/2024 6:34:23 PM ******/
+/****** Object:  Table [dbo].[cso1_rate]    Script Date: 7/3/2024 11:49:33 AM ******/
 SET ANSI_NULLS ON
 GO
 
@@ -12,7 +12,8 @@ CREATE TABLE [dbo].[cso1_rate](
 	[id] [int] IDENTITY(1,1) NOT NULL,
 	[rate] [int] NOT NULL,
 	[transactionId] [varchar](50) NOT NULL,
-	[terminalId] [varchar](50) NOT NULL,
+	[storeOutlesId] [varchar](50) NULL,
+	[terminalId] [varchar](50) NULL,
 	[inputDate] [datetime] NOT NULL,
  CONSTRAINT [PK_cso1_rate] PRIMARY KEY CLUSTERED 
 (

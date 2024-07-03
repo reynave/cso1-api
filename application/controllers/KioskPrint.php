@@ -60,24 +60,24 @@ class KioskPrint extends CI_Controller
             JOIN cso1_item as i on i.id = t1.itemId
             ORDER BY i.description ASC
             "); 
-            $i = 0;
-            foreach ($items as $rec) {
-                $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
+            // $i = 0;
+            // foreach ($items as $rec) {
+            //     $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
 
-                if ($items[$i]['barcode'][0] == '2') {
-                    if ($items[$i]['qty'] > 1) {
-                        $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
-                        $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
+            //     if ($items[$i]['barcode'][0] == '2') {
+            //         if ($items[$i]['qty'] > 1) {
+            //             $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
+            //             $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
 
-                    }
-                    $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
-                    $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
-                    $items[$i]['barcode'] = $this->model->barcode($items[$i]['barcode'])['itemId'];
-                    $items[$i]['price'] = $this->model->select("originPrice", "cso1_transactionDetail", "transactionId='" . $id . "' and itemId = '" . $items[$i]['itemId'] . "' ");
+            //         }
+            //         $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+            //         $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
+            //         $items[$i]['barcode'] = $this->model->barcode($items[$i]['barcode'])['itemId'];
+            //         $items[$i]['price'] = $this->model->select("originPrice", "cso1_transactionDetail", "transactionId='" . $id . "' and itemId = '" . $items[$i]['itemId'] . "' ");
 
-                }
-                $i++;
-            }
+            //     }
+            //     $i++;
+            // }
 
 
             $data = array(

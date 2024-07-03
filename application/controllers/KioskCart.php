@@ -42,20 +42,20 @@ class KioskCart extends CI_Controller
                 left join cso1_item as i  on t1.itemId = i.id
             ");
 
-            $i = 0;
-            foreach ($items as $rec) {
-                $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
-                if ($items[$i]['barcode'][0] == '2') {
-                    if ($items[$i]['qty'] > 1) {
-                        $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
-                        $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
-                    }
-                    $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
-                    $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
-                }
-                $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
-                $i++;
-            }
+            // $i = 0;
+            // foreach ($items as $rec) {
+            //     $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
+            //     if ($items[$i]['barcode'][0] == '2') {
+            //         if ($items[$i]['qty'] > 1) {
+            //             $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
+            //             $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
+            //         }
+            //         $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+            //         $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
+            //     }
+            //     $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
+            //     $i++;
+            // }
 
             $data = array(
                 "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
@@ -285,6 +285,21 @@ class KioskCart extends CI_Controller
         }
     }
 
+    function lockBcaQris()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        if ($post) {
+            $update = array(
+                "ilock" => 1,
+                "reffNo" => $post['reffNo'],
+                "navigate" => $post['navigate'],
+            );
+             $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '" . $post['kioskUuid'] . "' ");
+
+            echo json_encode($update);
+        }
+    }
     function fnVoidFreeItem()
     {
         $post = json_decode(file_get_contents('php://input'), true);

@@ -55,20 +55,20 @@ class KioskBill extends CI_Controller
             ");
 
 
-            $i = 0;
-            foreach ($items as $rec) {
-                $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
-                if ($items[$i]['barcode'][0] == '2') {
-                    if ($items[$i]['qty'] > 1) {
-                        $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
-                        $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
-                    }
-                    $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
-                    $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
-                }
-                $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
-                $i++;
-            }
+            // $i = 0;
+            // foreach ($items as $rec) {
+            //     $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
+            //     if ($items[$i]['barcode'][0] == '2') {
+            //         if ($items[$i]['qty'] > 1) {
+            //             $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
+            //             $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
+            //         }
+            //         $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+            //         $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
+            //     }
+            //     $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
+            //     $i++;
+            // }
 
 
             $data = array(
