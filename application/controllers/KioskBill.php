@@ -15,14 +15,14 @@ class KioskBill extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
             $getDeviceObj = $this->model->getDeviceObj();
             $this->terminalId = $getDeviceObj['terminalId'];
             $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        }
+       // }
     }
 
 
@@ -116,7 +116,8 @@ class KioskBill extends CI_Controller
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "summary" => $summary,
                 "grandTotal" => $summary['total'],
-
+                "RRN" => $this->model->sql("SELECT reffNo FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "' and reffNo = '".$this->input->get("RRN")."'"), 
+                
             );
         }
         echo json_encode($data);
