@@ -115,7 +115,7 @@ class KioskBill extends CI_Controller
             $data = array(
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "summary" => $summary,
-                "grandTotal" => $summary['total'],
+                "grandTotal" => $summary['final'],
                 "RRN" => $this->model->sql("SELECT reffNo FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "' and reffNo = '".$this->input->get("RRN")."'"), 
                 
             );
