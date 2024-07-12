@@ -679,22 +679,4 @@ class KioskPayment extends CI_Controller
         }
         echo json_encode($data);
     }
-
-    function destroyQrBca(){
-        $post =   json_decode(file_get_contents('php://input'), true);
-        $error = true;
-        if ($post) {
-            $kioskUuid = $post['kioskUuid'];
-            $update = array( 
-                "reffNo" => null,
-                "navigate" => null,  
-            );
-            $this->db->update("cso1_kioskUuid", $update,"kioskUuid = '$kioskUuid' ");
-            $data = array(
-                "update" => $update,
-                
-            );
-        }
-        echo json_encode($data);
-    }
 }

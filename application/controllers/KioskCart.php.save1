@@ -30,52 +30,32 @@ class KioskCart extends CI_Controller
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
             $priceLevel = $this->model->priceLevel($uuid);
-
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
-            $itemsList = $this->model->sql("SELECT 
-                    c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice,
-                    i.description, i.shortDesc, i.images
-                FROM cso1_kioskCart as c
-                left join cso1_item as i on i.id = c.itemId
-                WHERE c.presence =1 and c.kioskUuid = '$uuid' 
-            "); 
-            $items = [];  
-            
-            foreach ($itemsList as $rec) {
-               
-                $arrBarcode = $this->model->barcode($rec['barcode']);
-                $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
-                if(!isset($items[$rec['barcode']])){
-                    $price = $rec['price'];
-                    $count = false;
-                    if(is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2'){
-                        $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice']   : $rec['price'];
-                        $count = $this->model->sql("SELECT count(id) as 'total'
-                        from cso1_kioskCart where presence = 1 and barcode = '".$rec['barcode']."' and kioskUuid = '$uuid' 
-                                ")[0]['total'];
-                    }
-                 
 
-                    $items[$rec['barcode']] = array(    
-                        "qty" =>  $qty ,
-                        "itemId" => $rec['itemId'],
-                        "barcode" => $rec['barcode'],
-                        "totalPrice" =>  $rec['price'] - $rec['discount'] , 
-                        "totalDiscount" => $rec['discount'] *  -1,
-                        "shortDesc" => $rec['shortDesc'] .($count != false  ? " X ".$count : '' ),
-                        "description" => $rec['description'] .($count != false  ? " X ".$count : '' ),
-                        "count" => $count,
-                        "price" => $price,
-                        "images" => null,
-                        "arrayBarcode" => $arrBarcode,
-                        
-                    );
-                }else{
-                    $items[$rec['barcode']]['qty'] += $qty  ;
-                    $items[$rec['barcode']]['totalPrice'] += ($rec['price'] - $rec['discount']);
-                } 
-            }
-            $items = array_values($items);
+            $items = $this->model->sql("SELECT t1.*, i.shortDesc, i.description, i.price1 as 'price', i.images
+                from 
+                    (select count(k.itemId) as 'qty', k.itemId,  k.barcode,
+                    sum(k.price - k.discount) as 'totalPrice', sum(k.discount)*-1 as 'totalDiscount'
+                    from cso1_kioskCart as k
+                    where k.presence = 1 and k.kioskUuid = '$uuid'
+                    group by k.barcode, k.itemId ) as t1
+                left join cso1_item as i  on t1.itemId = i.id
+            ");
+
+            // $i = 0;
+            // foreach ($items as $rec) {
+            //     $items[$i]['barcode'] = isset($items[$i]['barcode']) || $items[$i]['barcode'] != '' ? $items[$i]['barcode'] : $items[$i]['itemId'];
+            //     if ($items[$i]['barcode'][0] == '2') {
+            //         if ($items[$i]['qty'] > 1) {
+            //             $items[$i]['shortDesc'] = $items[$i]['shortDesc'] . " x " . $items[$i]['qty'];
+            //             $items[$i]['description'] = $items[$i]['description'] . " x " . $items[$i]['qty'];
+            //         }
+            //         $qty = $this->model->barcode($items[$i]['barcode'])['weight'] * $items[$i]['qty'];
+            //         $items[$i]['qty'] = number_format((float) $qty, 3, '.', '');
+            //     }
+            //     $items[$i]['arrayBarcode'] = $this->model->barcode($items[$i]['barcode']);
+            //     $i++;
+            // }
 
             $data = array(
                 "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
@@ -85,9 +65,15 @@ class KioskCart extends CI_Controller
                     "lastName" => "",
 
                 ) : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
-                "items" => $items ,
-                "memberId" => $memberId,
-                "itemsList" => $itemsList,
+                "items" => $items,
+                "itemsList" => $this->model->sql("SELECT 
+                        c.id, c.kioskUuid, c.itemId, c.price, c.discount, 
+                        i.description, i.shortDesc, i.images
+                    FROM cso1_kioskCart as c
+                    left join cso1_item as i on i.id = c.itemId
+                    WHERE c.presence =1 and c.kioskUuid = '$uuid' 
+                "),
+
                 "itemsListfreeItem" => $this->model->sql("SELECT a.* , i.description, i.images
                     from cso1_kioskCartFreeItem as a
                     join cso1_item as i on i.id = a.freeItemId
@@ -309,12 +295,11 @@ class KioskCart extends CI_Controller
                 "reffNo" => $post['reffNo'],
                 "navigate" => $post['navigate'],
             );
-            $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '" . $post['kioskUuid'] . "' ");
+             $this->db->update("cso1_kioskUuid", $update, "  kioskUuid = '" . $post['kioskUuid'] . "' ");
 
             echo json_encode($update);
         }
     }
-
     function fnVoidFreeItem()
     {
         $post = json_decode(file_get_contents('php://input'), true);
