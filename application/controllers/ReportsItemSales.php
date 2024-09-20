@@ -13,8 +13,8 @@ class ReportsItemSales extends CI_Controller
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
+           // echo $this->model->error("Error auth");
+          //  exit;
         }
     }
     // START :: ITEMS
@@ -44,10 +44,13 @@ class ReportsItemSales extends CI_Controller
     function fnFilter()
     {
         $itemsCategory = [];
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
 
-
-        $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+        $where_epoctime = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
             and (t.transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and t.transactionDate < " . strtotime($this->input->get('dateTo')) . ")";
+        $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+            and (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' )  ";
 
         foreach ($this->model->sql("select id, name from cso1_itemCategory where presence = 1
            order by name asc") as $row) {
@@ -100,8 +103,8 @@ class ReportsItemSales extends CI_Controller
 
 
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom')),
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateFrom" => $startDate,
+            "dateTo" => $endDate,
             "itemsCategory" => $itemsCategory,
             "items" =>  $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
                 from (

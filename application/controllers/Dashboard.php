@@ -59,11 +59,15 @@ class Dashboard extends CI_Controller
 
     function salesDashboard()
     {
-        $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-        and (t.transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and t.transactionDate <= " . strtotime($this->input->get('dateTo')) . ")";
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+        
+
+       $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+        and (cast(t.startDate as date) >= '$startDate' and cast(t.startDate as date) <= '$endDate' )";
 
         $w = "and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-        and (transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and transactionDate <= " . strtotime($this->input->get('dateTo')) . ")";
+        and (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' )";
 
 
         $salesByBranches = $this->model->sql("SELECT t.sales, b.name
@@ -166,8 +170,8 @@ class Dashboard extends CI_Controller
  
 
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom')),
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateFrom" => $this->input->get('dateFrom'),
+            "dateTo" => $this->input->get('dateTo'),
             "salesByBranches" => $salesByBranches,
             "salesByBranchesObj" => $salesByBranchesObj,
 
@@ -188,11 +192,15 @@ class Dashboard extends CI_Controller
 
     function topten()
     {
-        $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-        and (t.transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and t.transactionDate <= " . strtotime($this->input->get('dateTo')) . ")";
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+        
+
+       $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+        and (cast(t.startDate as date) >= '$startDate' and cast(t.startDate as date) <= '$endDate' )";
 
         $w = "and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
-        and (transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and transactionDate <= " . strtotime($this->input->get('dateTo')) . ")";
+        and (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' )";
 
 
         $topItem = $this->model->sql("SELECT t1.*, i.description FROM (
@@ -231,8 +239,8 @@ class Dashboard extends CI_Controller
         }
 
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom')),
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateFrom" => ($this->input->get('dateFrom')),
+            "dateTo" => ($this->input->get('dateTo')),
             "topItemObj" => $topItemObj,
             "topItem" =>   $topItem,
             "topCategoryObj" => $topCategoryObj,

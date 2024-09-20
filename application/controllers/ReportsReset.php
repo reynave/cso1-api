@@ -79,17 +79,18 @@ class ReportsReset extends CI_Controller
     {
         //? storeBranchesId=11&storeOutletId=&dateFrom=2022-09-14&dateTo=2022-09-13 
         $dateFrom = strtotime($this->input->get('dateFrom'));
+        $dateTo =  strtotime($this->input->get('dateTo'));
         $storeOutlesId = $this->input->get('storeOutletId');
 
         $data = array(
             "dateFrom" => $dateFrom,
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateTo" =>  $dateTo,
             "storeOutlesId" => $storeOutlesId,
             "items" => $this->model->sql("SELECT a.*, u.name as 'user' 
             FROM cso1_reset as a 
             join cso1_user as u on u.id = a.inputBy   
             WHERE a.storeOutlesId = '$storeOutlesId' and 
-                (a.endDate >=  " . $dateFrom . " and  a.endDate <= " . strtotime($this->input->get('dateTo')) . " )  
+                (a.endDate >=  " . $dateFrom . " and  a.endDate <= " .  $dateTo  . " )  
                 and a.presence = 1
             "),
 

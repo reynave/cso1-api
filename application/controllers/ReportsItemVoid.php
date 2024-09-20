@@ -13,8 +13,8 @@ class ReportsItemVoid extends CI_Controller
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
+        //    echo $this->model->error("Error auth");
+         //   exit;
         }
     }
     // START :: ITEMS
@@ -42,6 +42,10 @@ class ReportsItemVoid extends CI_Controller
   
 
     function fnFilter(){
+
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+
         //? storeBranchesId=11&storeOutletId=&dateFrom=2022-09-14&dateTo=2022-09-13 
         $q = "SELECT t1.*, i.description , i.itemCategoryId, c.name
         from (
@@ -49,7 +53,7 @@ class ReportsItemVoid extends CI_Controller
             from cso1_transaction as t
             join cso1_transactionDetail as td on td.transactionId = t.id 
             where t.presence = 1 and  td.void = 1 and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
-            and (t.transactionDate  >=  ".strtotime($this->input->get('dateFrom') )." and t.transactionDate <= ".strtotime($this->input->get('dateTo')." 23:59:55" ).")
+            and  (cast(t.startDate as date) >= '$startDate' and cast(t.startDate as date) <= '$endDate' ) 
                 group by td.itemId
             ) as t1
             join cso1_item as i on i.id = t1.itemId
@@ -57,8 +61,8 @@ class ReportsItemVoid extends CI_Controller
         ";
 
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom') ), 
-            "dateTo" => strtotime($this->input->get('dateTo') ),  
+            "dateFrom" => $startDate, 
+            "dateTo" => $endDate,  
             "items" => $this->model->sql($q),
             "q" => $q
         );

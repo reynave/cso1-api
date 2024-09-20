@@ -13,8 +13,8 @@ class ReportsPayment extends CI_Controller
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
+         //   echo $this->model->error("Error auth");
+          //  exit;
         }
     }
     // START :: ITEMS
@@ -67,15 +67,19 @@ class ReportsPayment extends CI_Controller
 
     function fnFilter()
     {
-        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+
         $data = array(
-            "dateFrom" => strtotime($this->input->get('dateFrom')),
-            "dateTo" => strtotime($this->input->get('dateTo')),
+            "dateFrom" => $startDate,
+            "dateTo" =>  $endDate,
             "items" => $this->model->sql("SELECT t1.*, p.name
                 from (
                 SELECT paymentTypeId, count(paymentTypeId) as 'qty',  sum(finalPrice) as 'totalAmount'
-                from cso1_transaction where 
-                (transactionDate >= " .$dateFrom  . " and  transactionDate <= " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) 
+                from cso1_transaction 
+                where  
+                (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' ) 
+                
                 and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
                 and presence = 1 
                 group by paymentTypeId) as t1
@@ -86,14 +90,19 @@ class ReportsPayment extends CI_Controller
 
     function paymentDetail()
     {
-        $dateFrom = strtotime($this->input->get('dateFrom') . ' -1 day');
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+
         $data = array(
             "items" => $this->model->sql("
                 SELECT id, transactionDate,  paymentTypeId,  finalPrice
                 from cso1_transaction where 
                 paymentTypeId = '" . $this->input->get("paymentTypeId") . "'  and 
                 presence = 1  and 
-                 (transactionDate >= " .  $dateFrom . " and  transactionDate < " . strtotime($this->input->get('dateTo')." 23:59:55") . " ) and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+                  (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' ) 
+                 
+                 and storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+                
                  order by finalPrice DESC
             "),
         );

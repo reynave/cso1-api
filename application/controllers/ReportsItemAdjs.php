@@ -12,15 +12,15 @@ class ReportsItemAdjs extends CI_Controller
         header('Access-Control-Allow-Methods: GET, POST, PUT');
         header('Content-Type: application/json');
         // error_reporting(E_ALL);  
-        
+        if (!$this->model->header($this->openAPI)) {
+         //   echo $this->model->error("Error auth");
+          //  exit;
+         }
     }
     // START :: ITEMS
     function storeBranches()
     { 
-        if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
-         }
+      
         $data = array(
             "storeOutles" => $this->input->get('storeBranchesId') ?  $this->model->sql("SELECT id, name 
             from cso1_storeOutles where storeBranchesId = '".$this->input->get('storeBranchesId')."' and presence = 1 order by name ASC") : [], 
@@ -34,10 +34,7 @@ class ReportsItemAdjs extends CI_Controller
 
     function storeOutles($storeBranchesId="")
     { 
-        if (!$this->model->header($this->openAPI)) {
-            echo $this->model->error("Error auth");
-            exit;
-         }
+         
         $data = array(
             "storeOutles" => $this->model->sql("SELECT id, name from cso1_storeOutles where storeBranchesId = '$storeBranchesId' and  presence = 1 order by name ASC"),  
         );
@@ -47,8 +44,14 @@ class ReportsItemAdjs extends CI_Controller
    
     function fnFilter(){
         $dateFrom = strtotime($this->input->get('dateFrom').' -1 day');
+
+        
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+
+
         $where = " and t.storeOutlesId = '".$this->input->get('storeOutletId')."' 
-        and (t.transactionDate  >=  ". $dateFrom." and t.transactionDate <= ".strtotime($this->input->get('dateTo') ).")";
+        and (cast(t.startDate as date) >= '$startDate' and cast(t.startDate as date) <= '$endDate' ) ";
         $data = array(
           //  "dateFrom" => strtotime($this->input->get('dateFrom') ),
 
