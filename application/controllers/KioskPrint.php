@@ -24,7 +24,7 @@ class KioskPrint extends CI_Controller
     {
         $data = array(
             "items" => $this->model->sql("SELECT t.id, t.startDate, t.memberId, t.finalPrice, 
-            p.label as 'paymentName', e.kioskUuid, e.approvalCode
+            p.label as 'paymentName', e.kioskUuid, e.approvalCode, t.kioskUuid, e.approvalCode, t.terminalId
                 from cso1_transaction as t 
                 left join cso1_paymentType as p on p.id = t.paymentTypeId
                 left join cso1_paymentBcaEcr as e on e.transactionId = t.id
@@ -33,6 +33,18 @@ class KioskPrint extends CI_Controller
                     month(t.startDate) = month(GETDATE()) AND  
                     day(t.startDate) = day(GETDATE()) 
                 )"), 
+        ); 
+        echo json_encode($data);
+    }
+    function indexAll()
+    { 
+        $data = array(
+            "items" => $this->model->sql("SELECT top 100 t.id,  t.startDate, t.memberId, t.finalPrice, 
+            p.label as 'paymentName', e.kioskUuid, e.approvalCode, t.kioskUuid, e.approvalCode, t.terminalId
+                from cso1_transaction as t 
+                left join cso1_paymentType as p on p.id = t.paymentTypeId
+                left join cso1_paymentBcaEcr as e on e.transactionId = t.id
+                where t.presence  = 1 order by t.id DESC"), 
         );
         echo json_encode($data);
     }
