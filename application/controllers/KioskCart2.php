@@ -15,79 +15,82 @@ class KioskCart2 extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
-            $getDeviceObj = $this->model->getDeviceObj();
-            $this->terminalId = $getDeviceObj['terminalId'];
-            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        }
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
+        //     $getDeviceObj = $this->model->getDeviceObj();
+        //     $this->terminalId = $getDeviceObj['terminalId'];
+        //     $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
+        // }
     }
 
     function index()
     {
+
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
-
+            $this->benchmark->mark('code_start');
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
             $itemsList = $this->model->sql("SELECT 
-                    c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice,
+                    c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice, note,
                     i.description, i.shortDesc, i.images
                 FROM cso1_kioskCart as c
                 left join cso1_item as i on i.id = c.itemId
                 WHERE c.presence =1 and c.kioskUuid = '$uuid' 
             ");
-            $items = [];
+            $items = []; 
+            /*
+                       foreach ($itemsList as $rec) {
 
-            foreach ($itemsList as $rec) {
-
-                $arrBarcode = $this->model->barcode($rec['barcode']);
-                $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
-                if (!isset($items[$rec['barcode']])) {
-                    $price = $rec['price'];
-                    $count = false;
-                    if (is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2') {
-                        $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice'] : $rec['price'];
-                        $count = $this->model->sql("SELECT count(id) as 'total'
-                        from cso1_kioskCart where presence = 1 and barcode = '" . $rec['barcode'] . "' and kioskUuid = '$uuid' 
-                                ")[0]['total'];
-                    }
+                           $arrBarcode = $this->model->barcode($rec['barcode']);
+                           $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
+                           if (!isset($items[$rec['barcode']])) {
+                               $price = $rec['price'];
+                               $count = false;
+                               if (is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2') {
+                                   $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice'] : $rec['price'];
+                                   $count = $this->model->sql("SELECT count(id) as 'total'
+                                   from cso1_kioskCart where presence = 1 and barcode = '" . $rec['barcode'] . "' and kioskUuid = '$uuid' 
+                                           ")[0]['total'];
+                               }
 
 
-                    $items[$rec['barcode']] = array(
-                        "qty" => $qty,
-                        "itemId" => $rec['itemId'],
-                        "barcode" => $rec['barcode'],
-                        "totalPrice" => $rec['price'] - $rec['discount'],
-                        "totalDiscount" => $rec['discount'] * -1,
-                        "shortDesc" => $rec['shortDesc'] . ($count != false ? " X " . $count : ''),
-                        "description" => $rec['description'] . ($count != false ? " X " . $count : ''),
-                        "count" => $count,
-                        "price" => $price,
-                        "images" => null,
-                        "arrayBarcode" => $arrBarcode,
+                               $items[$rec['barcode']] = array(
+                                   "qty" => $qty,
+                                   "itemId" => $rec['itemId'],
+                                   "barcode" => $rec['barcode'],
+                                   "totalPrice" => $rec['price'] - $rec['discount'],
+                                   "totalDiscount" => $rec['discount'] * -1,
+                                   "shortDesc" => $rec['shortDesc'] . ($count != false ? " X " . $count : ''),
+                                   "description" => $rec['description'] . ($count != false ? " X " . $count : ''),
+                                   "count" => $count,
+                                   "price" => $price,
+                                   "images" => null,
+                                   "arrayBarcode" => $arrBarcode,
 
-                    );
-                } else {
-                    $items[$rec['barcode']]['qty'] += $qty;
-                    $items[$rec['barcode']]['totalPrice'] += ($rec['price'] - $rec['discount']);
-                }
-            }
-            $items = array_values($items);
-
+                               );
+                           } else {
+                               $items[$rec['barcode']]['qty'] += $qty;
+                               $items[$rec['barcode']]['totalPrice'] += ($rec['price'] - $rec['discount']);
+                           }
+                       }
+                       $items = array_values($items);
+            */
+            $this->benchmark->mark('code_end');
             $data = array(
+                "elapsed_time" => $this->benchmark->elapsed_time('code_start', 'code_end'), 
                 "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "member" => !$memberId ? array(
                     "firstName" => "Guest",
                     "lastName" => "",
-
                 ) : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
                 "items" => $items,
                 "memberId" => $memberId,
-                "itemsList" => $itemsList, 
+                "itemsList" => $itemsList,
                 "summary" => $this->model->summary($uuid),
+               
             );
         }
         echo json_encode($data);
@@ -122,8 +125,8 @@ class KioskCart2 extends CI_Controller
 
             $priceLevel = 1;
             $limit = (int) $this->model->storeOutlesLimit($post['kioskUuid']);
-          
-            
+
+
             // SCAN ITEM
             $weight = 1.0;
             $note = "";
@@ -214,7 +217,7 @@ class KioskCart2 extends CI_Controller
                     "error" => false,
                     "note" => "Item add",
                     "items" => $this->model->sql($sql)[0],
-                    "priceLevel" => $priceLevel, 
+                    "priceLevel" => $priceLevel,
                 );
             } else {
                 $data = array(
@@ -403,7 +406,7 @@ class KioskCart2 extends CI_Controller
                         )
                     );
                 }
-            } 
+            }
         }
 
         $data = array(

@@ -15,20 +15,21 @@ class KioskCart extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
-            $getDeviceObj = $this->model->getDeviceObj();
-            $this->terminalId = $getDeviceObj['terminalId'];
-            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        }
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
+        //     $getDeviceObj = $this->model->getDeviceObj();
+        //     $this->terminalId = $getDeviceObj['terminalId'];
+        //     $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
+        // }
     }
 
     function index()
     {
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
+            $this->benchmark->mark('code_start');
             $priceLevel = $this->model->priceLevel($uuid);
 
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
@@ -76,8 +77,9 @@ class KioskCart extends CI_Controller
                 } 
             }
             $items = array_values($items);
-
+            $this->benchmark->mark('code_end');
             $data = array(
+                "elapsed_time" => $this->benchmark->elapsed_time('code_start', 'code_end'), 
                 "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "member" => !$memberId ? array(
