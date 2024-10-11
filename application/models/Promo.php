@@ -121,5 +121,110 @@ class Promo extends CI_Model
         }
         return $data;
     }
+
+    function getPromo2($itemId,  $price, $qty = 1)
+    {
+     
+        $q = "SELECT * from cso1_promotionItem 
+        where itemId = '$itemId' 
+            and presence = 1 and status = 1 
+             AND ( qtyFrom <= $qty AND qtyTo >= $qty )
+            ";
+        $promotionItem = $this->model->sql( $q );
+        $promotionItem =  count($promotionItem ) > 0  ? $promotionItem[0] : [] ;
+        $time = time();
+        if($itemId && ( count($promotionItem ) > 0 ) ){
+            $allowToday = 0;
+            $nameOfDay = date('D');
+            $promotionId = $promotionItem['promotionId'];
+          
+            $q1 = "SELECT * from cso1_promotion 
+            where id = '$promotionId' and presence = 1 and status = 1 and 
+              (startDate <= $time   and  endDate >= $time ) 
+            ";
+            $promotion = $this->model->sql( $q1 );
+            $promotion =  count($promotion ) > 0  ? $promotion[0] : [] ;
+            
+            if(count($promotion ) > 0){ 
+                $allowToday = $promotion[ $nameOfDay];
+            }
+         
+            $data = array(
+                 "q1" => $q  ,
+                "today" =>  $nameOfDay,
+                "allowToday" =>   $allowToday,
+                "promotion" => [],
+                "promotionItem" => [],  
+                "itemid" => null,
+                "typeOfPromotion" => 0,
+                "promotionId" => $promotionId ,
+                "promotionItemId" => 0,
+                "newPrice" => 0,
+                "isSpecialPrice" => 0,
+                "discount" => 0,
+            );
+
+            if( $allowToday == 1 ){
+
+                $isSpecialPrice = (int) $promotionItem['specialPrice'] > 0 ? 1 : 0;
+                if ( $isSpecialPrice == 1) {
+                    $newPrice = (int) $promotionItem['specialPrice'];
+                } else {
+                    $discountPrice = $promotionItem['discountPrice'];
+    
+                    $discx = [
+                        "disc1" => $promotionItem['disc1'],
+                        "disc2" => $promotionItem['disc2'], 
+                        "disc3" => $promotionItem['disc3'],
+                    ];
+               
+    
+                    $disc1 = $discx['disc1'] / 100;
+                    $disc2 = $discx['disc2'] / 100;
+                    $disc3 = $discx['disc3'] / 100;
+    
+                    $discLevel1 = $price * $disc1;
+                    $discLevel2 = ($price - $discLevel1) * $disc2;
+                    $discLevel3 = ($price - $discLevel1 - $discLevel2) * $disc3;
+    
+                    $discLevel = $discLevel1 + $discLevel2 + $discLevel3;
+    
+    
+                    $newPrice = $price - ($discountPrice + $discLevel);
+    
+                }
+
+
+
+
+                $data = array(
+                  //  "q1" => $q  ,
+                    "time" => 	time(),
+                    "today" =>  $nameOfDay,
+                    "allowToday" => $allowToday,
+                  //  "promotion" => $promotion,
+                   // "promotionItem" => $promotionItem, 
+
+                    "itemid" => $itemId,
+                    "typeOfPromotion" => $promotion['typeOfPromotion'],
+                    "promotionId" => $promotion['id'],
+                    "promotionItemId" => $promotionItem['id'],
+                    "newPrice" => (int) $newPrice,
+                    "isSpecialPrice" => $isSpecialPrice > 0 ? 1 : 0,
+                    "discount" => $isSpecialPrice == 1 ? 0 : $discountPrice + $discLevel,
+                    "promoDetail" => $promotion,
+                   
+                );
+            } 
+            return $data;
+        }else{
+            return array(
+                "promotionItemId" => 0,
+            );
+        }
+     
+       
+    }   
+
  
 }

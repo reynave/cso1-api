@@ -173,7 +173,8 @@ class KioskPrint extends CI_Controller
                     "companyName" => $this->model->select("value", "cso1_account", "name='companyName'"),
                     "companyAddress" => $this->model->select("value", "cso1_account", "name='companyAddress'"),
                     "companyPhone" => strlen($this->model->select("value", "cso1_account", "name='companyPhone'")) > 3 ? 'Telp : ' . $this->model->select("value", "cso1_account", "name='companyPhone'") : '',
-                    "footer" => $member."\n".$this->model->select("value", "cso1_account", "id='1007'"),
+                 //   "footer" => $member."\n".$this->model->select("value", "cso1_account", "id='1007'"),
+                    "footer" => $this->model->select("value", "cso1_account", "id='1007'"),
 
                 ),
                 "memberId" =>  $memberId == '0' ? 'VISITOR' : $memberId,

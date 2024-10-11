@@ -2,6 +2,7 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 class Cmd extends CI_Controller
 {
+    // FOR php7 : C:\xampp7433\php\php.exe index.php Cmd promo
 
     public function __construct()
     {
@@ -144,6 +145,7 @@ class Cmd extends CI_Controller
 
     function promo()
     {
+        /// C:\xampp7433\php\php.exe index.php Cmd promo
         self::promoHeader();
         self::promoDetail();
         self::promoFree();
