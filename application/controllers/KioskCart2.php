@@ -199,17 +199,19 @@ class KioskCart2 extends CI_Controller
 
                 $data = array(
                     "promo" => $promo,
-                    "totalQty" => $totalQty,
-                    "admin" => false,
+                    "totalQty" => $totalQty, 
                     "error" => false,
                     "note" => "Item add",
-                    "items" => $this->model->sql($sql)[0],
-                    "priceLevel" => $priceLevel,
+                    "items" => $this->model->sql($sql)[0], 
                 );
             } else {
                 $data = array(
+                    "promo" => [],
                     "totalQty" => $totalQty,
                     "error" => true,
+                    "items" => array(
+                        "id" => 0,
+                    ),
                     "note" => "Item not found!",
                 );
             }
