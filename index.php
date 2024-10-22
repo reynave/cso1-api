@@ -53,6 +53,9 @@
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
+ini_set('sqlsrv.ClientBufferMaxKBSize','124288'); // Setting to 512M
+ini_set('pdo_sqlsrv.client_buffer_max_kb_size','124288'); // Setting to 512M - for pdo_sqlsrv
+
 	define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
 
 	
