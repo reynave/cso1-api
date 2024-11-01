@@ -34,7 +34,7 @@ class KioskCart2 extends CI_Controller
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
             $itemsList = $this->model->sql("SELECT 
                     c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice, c.note,
-                    i.description, i.shortDesc, i.images
+                    i.description, i.shortDesc, i.images, c.promoPrice
                 FROM cso1_kioskCart as c
                 left join cso1_item as i on i.id = c.itemId
                 WHERE c.presence =1 and c.kioskUuid = '$uuid' 
@@ -55,6 +55,13 @@ class KioskCart2 extends CI_Controller
                 "summary" => $this->model->summary($uuid),
                
             );
+
+            if($memberId){
+                if($data['member']['lastName'] == null){
+                    $data['member']['lastName'] = '';
+                }
+            }
+           
         }
         echo json_encode($data);
     }
@@ -138,9 +145,10 @@ class KioskCart2 extends CI_Controller
                 } else {
                     $finalPrice = (int) $finalPrice;
                 }
-
+                $originPrice = $price;
                 $insert = array(
                     "id" => $kioskCartId,
+                    "promoPrice" => 0,
                     "transactionDate" => date("Y-m-d H:i:s"),
                     "kioskUuid" => $post['kioskUuid'],
                     "itemId" => $itemId,
@@ -161,7 +169,8 @@ class KioskCart2 extends CI_Controller
                 $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
                 $promo = $this->promo->getPromo2($itemId, $finalPrice, $qty);
                 if ($promo['promotionItemId'] > 0) {
-                    $update = [
+                    $update = [ 
+                        "promoPrice" => (int) $promo['newPrice'], 
                         "kioskUuid" => $post['kioskUuid'],
                         "price" => $promo['newPrice'] * $weight,
                         "isSpecialPrice" => isset($promo['isSpecialPrice']),
@@ -171,9 +180,12 @@ class KioskCart2 extends CI_Controller
                         "note" => $note.$this->model->select("description", "cso1_promotion", " id = '" . $promo['promotionId'] . "'"),
                     ];
                     $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                   
+                    
                     $price = $promo['newPrice'];
                 }
 
+               
 
                 // ver 1.2 base on POS2
                 // $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;

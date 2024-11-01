@@ -52,8 +52,7 @@ class KioskCart extends CI_Controller
                     if(is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2'){
                         $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice']   : $rec['price'];
                         $count = $this->model->sql("SELECT count(id) as 'total'
-                        from cso1_kioskCart where presence = 1 and barcode = '".$rec['barcode']."' and kioskUuid = '$uuid' 
-                                ")[0]['total'];
+                        from cso1_kioskCart where presence = 1 and barcode = '".$rec['barcode']."' and kioskUuid = '$uuid' ")[0]['total'];
                     }
                  
 
@@ -225,9 +224,18 @@ class KioskCart extends CI_Controller
                             "isSpecialPrice" => isset($promo['isSpecialPrice']),
                             "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                             "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
-                            "discount" => $promo['discount'],
+                            "discount" => $promo['discount'], 
                         ];
                         $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+
+                        if(isset($promo['isSpecialPrice']) ){
+                            $update = [ 
+                                "note" => $note.' '.number_format($promo['newPrice'])
+                            ];
+                            $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                        }
+                     
+
                         $price = $promo['newPrice'];
                     }
 
@@ -333,8 +341,7 @@ class KioskCart extends CI_Controller
         }
     }
 
-
-    function fnCloseCart()
+    function fnCloseCart2()
     {
         $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
@@ -467,7 +474,7 @@ class KioskCart extends CI_Controller
                         "useBykioskUuidId" => $kiosCardId,
                         "updateDate" => time(),
                     );
-                    $this->db->update("cso1_kioskCartFreeItem", $update, "id=" . $row['id']);
+                    $this->db->update("cso1_kioskCartFreeItem", $update, "id='" . $row['id']."'" );
                 }
                 array_push(
                     $result,
@@ -477,6 +484,72 @@ class KioskCart extends CI_Controller
                     )
                 );
             }
+        }
+
+        $data = array(
+
+            "q1" => $q1,
+            "result" => $result,
+        );
+
+        echo json_encode($data);
+    }
+
+    function fnCloseCart()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        $result = [];
+        $trans_status = null;
+
+        if ($post) {
+            $trans_status = true;
+            $time = time();
+
+            /**
+             * CSO1_PROMOTIONITEM
+             */
+            $wherePromotion = "";
+            $or = "";
+            $q2 = $this->model->sql("SELECT id FROM cso1_promotion  WHERE startDate >= $time  AND endDate <= $time  
+            AND presence =1 AND status = 1 AND typeOfPromotion = 1");
+            foreach ($q2 as $d) {
+                $wherePromotion .= $or . "  promotionId =  '" . $d['id'] . "' ";
+                $or = " OR ";
+            }
+
+            if ($wherePromotion != "") {
+                $wherePromotion = " AND ( " . $wherePromotion . " )";
+            }
+
+            $time = time();
+            $q1 = "SELECT count(itemId) as qty, itemId, sum(isFreeItem) as 'freeItemQty'
+            from cso1_kioskCart
+            WHERE presence = 1 AND kioskUuid = '" . $post['uuid'] . "'
+            GROUP BY itemId";
+            $q = $this->model->sql($q1);
+            foreach ($q as $row) {
+
+                $promotionItemId = $this->model->select(
+                    "id",
+                    "cso1_promotionItem",
+                    "presence = 1 AND status = 1 AND itemId = '" . $row['itemId'] . "' " . $wherePromotion
+                );
+
+                $last_quert = $this->db->last_query();
+                $promoItem = [];
+                if ($promotionItemId) {
+                    
+                    array_push(
+                        $result,
+                        array(
+                            "promotionItemId" => $promotionItemId,
+                            "promoItem" => $promoItem,
+                            "last_quert" => $last_quert,
+                        )
+                    );
+                }
+            } 
         }
 
         $data = array(
