@@ -58,7 +58,7 @@ class ReportsItemSales extends CI_Controller
             $qty = 0;
             $itemDetail = $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId 
                 from (
-                    select td.itemId, sum(td.price) as 'totalAmount', count(td.itemId) as 'qty'
+                    select td.itemId, sum(td.price) as 'totalAmount', sum(td.qty) as 'qty'
                     from cso1_transaction as t
                     join cso1_transactionDetail as td on td.transactionId = t.id 
                     where t.presence = 1 and td.presence = 1 and td.void = 0 
@@ -108,7 +108,7 @@ class ReportsItemSales extends CI_Controller
             "itemsCategory" => $itemsCategory,
             "items" =>  $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
                 from (
-                    select td.itemId, sum(td.price) as 'totalAmount', count(td.itemId) as 'qty'
+                    select td.itemId, sum(td.price) as 'totalAmount', sum(td.qty) as 'qty'
                     from cso1_transaction as t
                     join cso1_transactionDetail as td on td.transactionId = t.id 
                     where t.presence = 1 and td.presence = 1 and td.void = 0 

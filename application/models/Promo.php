@@ -79,7 +79,7 @@ class Promo extends CI_Model
                     "disc3" => self::select("disc3", "cso1_promotionItem", "id=$promotionItemId"),
                 ];
 
-                $price = self::select("price$i", "cso1_item", "id=$itemId");
+                $price = self::select("price$i", "cso1_item", "id='$itemId'");
 
 
                 $disc1 = $discx['disc1'] / 100;
