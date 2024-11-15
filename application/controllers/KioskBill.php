@@ -66,7 +66,8 @@ class KioskBill extends CI_Controller
             foreach ($itemsList as $rec) {
                 $arrBarcode = $this->model->barcode($rec['barcode']);
                 $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
-                if (!isset($items[$rec['barcode']])) {
+                $a = $rec['barcode'].$rec['price'];
+                if (!isset($items[ $a])) {
                     $price = $rec['price'];
                     $count = 1;
                     if(is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2'){
@@ -77,7 +78,7 @@ class KioskBill extends CI_Controller
                     }
                  
                    
-                    $items[$rec['barcode']] = array(
+                    $items[ $a] = array(
                         "qty" => $qty,
                         "itemId" => $rec['itemId'],
                         "barcode" => $rec['barcode'],
@@ -96,8 +97,8 @@ class KioskBill extends CI_Controller
                         "arrayBarcode" => $arrBarcode,
                     );
                 } else {
-                    $items[$rec['barcode']]['qty'] += $qty;
-                    $items[$rec['barcode']]['totalPrice'] += ($rec['price'] - $rec['discount']);
+                    $items[ $a]['qty'] += $qty;
+                    $items[ $a]['totalPrice'] += ($rec['price'] - $rec['discount']);
                 }
             }
             $items = array_values($items);

@@ -29,8 +29,12 @@ class KioskCart extends CI_Controller
     {
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
+
+            $filename = $uuid.'.txt';
+            $this->kiosk->createLog($filename); 
+
             $this->benchmark->mark('code_start');
-            $priceLevel = $this->model->priceLevel($uuid);
+        //    $priceLevel = $this->model->priceLevel($uuid);
 
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
             $itemsList = $this->model->sql("SELECT 
@@ -39,46 +43,48 @@ class KioskCart extends CI_Controller
                 FROM cso1_kioskCart as c
                 left join cso1_item as i on i.id = c.itemId
                 WHERE c.presence =1 and c.kioskUuid = '$uuid' 
-            "); 
-            $items = [];  
-            
+            ");
+            $items = [];
+
             foreach ($itemsList as $rec) {
-               
+
                 $arrBarcode = $this->model->barcode($rec['barcode']);
                 $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
-                if(!isset($items[$rec['barcode']])){
+
+                $a = $rec['barcode'].$rec['price'];
+                if (!isset($items[$a])  ) {
                     $price = $rec['price'];
                     $count = false;
-                    if(is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2'){
-                        $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice']   : $rec['price'];
+                    if (is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2') {
+                        $price = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $rec['originPrice'] : $rec['price'];
                         $count = $this->model->sql("SELECT count(id) as 'total'
-                        from cso1_kioskCart where presence = 1 and barcode = '".$rec['barcode']."' and kioskUuid = '$uuid' ")[0]['total'];
+                        from cso1_kioskCart where presence = 1 and barcode = '" . $rec['barcode'] . "' and kioskUuid = '$uuid' ")[0]['total'];
                     }
-                 
 
-                    $items[$rec['barcode']] = array(    
-                        "qty" =>  $qty ,
+
+                    $items[$a] = array(
+                        "qty" => $qty,
                         "itemId" => $rec['itemId'],
                         "barcode" => $rec['barcode'],
-                        "totalPrice" =>  $rec['price'] - $rec['discount'] , 
-                        "totalDiscount" => $rec['discount'] *  -1,
-                        "shortDesc" => $rec['shortDesc'] .($count != false  ? " X ".$count : '' ),
-                        "description" => $rec['description'] .($count != false  ? " X ".$count : '' ),
+                        "totalPrice" => $rec['price'] - $rec['discount'],
+                        "totalDiscount" => $rec['discount'] * -1,
+                        "shortDesc" => $rec['shortDesc'] . ($count != false ? " X " . $count : ''),
+                        "description" => $rec['description'] . ($count != false ? " X " . $count : ''),
                         "count" => $count,
                         "price" => $price,
                         "images" => null,
                         "arrayBarcode" => $arrBarcode,
-                        
+
                     );
-                }else{
-                    $items[$rec['barcode']]['qty'] += $qty  ;
-                    $items[$rec['barcode']]['totalPrice'] += ($rec['price'] - $rec['discount']);
-                } 
+                } else {
+                    $items[$a]['qty'] += $qty;
+                    $items[$a]['totalPrice'] += ($rec['price'] - $rec['discount']);
+                }
             }
             $items = array_values($items);
             $this->benchmark->mark('code_end');
             $data = array(
-                "elapsed_time" => $this->benchmark->elapsed_time('code_start', 'code_end'), 
+                "elapsed_time" => $this->benchmark->elapsed_time('code_start', 'code_end'),
                 "ilock" => (bool) $this->model->select("ilock", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'"),
                 "kioskUuid" => $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'") ? $this->model->sql("SELECT * FROM cso1_kioskUuid  where presence = 1 and kioskUuid = '" . $uuid . "'")[0] : [],
                 "member" => !$memberId ? array(
@@ -86,7 +92,7 @@ class KioskCart extends CI_Controller
                     "lastName" => "",
 
                 ) : $this->model->sql("SELECT * FROM cso1_member  where presence = 1 and id = '" . $memberId . "'")[0],
-                "items" => $items ,
+                "items" => $items,
                 "memberId" => $memberId,
                 "itemsList" => $itemsList,
                 "itemsListfreeItem" => $this->model->sql("SELECT a.* , i.description, i.images
@@ -173,93 +179,107 @@ class KioskCart extends CI_Controller
                 }
 
 
-                if ($totalQty >= $limit) {
+
+                $min = 0.001;
+                if ($weight < $min) {
                     $data = array(
-                        "sql" => $sqlQty,
                         "totalQty" => $totalQty,
-                        "limit" => $limit,
                         "error" => true,
-                        "note" => "Maxsimum only $limit items",
+                        "note" => $post['barcode']." Min Weight = ".$min." Kg",
                     );
-                } else if ($itemId) {
-                    $price = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
-                    $id = $this->model->number("kiosk");
+                } else {  
+                    if ($totalQty >= $limit) {
+                        $data = array(
+                            "sql" => $sqlQty,
+                            "totalQty" => $totalQty,
+                            "limit" => $limit,
+                            "error" => true,
+                            "note" => "Maxsimum only $limit items",
+                        );
+                    } else if ($itemId) {
+                        $price = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
+                        $id = $this->model->number("kiosk");
 
-                    $finalPrice = $price * $weight;
-                    $coma = (float) $finalPrice - (int) $finalPrice;
-                    if ($coma > 0.5) {
-                        $finalPrice = ceil($finalPrice);
-                    } else {
-                        $finalPrice = (int) $finalPrice;
-                    }
+                        $finalPrice = $price * $weight;
+                        $coma = (float) $finalPrice - (int) $finalPrice;
+                        if ($coma > 0.5) {
+                            $finalPrice = ceil($finalPrice);
+                        } else {
+                            $finalPrice = (int) $finalPrice;
+                        }
 
-                    $insert = array(
-                        "id" => $id,
-                        "transactionDate" => date("Y-m-d H:i:s"),
-                        "kioskUuid" => $post['kioskUuid'],
-                        "itemId" => $itemId,
-                        "barcode" => $post['barcode'],
-                        "price" => $finalPrice,
-                        "originPrice" => $price,
-                        "promotionId" => "",
-                        "discount" => 0,
-                        "void" => 0,
-                        "presence" => 1,
-                        "inputDate" => time(),
-                        "updateDate" => time(),
-                        "note" => $note,
-                    );
-                    $this->db->insert("cso1_kioskCart", $insert);
-
-
-                    $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
-
-                    // ver 2 base on POS2
-                    $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
-                    $promo = $this->promo->getPromo($itemId, $qty);
-                    if ($promo['promotionItemId'] > 0) {
-                        $update = [
+                        $kioskCartId = $post['kioskUuid'];
+                        $filename = $post['kioskUuid'].'.txt';
+                        $this->kiosk->writeLog("INSERT $kioskCartId ".$post['barcode']." $itemId : $price  x $weight  = $finalPrice",$filename); 
+ 
+                        $insert = array(
+                            "id" => $id,
+                            "transactionDate" => date("Y-m-d H:i:s"),
                             "kioskUuid" => $post['kioskUuid'],
-                            "price" => $promo['newPrice'] * $weight,
-                            "isSpecialPrice" => isset($promo['isSpecialPrice']),
-                            "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
-                            "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
-                            "discount" => $promo['discount'], 
-                        ];
-                        $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                            "itemId" => $itemId,
+                            "barcode" => $post['barcode'],
+                            "price" => $finalPrice,
+                            "originPrice" => $price,
+                            "promotionId" => "",
+                            "discount" => 0,
+                            "void" => 0,
+                            "presence" => 1,
+                            "inputDate" => time(),
+                            "updateDate" => time(),
+                            "note" => $note,
+                        );
+                        $this->db->insert("cso1_kioskCart", $insert);
 
-                        if(isset($promo['isSpecialPrice']) ){
-                            $update = [ 
-                                "note" => $note.' '.number_format($promo['newPrice'])
+
+                        $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
+
+                        // ver 2 base on POS2
+                        $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
+                        $promo = $this->promo->getPromo($itemId, $qty);
+                        if ($promo['promotionItemId'] > 0) {
+                            $update = [
+                                "kioskUuid" => $post['kioskUuid'],
+                                "price" => $promo['newPrice'] * $weight,
+                                "isSpecialPrice" => isset($promo['isSpecialPrice']),
+                                "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
+                                "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
+                                "discount" => $promo['discount'],
                             ];
                             $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+
+                            if (isset($promo['isSpecialPrice'])) {
+                                $update = [
+                                    "note" => $note . ' ' . number_format($promo['newPrice'])
+                                ];
+                                $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                            }
+
+
+                            $price = $promo['newPrice'];
                         }
-                     
 
-                        $price = $promo['newPrice'];
+
+
+
+                        $sql = "select *,   '$price'  as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
+
+                        $data = array(
+                            "promo" => $promo,
+                            "totalQty" => $totalQty,
+                            "admin" => false,
+                            "error" => false,
+                            "note" => "Item add",
+                            "items" => $this->model->sql($sql)[0],
+                            "priceLevel" => $priceLevel,
+                            "sql" => $sql,
+                        );
+                    } else {
+                        $data = array(
+                            "totalQty" => $totalQty,
+                            "error" => true,
+                            "note" => "Item not found!",
+                        );
                     }
-
-
-
-
-                    $sql = "select *,   '$price'  as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
-
-                    $data = array(
-                        "promo" => $promo,
-                        "totalQty" => $totalQty,
-                        "admin" => false,
-                        "error" => false,
-                        "note" => "Item add",
-                        "items" => $this->model->sql($sql)[0],
-                        "priceLevel" => $priceLevel,
-                        "sql" => $sql,
-                    );
-                } else {
-                    $data = array(
-                        "totalQty" => $totalQty,
-                        "error" => true,
-                        "note" => "Item not found!",
-                    );
                 }
             }
         }
@@ -474,7 +494,7 @@ class KioskCart extends CI_Controller
                         "useBykioskUuidId" => $kiosCardId,
                         "updateDate" => time(),
                     );
-                    $this->db->update("cso1_kioskCartFreeItem", $update, "id='" . $row['id']."'" );
+                    $this->db->update("cso1_kioskCartFreeItem", $update, "id='" . $row['id'] . "'");
                 }
                 array_push(
                     $result,
@@ -539,7 +559,7 @@ class KioskCart extends CI_Controller
                 $last_quert = $this->db->last_query();
                 $promoItem = [];
                 if ($promotionItemId) {
-                    
+
                     array_push(
                         $result,
                         array(
@@ -549,7 +569,7 @@ class KioskCart extends CI_Controller
                         )
                     );
                 }
-            } 
+            }
         }
 
         $data = array(
