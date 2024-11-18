@@ -30,10 +30,10 @@ class Spv_terminal extends CI_Controller
             WHERE  t.presence = 1 and t.status = 1
             order by t.name ASC "),
 
-            "storeOutles" =>  $this->model->sql("SELECT *  FROM cso1_storeOutles  WHERE  status = 1 and presence = 1 order by id ASC"),
+            "storeOutles" => $this->model->sql("SELECT *  FROM cso1_storeOutles  WHERE  status = 1 and presence = 1 order by id ASC"),
             "turnOn" => $this->model->select("value", "cso1_account", "id=4"),
         );
-        echo   json_encode($data);
+        echo json_encode($data);
     }
 
     function fnSearchItem($name = '', $priceLevel = 1)
@@ -66,16 +66,16 @@ class Spv_terminal extends CI_Controller
                 order by inputDate DESC 
             "),
         );
-        echo   json_encode($data);
+        echo json_encode($data);
     }
-    function transaction($kiosUuid = "")
+    function transaction($kioskUuid = "")
     {
-        $storeOutlesId = $this->model->select("storeOutlesId","cso1_kioskUuid","kioskUuid = '$kiosUuid'");
+        $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
         $data = array(
             "items" => $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId'
                 from cso1_kioskCart as k
                 join cso1_item as i on i.id = k.itemId
-                where k.kioskUuid = '$kiosUuid' and  k.presence = 1
+                where k.kioskUuid = '$kioskUuid' and  k.presence = 1
             "),
 
             "storeOutlesPaymentType" => $this->model->sql("SELECT s.id, s.paymentTypeId, p.*
@@ -86,33 +86,52 @@ class Spv_terminal extends CI_Controller
             "freeItem" => $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId'
                 from cso1_kioskCartFreeItem as k
                 join cso1_item as i on i.id = k.freeItemId
-                where k.kioskUuid = '$kiosUuid' and k.presence = 1
+                where k.kioskUuid = '$kioskUuid' and k.presence = 1
             "),
-            "kioskCart" => $this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kiosUuid . "' ")[0],
-            "summary" =>  $this->model->summary($kiosUuid),
-            "priceLevel" => $this->model->priceLevel($kiosUuid),
+            "kioskCart" => $this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kioskUuid . "' ")[0],
+            "summary" => $this->model->summary($kioskUuid),
+            "priceLevel" => $this->model->priceLevel($kioskUuid),
         );
-        echo   json_encode($data);
+        echo json_encode($data);
     }
-    
-    function recheck($kiosUuid = "")
+    function transactionDetail()
     {
-        $storeOutlesId = $this->model->select("storeOutlesId","cso1_kioskUuid","kioskUuid = '$kiosUuid'");
+
+        $kioskUuid = $this->input->get("kioskUuid");
+        $barcode = $this->input->get("barcode");
+
+        $q = "SELECT k.*, i.description,  i.id as 'itemId'
+                from cso1_kioskCart as k
+                join cso1_item as i on i.id = k.itemId
+                where k.kioskUuid = '$kioskUuid' and  k.presence = 1 and k.barcode = '$barcode'
+            ";
         $data = array(
-            "ilock" => $this->model->select("ilock","cso1_kioskUuid"," kioskUuid = '" . $kiosUuid . "' "), 
+            "items" => $this->model->sql($q),
+            "q" => $q , 
         );
-        echo   json_encode($data);
+        echo json_encode($data);
+    }
+
+
+    
+    function recheck($kioskUuid = "")
+    {
+        $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
+        $data = array(
+            "ilock" => $this->model->select("ilock", "cso1_kioskUuid", " kioskUuid = '" . $kioskUuid . "' "),
+        );
+        echo json_encode($data);
     }
 
     function addItems()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $error = true;
-            $price  = $this->model->select("price" .  $post['priceLevel'], "cso1_item", "id='" . $post['item']['id'] . "' ");
+            $price = $this->model->select("price" . $post['priceLevel'], "cso1_item", "id='" . $post['item']['id'] . "' ");
 
-            $id =  $this->model->number("kiosk");
+            $id = $this->model->number("kiosk");
             $insert = array(
                 "id" => $id,
                 "kioskUuid" => $post['kioskUuid'],
@@ -131,26 +150,26 @@ class Spv_terminal extends CI_Controller
                 "id" => $id,
                 "note" => 'DISABLE',
             );
-          //  $this->db->insert("cso1_kioskCart", $insert);
+            //  $this->db->insert("cso1_kioskCart", $insert);
         }
-        echo   json_encode($insert);
+        echo json_encode($insert);
     }
 
     function duplicateItem()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $id =  $this->model->number("kiosk");
+            $id = $this->model->number("kiosk");
 
-            $filename = $post['item']['kioskUuid'].'.txt';
-            $error = true; 
-            $price = $post['item']['price']; 
+            $filename = $post['item']['kioskUuid'] . '.txt';
+            $error = true;
+            $price = $post['item']['price'];
             $discount = $post['item']['discount'];
             $finalPrice = $price - $discount;
-            $barcode =  $post['item']['barcode'];
-            $itemId =  $post['item']['itemId'];  
-            $this->kiosk->writeLog("SUPERVISOR DUPLICATE $id $barcode $itemId : $price - $discount = $finalPrice",$filename); 
+            $barcode = $post['item']['barcode'];
+            $itemId = $post['item']['itemId'];
+            $this->kiosk->writeLog("SUPERVISOR DUPLICATE $id $barcode $itemId : $price - $discount = $finalPrice", $filename);
 
 
             $insert = array(
@@ -169,49 +188,47 @@ class Spv_terminal extends CI_Controller
             );
             $this->db->insert("cso1_kioskCart", $insert);
         }
-        echo   json_encode($insert);
+        echo json_encode($insert);
     }
     function fnUpdate()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $filename = $post['item']['kioskUuid'].'.txt';
-            $error = true; 
-            $price = $post['item']['price']; 
-            $discount = $post['item']['discount'];
-            $finalPrice = $price - $discount;
-            $barcode =  $post['item']['barcode'];
-            $itemId =  $post['item']['itemId']; 
-            $id = $post['item']['id'];
-            $this->kiosk->writeLog("SUPERVISOR UPDATE $id $barcode $itemId : $price - $discount = $finalPrice",$filename); 
+            $filename = $post['kioskUuid'] . '.txt';
+            $error = true;
+            $price = $post['item']['price'];
+             
+            $barcode = $post['item']['barcode'];
+            $itemId = $post['item']['itemId']; 
+            $this->kiosk->writeLog("SUPERVISOR UPDATE BARCODE $barcode $itemId :  $price", $filename);
 
             $update = array(
-                "price"         => $post['item']['price'],
-                "discount"      => $post['item']['discount'],
+                "price" => $post['item']['price'],
+               // "discount" => $post['item']['discount'],
                 "isPriceEdit" => 1,
-                "updateDate"    => time(),
+                "updateDate" => time(),
             );
-            $this->db->update('cso1_kioskCart', $update, "id='" . $post['item']['id'] . "' ");
+            $this->db->update('cso1_kioskCart', $update, "barcode='" . $post['item']['barcode'] . "' ");
         }
-        echo   json_encode($update);
+        echo json_encode($update);
     }
 
     function removeFreeItem()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $error = true;
 
-            $filename = $post['item']['kioskUuid'].'.txt';
-            $price = $post['item']['price']; 
+            $filename = $post['item']['kioskUuid'] . '.txt';
+            $price = $post['item']['price'];
             $discount = $post['item']['discount'];
             $finalPrice = $price - $discount;
-            $barcode =  $post['item']['barcode'];
-            $itemId =  $post['item']['itemId']; 
+            $barcode = $post['item']['barcode'];
+            $itemId = $post['item']['itemId'];
             $id = $post['item']['id'];
-            $this->kiosk->writeLog("SUPERVISOR VOID $id $barcode $itemId",$filename); 
+            $this->kiosk->writeLog("SUPERVISOR VOID $id $barcode $itemId", $filename);
 
             $update = array(
                 "presence" => 0,
@@ -219,21 +236,21 @@ class Spv_terminal extends CI_Controller
             );
             $this->db->update('cso1_kioskCartFreeItem', $update, "id='" . $post['item']['id'] . "' ");
         }
-        echo   json_encode($update);
+        echo json_encode($update);
     }
 
     function removeItem()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $error = true;
 
-            $filename = $post['item']['kioskUuid'].'.txt'; 
-            $barcode =  $post['item']['barcode'];
-            $itemId =  $post['item']['itemId']; 
+            $filename = $post['item']['kioskUuid'] . '.txt';
+            $barcode = $post['item']['barcode'];
+            $itemId = $post['item']['itemId'];
             $id = $post['item']['id'];
-            $this->kiosk->writeLog("SUPERVISOR VOID $id $barcode $itemId",$filename); 
+            $this->kiosk->writeLog("SUPERVISOR VOID $id $barcode $itemId", $filename);
 
             $update = array(
                 "void" => 1,
@@ -241,13 +258,25 @@ class Spv_terminal extends CI_Controller
                 "updateDate" => time(),
             );
             $this->db->update('cso1_kioskCart', $update, "id='" . $post['item']['id'] . "' ");
+
+            $kioskUuid = $post['kioskUuid']; 
+    
+            $q = "SELECT k.*, i.description,  i.id as 'itemId'
+                    from cso1_kioskCart as k
+                    join cso1_item as i on i.id = k.itemId
+                    where k.kioskUuid = '$kioskUuid' and  k.presence = 1 and k.barcode = '$barcode'
+                ";
+            $data = array(
+                "items" => $this->model->sql($q),
+                "q" => $q , 
+            );
         }
-        echo   json_encode($update);
+        echo json_encode($data);
     }
 
     function fnStatusTerminal()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $this->db->query("TRUNCATE TABLE cso1_kioskUuid");
@@ -255,7 +284,7 @@ class Spv_terminal extends CI_Controller
             $this->db->query("TRUNCATE TABLE cso1_kioskCart");
 
             $update = array(
-                "value" =>   $post['status'],
+                "value" => $post['status'],
                 "updateDate" => time(),
             );
             $this->db->update("cso1_account", $update, "id=4");
@@ -264,63 +293,63 @@ class Spv_terminal extends CI_Controller
                 "turnOn" => $this->model->select("value", "cso1_account", "id=4"),
             );
         }
-        echo   json_encode($data);
+        echo json_encode($data);
     }
 
-    
+
     function fnProcessPayment()
     {
-        $post =   json_decode(file_get_contents('php://input'), true);
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $this->db->trans_start();
-            $id =  $this->model->number("transaction");
+            $id = $this->model->number("transaction");
 
-            $kioskUuid =  $post['kioskUuid'];
+            $kioskUuid = $post['kioskUuid'];
             $summary = $this->model->summary($kioskUuid);
 
-            $storeOutlesId = $this->model->select("storeOutlesId","cso1_kioskUuid","kioskUuid='".$post['kioskUuid']."'");
-            $terminalId = $this->model->select("terminalId","cso1_kioskUuid","kioskUuid='".$post['kioskUuid']."'");
+            $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid='" . $post['kioskUuid'] . "'");
+            $terminalId = $this->model->select("terminalId", "cso1_kioskUuid", "kioskUuid='" . $post['kioskUuid'] . "'");
 
             $insert = array(
                 "id" => $id,
                 "transactionDate" => time(),
-                "kioskUuid" =>  $kioskUuid,
-                "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                "kioskUuid" => $kioskUuid,
+                "memberId" => $this->model->select("memberId", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
                 "paymentTypeId" => $post['paymentTypeId'],
 
-                "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" .  $kioskUuid . "'"),
+                "startDate" => $this->model->select("startDate", "cso1_kioskUuid", "kioskUuid = '" . $kioskUuid . "'"),
                 "endDate" => date("Y-m-d H:i:s"),
-                "storeOutlesId" =>  $storeOutlesId,
-                "terminalId" =>   $terminalId,
+                "storeOutlesId" => $storeOutlesId,
+                "terminalId" => $terminalId,
                 "struk" => $id,
                 "cashierId" => "",
                 "pthType" => 1,
 
-                "total" => (int)$summary['total'],
-                "discount" => (int)$summary['discount'],
-                "discountMember" => (int)$summary['memberDiscount'],
-                "voucher" => (int)$summary['voucer'],
-                "bkp" => (int)$summary['bkp'],
-                "dpp" => (int)$summary['dpp'],
-                "ppn" => (int)$summary['ppn'],
-                "nonBkp" => (int)$summary['nonBkp'],
-                "finalPrice" => (int)$summary['final'],
+                "total" => (int) $summary['total'],
+                "discount" => (int) $summary['discount'],
+                "discountMember" => (int) $summary['memberDiscount'],
+                "voucher" => (int) $summary['voucer'],
+                "bkp" => (int) $summary['bkp'],
+                "dpp" => (int) $summary['dpp'],
+                "ppn" => (int) $summary['ppn'],
+                "nonBkp" => (int) $summary['nonBkp'],
+                "finalPrice" => (int) $summary['final'],
                 "userId" => $this->model->userId(),
                 "locked" => 1,
                 "presence" => 1,
                 "inputDate" => time(),
-                "updateDate" =>  time(),
+                "updateDate" => time(),
             );
             $this->db->insert('cso1_transaction', $insert);
 
-            if( $this->model->select("kioskUuid", "cso1_paymentQrisTelkom", "kioskUuid = '" .  $kioskUuid . "'") ){
+            if ($this->model->select("kioskUuid", "cso1_paymentQrisTelkom", "kioskUuid = '" . $kioskUuid . "'")) {
                 $update = array(
                     "qris_status" => "Close by Admin",
-                    "transactionId" => $id,  
-                    "updateDate" =>  time(),
+                    "transactionId" => $id,
+                    "updateDate" => time(),
                 );
-                $this->db->update('cso1_paymentQrisTelkom', $update, "kioskUuid = '" .  $kioskUuid . "'");
+                $this->db->update('cso1_paymentQrisTelkom', $update, "kioskUuid = '" . $kioskUuid . "'");
             }
 
 
@@ -339,11 +368,11 @@ class Spv_terminal extends CI_Controller
                     "isFreeItem" => $row['isFreeItem'],
                     "isSpecialPrice" => $row['isSpecialPrice'],
                     "isPrintOnBill" => $row['isPrintOnBill'],
-                    "note" => $row['note'], 
+                    "note" => $row['note'],
                     "void" => $row['void'],
                     "presence" => 1,
                     "inputDate" => time(),
-                    "updateDate" =>  time(),
+                    "updateDate" => time(),
                     "updateBy" => $row['updateBy'],
                 );
                 $this->db->insert('cso1_transactionDetail', $insertDetail);
@@ -369,13 +398,13 @@ class Spv_terminal extends CI_Controller
                     "void" => 0,
                     "presence" => $row['scanFree'] == true ? 1 : 2,
                     "inputDate" => time(),
-                    "updateDate" =>  time(),
+                    "updateDate" => time(),
                     "updateBy" => $row['updateBy'],
                 );
                 $this->db->insert('cso1_transactionDetail', $insertDetail);
             }
- 
- 
+
+
             $this->db->trans_complete();
             $trans_status = true;
             if ($this->db->trans_status() === FALSE) {
@@ -397,35 +426,35 @@ class Spv_terminal extends CI_Controller
                 "id" => $id,
                 "insert" => $insert,
                 "post" => $post,
-                "trans_status" =>  $trans_status,
+                "trans_status" => $trans_status,
             );
-        }else{
+        } else {
             $data = array(
-                "error" => true, 
+                "error" => true,
             );
         }
         echo json_encode($data);
     }
 
-    function fnRemove(){
-        $post =   json_decode(file_get_contents('php://input'), true);
+    function fnRemove()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $kioskUuid = $post['kioskUuid'];
-            $this->db->delete("cso1_kioskUuid","kioskUuid = '$kioskUuid' ");
-            $this->db->delete("cso1_kioskCart","kioskUuid = '$kioskUuid' ");
-            $this->db->delete("cso1_kioskCartFreeItem","kioskUuid = '$kioskUuid' ");
+            $this->db->delete("cso1_kioskUuid", "kioskUuid = '$kioskUuid' ");
+            $this->db->delete("cso1_kioskCart", "kioskUuid = '$kioskUuid' ");
+            $this->db->delete("cso1_kioskCartFreeItem", "kioskUuid = '$kioskUuid' ");
             $data = array(
                 "error" => false,
-            ); 
-          
-        }else{
+            );
+
+        } else {
             $data = array(
                 "error" => true,
-            ); 
-        } 
+            );
+        }
 
         echo json_encode($data);
     }
 }
- 
