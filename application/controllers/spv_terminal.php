@@ -71,12 +71,32 @@ class Spv_terminal extends CI_Controller
     function transaction($kioskUuid = "")
     {
         $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
+
+        $items = $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId',  i.price1 as 'masterPrice', 1 as 'weight'
+            from cso1_kioskCart as k
+            join cso1_item as i on i.id = k.itemId
+            where k.kioskUuid = '$kioskUuid' and  k.presence = 1
+        ");
+
+        $i = 0;
+        foreach ($items as $row) {
+            $barcode = $row['barcode'];
+            //  $items[$i]['weight'] =  $items[$i]['barcode'];
+
+            $arrItem = $this->model->barcode($barcode);
+            if (isset($arrItem['prefix'])) { 
+                if ( $arrItem['prefix'] == 2) {
+                    $arrItem = $this->model->barcode($barcode);
+
+                    $items[$i]['weight'] = (float) $arrItem['weight'];
+                } 
+            }
+            $i++;
+        }
+
+
         $data = array(
-            "items" => $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId'
-                from cso1_kioskCart as k
-                join cso1_item as i on i.id = k.itemId
-                where k.kioskUuid = '$kioskUuid' and  k.presence = 1
-            "),
+            "items" => $items,
 
             "storeOutlesPaymentType" => $this->model->sql("SELECT s.id, s.paymentTypeId, p.*
                     from cso1_storeOutlesPaymentType as s
@@ -107,13 +127,13 @@ class Spv_terminal extends CI_Controller
             ";
         $data = array(
             "items" => $this->model->sql($q),
-            "q" => $q , 
+            "q" => $q,
         );
         echo json_encode($data);
     }
 
 
-    
+
     function recheck($kioskUuid = "")
     {
         $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
@@ -198,14 +218,26 @@ class Spv_terminal extends CI_Controller
             $filename = $post['kioskUuid'] . '.txt';
             $error = true;
             $price = $post['item']['price'];
-             
+
             $barcode = $post['item']['barcode'];
-            $itemId = $post['item']['itemId']; 
+
+            $weight = 1;
+            $arrItem = $this->model->barcode($barcode);
+            if (isset($arrItem['prefix'])) {
+                if ($arrItem['prefix'] == 2) {
+                    $arrItem = $this->model->barcode($barcode);
+                    $weight = (float) $arrItem['weight'];
+                }
+            }
+
+
+            $itemId = $post['item']['itemId'];
             $this->kiosk->writeLog("SUPERVISOR UPDATE BARCODE $barcode $itemId :  $price", $filename);
 
             $update = array(
-                "price" => $post['item']['price'],
-               // "discount" => $post['item']['discount'],
+                "originPrice" => $post['item']['originPrice'],
+                "price" => $post['item']['originPrice'] * $weight,
+                // "discount" => $post['item']['discount'],
                 "isPriceEdit" => 1,
                 "updateDate" => time(),
             );
@@ -259,8 +291,21 @@ class Spv_terminal extends CI_Controller
             );
             $this->db->update('cso1_kioskCart', $update, "id='" . $post['item']['id'] . "' ");
 
-            $kioskUuid = $post['kioskUuid']; 
+            $kioskUuid = $post['kioskUuid'];
+
+
+            if($this->model->select("count(id)","cso1_kioskCart", "price  = 0 and presence = 1 and kioskUuid='" . $kioskUuid . "' " ) == 0) {
+                $update = array(
+                    "ilock" => 0,
+                );
+                $this->db->update('cso1_kioskUuid', $update, "kioskUuid='" . $kioskUuid . "' ");
     
+            }
+           
+
+
+
+
             $q = "SELECT k.*, i.description,  i.id as 'itemId'
                     from cso1_kioskCart as k
                     join cso1_item as i on i.id = k.itemId
@@ -268,7 +313,7 @@ class Spv_terminal extends CI_Controller
                 ";
             $data = array(
                 "items" => $this->model->sql($q),
-                "q" => $q , 
+                "q" => $q,
             );
         }
         echo json_encode($data);
