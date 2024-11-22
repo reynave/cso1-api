@@ -3,6 +3,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class Cmd extends CI_Controller
 {
     // FOR php7 : C:\xampp7433\php\php.exe index.php Cmd promo
+    // FULL LINK PS C:\xampp7433\htdocs\app\cso1-api> C:\xampp7433\php\php.exe index.php Cmd promo
 
     public function __construct()
     {

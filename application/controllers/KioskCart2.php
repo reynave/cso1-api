@@ -196,6 +196,8 @@ class KioskCart2 extends CI_Controller
                         "promoPrice" => (int) $promo['newPrice'],
                         "kioskUuid" => $post['kioskUuid'],
                         "price" => $promo['newPrice'] * $weight,
+                        "originPrice" => $promo['newPrice'],
+                        
                         "isSpecialPrice" => isset($promo['isSpecialPrice']),
                         "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                         "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",

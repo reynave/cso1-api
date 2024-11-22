@@ -30,11 +30,11 @@ class KioskCart extends CI_Controller
         $uuid = str_replace(["'", '"', "-"], "", $this->input->get("uuid"));
         if ($uuid) {
 
-            $filename = $uuid . '.txt';
-            $this->kiosk->createLog($filename);
+            $filename = $uuid.'.txt';
+            $this->kiosk->createLog($filename); 
 
             $this->benchmark->mark('code_start');
-            //    $priceLevel = $this->model->priceLevel($uuid);
+        //    $priceLevel = $this->model->priceLevel($uuid);
 
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
             $itemsList = $this->model->sql("SELECT 
@@ -51,8 +51,8 @@ class KioskCart extends CI_Controller
                 $arrBarcode = $this->model->barcode($rec['barcode']);
                 $qty = is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2' ? $arrBarcode['weight'] : 1;
 
-                $a = $rec['barcode'] . $rec['price'];
-                if (!isset($items[$a])) {
+                $a = $rec['barcode'].$rec['price'];
+                if (!isset($items[$a])  ) {
                     $price = $rec['price'];
                     $count = false;
                     if (is_array($arrBarcode) == true && $arrBarcode['prefix'] == '2') {
@@ -144,131 +144,144 @@ class KioskCart extends CI_Controller
             $priceLevel = $this->model->priceLevel($post['kioskUuid']);
             $limit = (int) $this->model->storeOutlesLimit($post['kioskUuid']);
             // SCAN SUPERVISOR
-
-            $weight = 1.0;
-            $note = "";
-            // CHECK BARCODE 
-            $barcode = str_split($post['barcode']);
-            $arrItem = $this->model->barcode($post['barcode']);
-            if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
-                $arrItem = $this->model->barcode($post['barcode']);
-
-                // BARCODE DINAMIC  
-                $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $arrItem['itemId'] . "' and presence = 1");
-                $weight = (float) $arrItem['weight'];
-                $note = number_format($arrItem['weight'], $arrItem['config']['digitFloat']) . " Kg";
-
-
-            } else {
-                // BARCODE STATIC
-                $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $post['barcode'] . "' and presence = 1");
-            }
-
-
-
-            $min = 0.001;
-            if ($weight < $min) {
+            $userId = $this->model->select("id", "cso1_user", "id='" . $post['barcode'] . "' and presence = 1  and status = 1");
+            if ($userId) {
                 $data = array(
-                    "totalQty" => $totalQty,
-                    "error" => true,
-                    "note" => $post['barcode'] . " Min Weight = " . $min . " Kg",
+                    "admin" => true,
+                    "error" => false,
+                    "note" => "Supervisor mode!",
+                    "userId" => $userId,
+                    "supervisor" => array(
+                        "name" => ucwords($this->model->select("name", "cso1_user", "id='" . $post['barcode'] . "' and presence = 1 
+                        and status = 1")),
+                        "id" => $userId,
+                    ),
                 );
             } else {
-                if ($totalQty >= $limit) {
+                // SCAN ITEM
+                $weight = 1.0;
+                $note = "";
+                // CHECK BARCODE 
+                $barcode = str_split($post['barcode']);
+                $arrItem = $this->model->barcode($post['barcode']);
+                if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
+                    $arrItem = $this->model->barcode($post['barcode']);
+
+                    // BARCODE DINAMIC  
+                    $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $arrItem['itemId'] . "' and presence = 1");
+                    $weight = (float) $arrItem['weight'];
+                    $note = number_format($arrItem['weight'], $arrItem['config']['digitFloat']) . " Kg";
+
+
+                } else {
+                    // BARCODE STATIC
+                    $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $post['barcode'] . "' and presence = 1");
+                }
+
+
+
+                $min = 0.001;
+                if ($weight < $min) {
                     $data = array(
-                        "sql" => $sqlQty,
                         "totalQty" => $totalQty,
-                        "limit" => $limit,
                         "error" => true,
-                        "note" => "Maxsimum only $limit items",
+                        "note" => $post['barcode']." Min Weight = ".$min." Kg",
                     );
-                } else if ($itemId) {
-                    $price = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
-                    $id = $this->model->number("kiosk");
+                } else {  
+                    if ($totalQty >= $limit) {
+                        $data = array(
+                            "sql" => $sqlQty,
+                            "totalQty" => $totalQty,
+                            "limit" => $limit,
+                            "error" => true,
+                            "note" => "Maxsimum only $limit items",
+                        );
+                    } else if ($itemId) {
+                        $price = $this->model->select("price" . $priceLevel, "cso1_item", "id='" . $itemId . "' ");
+                        $id = $this->model->number("kiosk");
 
-                    $finalPrice = $price * $weight;
-                    $coma = (float) $finalPrice - (int) $finalPrice;
-                    if ($coma > 0.5) {
-                        $finalPrice = ceil($finalPrice);
-                    } else {
-                        $finalPrice = (int) $finalPrice;
-                    }
+                        $finalPrice = $price * $weight;
+                        $coma = (float) $finalPrice - (int) $finalPrice;
+                        if ($coma > 0.5) {
+                            $finalPrice = ceil($finalPrice);
+                        } else {
+                            $finalPrice = (int) $finalPrice;
+                        }
 
-                    $kioskCartId = $post['kioskUuid'];
-                    $filename = $post['kioskUuid'] . '.txt';
-                    $this->kiosk->writeLog("INSERT $kioskCartId " . $post['barcode'] . " $itemId : $price  x $weight  = $finalPrice", $filename);
-
-                    $insert = array(
-                        "id" => $id,
-                        "transactionDate" => date("Y-m-d H:i:s"),
-                        "kioskUuid" => $post['kioskUuid'],
-                        "itemId" => $itemId,
-                        "barcode" => $post['barcode'],
-                        "price" => $finalPrice,
-                        "originPrice" => $price,
-                        "promotionId" => "",
-                        "discount" => 0,
-                        "void" => 0,
-                        "presence" => 1,
-                        "inputDate" => time(),
-                        "updateDate" => time(),
-                        "note" => $note,
-                    );
-                    $this->db->insert("cso1_kioskCart", $insert);
-
-
-                    $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
-
-                    // ver 2 base on POS2
-                    $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
-                    $promo = $this->promo->getPromo($itemId, $qty);
-                    if ($promo['promotionItemId'] > 0) {
-                        $update = [
+                        $kioskCartId = $post['kioskUuid'];
+                        $filename = $post['kioskUuid'].'.txt';
+                        $this->kiosk->writeLog("INSERT $kioskCartId ".$post['barcode']." $itemId : $price  x $weight  = $finalPrice",$filename); 
+ 
+                        $insert = array(
+                            "id" => $id,
+                            "transactionDate" => date("Y-m-d H:i:s"),
                             "kioskUuid" => $post['kioskUuid'],
-                            "originPrice" => $promo['newPrice'],
-                            "price" => $promo['newPrice'] * $weight,
-                            "isSpecialPrice" => isset($promo['isSpecialPrice']),
-                            "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
-                            "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
-                            "discount" => $promo['discount'],
-                        ];
-                        $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                            "itemId" => $itemId,
+                            "barcode" => $post['barcode'],
+                            "price" => $finalPrice,
+                            "originPrice" => $price,
+                            "promotionId" => "",
+                            "discount" => 0,
+                            "void" => 0,
+                            "presence" => 1,
+                            "inputDate" => time(),
+                            "updateDate" => time(),
+                            "note" => $note,
+                        );
+                        $this->db->insert("cso1_kioskCart", $insert);
 
-                        if (isset($promo['isSpecialPrice'])) {
+
+                        $kioskCartId = $this->model->select("id", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' ORDER BY  id DESC");
+
+                        // ver 2 base on POS2
+                        $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
+                        $promo = $this->promo->getPromo($itemId, $qty);
+                        if ($promo['promotionItemId'] > 0) {
                             $update = [
-                                "note" => $note . ' ' . number_format($promo['newPrice'])
+                                "kioskUuid" => $post['kioskUuid'],
+                                "price" => $promo['newPrice'] * $weight,
+                                "isSpecialPrice" => isset($promo['isSpecialPrice']),
+                                "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
+                                "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
+                                "discount" => $promo['discount'],
                             ];
                             $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+
+                            if (isset($promo['isSpecialPrice'])) {
+                                $update = [
+                                    "note" => $note . ' ' . number_format($promo['newPrice'])
+                                ];
+                                $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                            }
+
+
+                            $price = $promo['newPrice'];
                         }
 
 
-                        $price = $promo['newPrice'];
+
+
+                        $sql = "select *,   '$price'  as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
+
+                        $data = array(
+                            "promo" => $promo,
+                            "totalQty" => $totalQty,
+                            "admin" => false,
+                            "error" => false,
+                            "note" => "Item add",
+                            "items" => $this->model->sql($sql)[0],
+                            "priceLevel" => $priceLevel,
+                            "sql" => $sql,
+                        );
+                    } else {
+                        $data = array(
+                            "totalQty" => $totalQty,
+                            "error" => true,
+                            "note" => "Item not found!",
+                        );
                     }
-
-
-
-
-                    $sql = "select *,   '$price'  as price from cso1_item where id= '" . $itemId . "' and presence = 1 and status = 1";
-
-                    $data = array(
-                        "promo" => $promo,
-                        "totalQty" => $totalQty,
-                        "admin" => false,
-                        "error" => false,
-                        "note" => "Item add",
-                        "items" => $this->model->sql($sql)[0],
-                        "priceLevel" => $priceLevel,
-                        "sql" => $sql,
-                    );
-                } else {
-                    $data = array(
-                        "totalQty" => $totalQty,
-                        "error" => true,
-                        "note" => "Item not found!",
-                    );
                 }
             }
-
         }
 
         if (!$this->model->select("kioskUuid", "cso1_kioskUuid", "kioskUuid =  '" . $post['kioskUuid'] . "' ")) {
