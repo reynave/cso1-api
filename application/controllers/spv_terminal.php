@@ -232,16 +232,23 @@ class Spv_terminal extends CI_Controller
 
 
             $itemId = $post['item']['itemId'];
-            $this->kiosk->writeLog("SUPERVISOR UPDATE BARCODE $barcode $itemId :  $price", $filename);
+            $this->kiosk->writeLog("SUPERVISOR UPDATE fnUpdate()  $barcode $itemId :  $price", $filename);
 
-            $update = array(
-                "originPrice" => $post['item']['originPrice'],
-                "price" => $post['item']['originPrice'] * $weight,
-                // "discount" => $post['item']['discount'],
-                "isPriceEdit" => 1,
-                "updateDate" => time(),
-            );
-            $this->db->update('cso1_kioskCart', $update, "barcode='" . $post['item']['barcode'] . "' ");
+            if($post['item']['originPrice'] > 0 &&  ($post['item']['originPrice'] * $weight) > 0){
+
+           
+                $update = array(
+                    "originPrice" => $post['item']['originPrice'],
+                    "price" => $post['item']['originPrice'] * $weight,
+                    // "discount" => $post['item']['discount'],
+                    "isPriceEdit" => 1,
+                    "updateDate" => time(),
+                );
+                $this->db->update('cso1_kioskCart', $update, "barcode='" . $post['item']['barcode'] . "' ");
+            }else{
+                $this->kiosk->writeLog("SUPERVISOR UPDATE fnUpdate() ERROR MINUS $barcode $itemId :  $price", $filename);
+
+            }
         }
         echo json_encode($update);
     }
