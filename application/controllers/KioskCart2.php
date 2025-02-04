@@ -162,12 +162,12 @@ class KioskCart2 extends CI_Controller
                 $this->kiosk->writeLog("INSERT $kioskCartId " . $post['barcode'] . " $itemId : $price  x $weight  = $finalPrice", $filename);
 
 
-                $coma = (float) $finalPrice - (int) $finalPrice;
-                if ($coma > 0.5) {
-                    $finalPrice = ceil($finalPrice);
-                } else {
-                    $finalPrice = (int) $finalPrice;
-                }
+                // $coma = (float) $finalPrice - (int) $finalPrice;
+                // if ($coma > 0.5) {
+                //     $finalPrice = ceil($finalPrice);
+                // } else {
+                //     $finalPrice = (int) $finalPrice;
+                // }
                 $originPrice = $price;
                 $insert = array(
                     "id" => $kioskCartId,
@@ -176,7 +176,7 @@ class KioskCart2 extends CI_Controller
                     "kioskUuid" => $post['kioskUuid'],
                     "itemId" => $itemId,
                     "barcode" => $post['barcode'],
-                    "price" => $finalPrice,
+                    "price" => ceil($finalPrice),
                     "originPrice" => $price,
                     "promotionId" => "",
                     "discount" => 0,
@@ -193,7 +193,7 @@ class KioskCart2 extends CI_Controller
                 $promo = $this->promo->getPromo2($itemId, $finalPrice, $qty);
                 if ($promo['promotionItemId'] > 0) {
                     $update = [
-                        "promoPrice" => (int) $promo['newPrice'],
+                         "promoPrice" => (int) $promo['newPrice'],
                         "kioskUuid" => $post['kioskUuid'],
                         "price" => $promo['newPrice'] * $weight,
                         "originPrice" => $promo['newPrice'],

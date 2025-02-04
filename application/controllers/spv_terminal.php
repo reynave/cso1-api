@@ -239,7 +239,7 @@ class Spv_terminal extends CI_Controller
            
                 $update = array(
                     "originPrice" => $post['item']['originPrice'],
-                    "price" => $post['item']['originPrice'] * $weight,
+                    "price" => ceil($post['item']['originPrice'] * $weight),
                     // "discount" => $post['item']['discount'],
                     "isPriceEdit" => 1,
                     "updateDate" => time(),

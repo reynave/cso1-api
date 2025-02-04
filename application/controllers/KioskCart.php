@@ -187,12 +187,12 @@ class KioskCart extends CI_Controller
                     $id = $this->model->number("kiosk");
 
                     $finalPrice = $price * $weight;
-                    $coma = (float) $finalPrice - (int) $finalPrice;
-                    if ($coma > 0.5) {
-                        $finalPrice = ceil($finalPrice);
-                    } else {
-                        $finalPrice = (int) $finalPrice;
-                    }
+                    // $coma = (float) $finalPrice - (int) $finalPrice;
+                    // if ($coma > 0.5) {
+                    //     $finalPrice = ceil($finalPrice);
+                    // } else {
+                    //     $finalPrice =  ceil( $finalPrice);
+                    // }
 
                     $kioskCartId = $post['kioskUuid'];
                     $filename = $post['kioskUuid'] . '.txt';
@@ -204,7 +204,7 @@ class KioskCart extends CI_Controller
                         "kioskUuid" => $post['kioskUuid'],
                         "itemId" => $itemId,
                         "barcode" => $post['barcode'],
-                        "price" => $finalPrice,
+                        "price" => ceil($finalPrice),
                         "originPrice" => $price,
                         "promotionId" => "",
                         "discount" => 0,
