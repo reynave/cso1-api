@@ -8,8 +8,8 @@ class Cmd extends CI_Controller
     public function __construct()
     {
         parent::__construct();
-        $this->item = "item.txt";
-        $this->barcode = "barcode.txt";
+        $this->item = "item_sco.txt";
+        $this->barcode = "barcode_sco.txt";
         $this->file = 'C:/xampp7433/htdocs/app/sync';
        // $this->file = 'E:/xampp/htdocs/sync';
         $this->promo_header = "promo_header.txt";
@@ -211,6 +211,29 @@ class Cmd extends CI_Controller
     function transaction()
     {
         $this->load->model('transaction');
+
+
+        /* 
+		$start_date = '2024-09-20';
+		$end_date = '2025-01-13';
+ 
+		$date_array = [];
+ 
+		$current_date = new DateTime($start_date);
+		$end_date_obj = new DateTime($end_date);
+ 
+		while ($current_date <= $end_date_obj) {
+			$date_array[] = $current_date->format('Y-m-d'); // Simpan tanggal dalam format Y-m-d
+			$current_date->modify('+1 day'); // Tambahkan 1 hari
+		}
+
+		print_r($date_array);
+		foreach($date_array as $row){
+			echo $this->transaction->sync($row);
+		}
+		*/
+
+
         echo $this->transaction->sync(date("Y-m-d"));
     }
 
@@ -267,10 +290,77 @@ class Cmd extends CI_Controller
         $this->db->query("Truncate table cso1_item");
         $this->db->query("
         BULK INSERT cso1_item  
-        FROM '$file/edit_item.txt' 
+        FROM '$file/edit_item_sco.txt' 
         WITH (FIELDTERMINATOR = '|' , ROWTERMINATOR = '\n');
         ");
 
+
+    }
+
+    function itemLoop()
+    {
+        $fileName =   $this->item;
+        $date = date("Y-m-d H:i:s");
+        $filename =  'sync_'.$date.'.csv';
+        $this->kiosk->createLog($filename);
+
+        $this->db->query("Truncate table cso1_item");
+        $file = new SplFileObject("../sync/$fileName", 'r');
+        $file->seek(PHP_INT_MAX);
+        $file->key();
+
+        if ($file->key() > 0) {
+
+            $handle = fopen("../sync/$fileName", "r");
+            if ($handle) {
+                while (($line = fgets($handle)) !== false) {
+                    $ar =  explode("|", $line);
+                   // $this->db->delete("cso1_item", "id='$ar[0]'");
+                    $i++;
+                    $insert = array(
+                        "id" => $ar[0],
+                        "description" => $ar[1],
+                        "shortDesc" =>  $ar[2],
+                        "price1" =>  (int)$ar[3],
+                        "price2" =>  (int)$ar[4],
+                        "price3" =>  (int)$ar[5],
+                        "price4" =>  (int)$ar[6],
+                        "price5" =>  (int)$ar[7],
+                        "price6" =>  (int)$ar[8],
+                        "price7" =>  (int)$ar[9],
+                        "price8" =>  (int)$ar[10],
+                        "price9" =>  (int)$ar[11],
+                        "price10" => (int)$ar[12],
+
+                        "itemUomId"         =>   $ar[13],
+                        "itemCategoryId"    =>   $ar[14],
+                        "itemTaxId"         =>   $ar[15],
+                        "images"            =>   $ar[16],
+
+                        "status" => 1,
+                        "presence" => 1,
+                        "inputDate" => time(),
+                        "updateDate" => time(),
+                    );
+                    $this->db->insert("cso1_item", $insert);
+                    echo "masterItem INSERT " . $ar[0] . "\n";
+
+                   // $this->kiosk->writeLog("INSERT $kioskCartId " . $post['barcode'] . " $itemId : $price  x $weight  = $finalPrice", $filename);
+
+                }
+                $insert = array(
+                    "fileName" => $fileName,
+                    "totalInsert" => $i,
+                    "lastSycn" => date("Y-m-d H:i:s"),
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_sync", $insert);
+                print_r($insert);
+                fclose($handle);
+            }
+        } else {
+            echo "\n $fileName NO DATA";
+        }
 
     }
 

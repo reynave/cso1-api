@@ -84,12 +84,12 @@ class Spv_terminal extends CI_Controller
             //  $items[$i]['weight'] =  $items[$i]['barcode'];
 
             $arrItem = $this->model->barcode($barcode);
-            if (isset($arrItem['prefix'])) { 
-                if ( $arrItem['prefix'] == 2) {
+            if (isset($arrItem['prefix'])) {
+                if ($arrItem['prefix'] == 2) {
                     $arrItem = $this->model->barcode($barcode);
 
                     $items[$i]['weight'] = (float) $arrItem['weight'];
-                } 
+                }
             }
             $i++;
         }
@@ -180,33 +180,37 @@ class Spv_terminal extends CI_Controller
         $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
-            $id = $this->model->number("kiosk");
+            for ($i = 0; $i < $post['qty']; $i++) {
+                $id = $this->model->number("kiosk");
 
-            $filename = $post['item']['kioskUuid'] . '.txt';
-            $error = true;
-            $price = $post['item']['price'];
-            $discount = $post['item']['discount'];
-            $finalPrice = $price - $discount;
-            $barcode = $post['item']['barcode'];
-            $itemId = $post['item']['itemId'];
-            $this->kiosk->writeLog("SUPERVISOR DUPLICATE $id $barcode $itemId : $price - $discount = $finalPrice", $filename);
+                $filename = $post['item']['kioskUuid'] . '.txt';
+                $error = true;
+                $price = $post['item']['price'];
+                $discount = $post['item']['discount'];
+                $finalPrice = $price - $discount;
+                $barcode = $post['item']['barcode'];
+                $itemId = $post['item']['itemId'];
 
+                $insert = array(
+                    "id" => $id,
+                    "kioskUuid" => $post['item']['kioskUuid'],
+                    "itemId" => $post['item']['itemId'],
+                    "price" => $post['item']['price'],
+                    "barcode" => $post['item']['barcode'],
+                    "originPrice" => $post['item']['originPrice'],
+                    "discount" => $post['item']['discount'],
+                    "transactionDate" => date("Y-m-d H:i:s"),
+                    "void" => 0,
+                    "isPriceEdit" => 1,
+                    "presence" => 1,
+                    "inputDate" => time(),
+                    "updateDate" => time(),
+                );
 
-            $insert = array(
-                "id" => $id,
-                "kioskUuid" => $post['item']['kioskUuid'],
-                "itemId" => $post['item']['itemId'],
-                "price" => $post['item']['price'],
-                "originPrice" => $post['item']['originPrice'],
-                "discount" => $post['item']['discount'],
-                "transactionDate" => date("Y-m-d H:i:s"),
-                "void" => 0,
-                "isPriceEdit" => 1,
-                "presence" => 1,
-                "inputDate" => time(),
-                "updateDate" => time(),
-            );
-            $this->db->insert("cso1_kioskCart", $insert);
+                $this->db->insert("cso1_kioskCart", $insert);
+            }
+            $this->kiosk->writeLog("SUPERVISOR DUPLICATE QTY ".$post['qty']." $id $barcode $itemId : $price - $discount = $finalPrice", $filename);
+
         }
         echo json_encode($insert);
     }
@@ -234,9 +238,9 @@ class Spv_terminal extends CI_Controller
             $itemId = $post['item']['itemId'];
             $this->kiosk->writeLog("SUPERVISOR UPDATE fnUpdate()  $barcode $itemId :  $price", $filename);
 
-            if($post['item']['originPrice'] > 0 &&  ($post['item']['originPrice'] * $weight) > 0){
+            if ($post['item']['originPrice'] > 0 && ($post['item']['originPrice'] * $weight) > 0) {
 
-           
+
                 $update = array(
                     "originPrice" => $post['item']['originPrice'],
                     "price" => ceil($post['item']['originPrice'] * $weight),
@@ -245,7 +249,7 @@ class Spv_terminal extends CI_Controller
                     "updateDate" => time(),
                 );
                 $this->db->update('cso1_kioskCart', $update, "barcode='" . $post['item']['barcode'] . "' ");
-            }else{
+            } else {
                 $this->kiosk->writeLog("SUPERVISOR UPDATE fnUpdate() ERROR MINUS $barcode $itemId :  $price", $filename);
 
             }
@@ -301,14 +305,14 @@ class Spv_terminal extends CI_Controller
             $kioskUuid = $post['kioskUuid'];
 
 
-            if($this->model->select("count(id)","cso1_kioskCart", "price  = 0 and presence = 1 and kioskUuid='" . $kioskUuid . "' " ) == 0) {
+            if ($this->model->select("count(id)", "cso1_kioskCart", "price  = 0 and presence = 1 and kioskUuid='" . $kioskUuid . "' ") == 0) {
                 $update = array(
                     "ilock" => 0,
                 );
                 $this->db->update('cso1_kioskUuid', $update, "kioskUuid='" . $kioskUuid . "' ");
-    
+
             }
-           
+
 
 
 

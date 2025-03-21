@@ -102,7 +102,7 @@ class KioskLogin extends CI_Controller
         echo json_encode($data);
     }
 
-    function loginMember()
+    function loginMember_API()
     {
         $post =   json_decode(file_get_contents('php://input'), true);
         $error = true;
@@ -201,6 +201,121 @@ class KioskLogin extends CI_Controller
                     "date" => date("H:i:s"),
                 );
             }
+        }
+        echo json_encode($data);
+    }
+
+    function loginMemberOFFLINE()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+  
+        if ($post) {
+            
+            $member = [];
+            $insert  = []; 
+            $name  = "";
+            $memberId = false;
+
+            $memberInsert = array(
+                "firstName" => "OFFLINE",
+                "id" =>  $memberId,
+                "inputDate" => time(),
+                "status" => 1,
+                "presence" => 1,
+            );
+            $memberId =  $post['memberId'];
+          
+            $data = array(
+                "token" => "",
+                "welcomeMember" => 'Member sedang offline',
+                "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=15"),
+                "memberId" => $post['memberId'],
+                "member" => $memberInsert,
+                "error" => $error,
+                "post" => $post,
+                "insert" => $insert,
+                "date" => date("H:i:s"),
+            );
+            
+        }
+        echo json_encode($data);
+    }
+
+    function loginMember()
+    {
+        $post =   json_decode(file_get_contents('php://input'), true);
+        $error = true;
+  
+        if ($post) {
+            $memberId =  $post['memberId'];
+            $member = [];
+            $insert  = []; 
+            $name  = ""; 
+
+            $data = array(
+                "token" => "",
+                "welcomeMember" => 'Member tidak ditemukan',
+                "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=15"),
+                "memberId" => $post['memberId'],
+                "member" => [],
+                "error" => $error,
+                "post" => $post,
+                "insert" => $insert,
+                "date" => date("H:i:s"),
+            );
+
+            $FKODE = $this->model->select("FKODE", "cso1_memberVip", "FKODE = '" .$memberId . "' ");
+            if ( $FKODE != ''  ) {
+				$member = $this->model->sql(" SELECT * 
+                FROM cso1_memberVip
+                WHERE FKODE ='" . $memberId . "'");
+				
+
+                $error = false;
+                $kioskUuid = $this->model->number('kioskUuid');
+                $insert = array(
+                    "kioskUuid" 	=> $kioskUuid,
+                    "memberId"  	=> $memberId,
+                    "terminalId" 	=> $this->terminalId,
+                    "storeOutlesId" => $this->storeOutlesId,
+                    "inputDate" 	=> time(),
+                    "startDate" 	=> date("Y-m-d H:i:s"),
+                    "presence" 		=> 1,
+                    "status" 		=> 1,
+                );
+                $this->db->insert("cso1_kioskUuid", $insert);
+
+                $this->db->delete("cso1_member","id='". $memberId."'");
+
+                $name = $member[0]['FNAME'];
+                $memberInsert = array(
+                    "firstName" =>   $name ,
+                    "id" =>  $memberId,
+                    "inputDate" => time(),
+                    "status" => 1,
+                    "presence" => 1,
+                );
+                $this->db->insert("cso1_member", $memberInsert); 
+                $branches = $this->model->sql("SELECT t.storeOutlesId, o.name as 'outlet', b.name as 'branches'
+                                                FROM cso1_terminal as  t 
+                                                join cso1_storeOutles as o on o.id = t.storeOutlesId
+                                                join cso1_storeBranches as b on b.id = o.storeBranchesId
+                                                WHERE t.id='" . $this->terminalId . "'")[0]['branches'];
+
+                $data = array(
+                    "token" => "",
+                    "welcomeMember" => $name ? "Welcome " . ucwords($name) . " <br>Ke cabang kami $branches" : 'Member not found',
+                    "photoRequred" => (int)$this->model->select("value", "cso1_account", "id=15"),
+                    "memberId" => $post['memberId'],
+                    "memberVIP" => $member,
+                    "member" => $memberInsert,
+                    "error" => $error,
+                    "insert" => $insert,
+                    "post" => $post,  
+                );
+            }
+            
         }
         echo json_encode($data);
     }

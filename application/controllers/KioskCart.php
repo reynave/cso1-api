@@ -256,7 +256,7 @@ class KioskCart extends CI_Controller
                         "admin" => false,
                         "error" => false,
                         "note" => "Item add",
-                        "items" => $this->model->sql($sql)[0],
+                        "items" => count($this->model->sql($sql)) > 0 ? $this->model->sql($sql)[0] : [],
                         "priceLevel" => $priceLevel,
                         "sql" => $sql,
                     );
