@@ -75,4 +75,51 @@ class Spv_report extends CI_Controller
         }
       
     }  
+
+
+    function terminal(){
+        $post = $this->input->get();
+
+
+            $q = "SELECT 
+                CAST(endDate AS DATE) AS 'transactionDate',
+                COUNT(*) AS total
+                from cso1_transaction as t
+                left join cso1_rate as r on r.transactionId = t.id
+                where  CAST(endDate AS DATE) BETWEEN '".$post['startDate']."' AND '".$post['endDate']."'
+                and t.terminalId is not null
+                GROUP BY CAST(endDate AS DATE)
+                ORDER BY CAST(endDate AS DATE);";
+            
+            $item = $this->model->sql($q);
+
+            $t = "select id, name from cso1_terminal where   token  != ''";
+        
+             $termial = $this->model->sql($t);
+
+            $i=0;
+            foreach($item as $r){
+
+                foreach($termial as $tt){
+                    $total =  $this->model->sql("select count(id)  as 'total' from cso1_transaction 
+                    where CAST(endDate AS DATE) = '".$r['transactionDate']."' and terminalId = '".$tt['id']."'")[0]['total'];  
+                    $item[$i][url_title($tt['name'])] = $total ; 
+
+                    $rate =  $this->model->sql("select count(id) as 'totalRate', sum(rate)/count(id) as 'rateValue'  from cso1_rate
+                    where CAST(inputDate AS DATE)   = '".$r['transactionDate']."'");  
+                    $item[$i][url_title($tt['name'])."_totalRate"] = (int)$rate[0]['totalRate'] ; 
+                    $item[$i][url_title($tt['name'])."_rateValue"] = (int)$rate[0]['rateValue'] ; 
+                    
+                }
+               
+                
+                $i++;
+            }
+
+            $data = array(  
+                "terminal" => $termial,
+                "items" => $item ,
+            ); 
+            echo   json_encode($data);  
+    }
 }
