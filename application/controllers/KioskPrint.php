@@ -162,9 +162,11 @@ class KioskPrint extends CI_Controller
                 "),
                 "summary" => array(
                     "nonBkp" => (int)$this->model->select("nonBkp", "cso1_transaction", "id='$id'"),
-                    "bkp" => (int)$this->model->select("bkp", "cso1_transaction", "id='$id'"),
+                    "bkp" =>  ceil($this->model->select("bkp", "cso1_transaction", "id='$id'")),
                     "discount" => (int)$this->model->select("discount", "cso1_transaction", "id='$id'"),
-                    "dpp" => (int)$this->model->select("dpp", "cso1_transaction", "id='$id'"),
+                    //"dpp" => (int)$this->model->select("dpp", "cso1_transaction", "id='$id'"),
+                    "dpp" =>  ceil($this->model->select("bkp", "cso1_transaction", "id='$id'")),
+
                     "discountMember" => (int)$this->model->select("discountMember", "cso1_transaction", "id='$id'"),
                     "ppn" => (int)$this->model->select("ppn", "cso1_transaction", "id='$id'"),
                     "total" => (int)$this->model->select("total", "cso1_transaction", "id='$id'"),
