@@ -37,7 +37,7 @@ class Promo extends CI_Model
         // AND p.$today = 1 AND p.`status` = 1 AND p.presence = 1 AND i.presence = 1 AND i.`status` = 1"; 
 
 
-        $q = "SELECT  i.promotionId, i.id AS 'promotionItemId', i.qtyFrom, i.qtyTo, p.typeOfPromotion,
+        $qOLD = "SELECT  i.promotionId, i.id AS 'promotionItemId', i.qtyFrom, i.qtyTo, p.typeOfPromotion,
         DATEADD(s, p.startDate, '1970-01-01 00:00:00') AS 'startDate', 
         DATEADD(s, p.endDate, '1970-01-01 00:00:00') AS 'endDate', 
         GETDATE() as 'nowDate',  p.$today as '$today'  
@@ -47,7 +47,14 @@ class Promo extends CI_Model
         AND (p.startDate < DATEDIFF(SECOND, '19700101', GETDATE()) AND DATEDIFF(SECOND, '19700101', GETDATE()) <  p.endDate)
         AND ( i.qtyFrom <= $qty AND i.qtyTo >= $qty )
         AND p.$today = 1 AND p.status = 1 AND p.presence = 1 AND i.presence = 1 AND i.status = 1";
-  
+    $q = "SELECT  i.promotionId, i.id AS 'promotionItemId', i.qtyFrom, i.qtyTo, p.typeOfPromotion, 
+    GETDATE() as 'nowDate',  p.$today as '$today'  
+    FROM cso1_promotionItem AS i
+    LEFT JOIN cso1_promotion AS p ON p.id = i.promotionId
+    WHERE i.itemId = '$itemId' AND  p.typeOfPromotion = 1 
+    AND (p.startDate < DATEDIFF(SECOND, '19700101', GETDATE()) AND DATEDIFF(SECOND, '19700101', GETDATE()) <  p.endDate)
+    AND ( i.qtyFrom <= $qty AND i.qtyTo >= $qty )
+    AND p.$today = 1 AND p.status = 1 AND p.presence = 1 AND i.presence = 1 AND i.status = 1";
         $items = $this->model->sql( $q );
         
         $data = array(

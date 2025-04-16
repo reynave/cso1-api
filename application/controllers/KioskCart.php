@@ -223,15 +223,28 @@ class KioskCart extends CI_Controller
                     $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
                     $promo = $this->promo->getPromo($itemId, $qty);
                     if ($promo['promotionItemId'] > 0) {
-                        $update = [
-                            "kioskUuid" => $post['kioskUuid'],
-                            "originPrice" => $promo['newPrice'],
-                            "price" => $promo['newPrice'] * $weight,
-                            "isSpecialPrice" => isset($promo['isSpecialPrice']),
-                            "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
-                            "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
-                            "discount" => $promo['discount'],
-                        ];
+
+
+                        if($promo['isSpecialPrice'] == 1){ 
+                            $update = [
+                                "kioskUuid" => $post['kioskUuid'],
+                                "originPrice" => $promo['newPrice'],
+                                "price" => $promo['newPrice'] * $weight,
+                                "isSpecialPrice" => isset($promo['isSpecialPrice']),
+                                "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
+                                "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
+                                "discount" => $promo['discount'],
+                            ];
+                        }else{
+                            $update = [
+                                "kioskUuid" => $post['kioskUuid'], 
+                                "isSpecialPrice" => 0,
+                                "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
+                                "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
+                                "discount" => $promo['discount'],
+                            ];
+                        }
+
                         $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
 
                         if (isset($promo['isSpecialPrice'])) {

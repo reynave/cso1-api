@@ -641,7 +641,7 @@ class Model extends CI_Model
             left join cso1_taxCode as t on t.id = i.itemTaxId
             where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 0 ")[0]['tax'];
 
-        $ppnInc = (int) $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
+        $ppnInc =   $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
             from cso1_kioskCart as c
             join cso1_item as i on c.itemId = i.id
             left join cso1_taxCode as t on t.id = i.itemTaxId
@@ -658,11 +658,13 @@ class Model extends CI_Model
             "voucer" => 0,
 
             // Barang Kena Pajak 
-            "bkp" => $bkp - ($ppnExc + $ppnInc),
-            "dpp" => $bkp + $nonBkp,
+          //  "bkp" => $bkp - ($ppnExc + $ppnInc),
+             "bkp" => (int) ( ($bkp ) / 1.11),
+          
+            "dpp" =>(int) ( ($bkp ) / 1.11),
 
             //harga sebelum ppn + (harga sebelum ppn x 0.11) = 100.000
-            "ppn" => $ppnInc + $ppnExc,
+            "ppn" => ceil( $ppnInc + $ppnExc),
 
             "nonBkp" => $nonBkp,
             "final" => 0,
