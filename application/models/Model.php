@@ -10,6 +10,29 @@ class Model extends CI_Model
         parent::__construct();
     }
 
+    function socketReload(){
+         $dataSocket = [
+            'to' => 'supervisor',
+            'msg' => 'request reload From PHP',
+            'action' => 'reload'
+        ];
+
+        $url = 'http://localhost:3000/send-message?message=' . urlencode(json_encode($dataSocket));
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // get response
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        $data = [
+            'response' => json_decode($response, true),
+            'error' => $error
+        ];
+
+        return $data;
+    }
+
     function https()
     {
         if ($this->db->https == TRUE) {
@@ -641,7 +664,7 @@ class Model extends CI_Model
             left join cso1_taxCode as t on t.id = i.itemTaxId
             where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 0 ")[0]['tax'];
 
-        $ppnInc =   $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
+        $ppnInc =  (int) $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
             from cso1_kioskCart as c
             join cso1_item as i on c.itemId = i.id
             left join cso1_taxCode as t on t.id = i.itemTaxId
@@ -661,7 +684,7 @@ class Model extends CI_Model
           //  "bkp" => $bkp - ($ppnExc + $ppnInc),
              "bkp" => (int) ( ($bkp ) / 1.11),
           
-            "dpp" =>(int) ( ($bkp ) / 1.11),
+            "dpp" =>ceil ( ($bkp ) / 1.11),
 
             //harga sebelum ppn + (harga sebelum ppn x 0.11) = 100.000
             "ppn" => ceil( $ppnInc + $ppnExc),

@@ -16,8 +16,8 @@ class KioskPayment extends CI_Controller
         date_default_timezone_set('Asia/Jakarta');
 
         if (!$this->model->checkDeviceObj()) {
-             echo $this->model->error("Error auth");
-             exit;
+            echo $this->model->error("Error auth");
+            exit;
         } else {
             $getDeviceObj = $this->model->getDeviceObj();
             $this->terminalId = $getDeviceObj['terminalId'];
@@ -54,7 +54,32 @@ class KioskPayment extends CI_Controller
 
                 "summary" => $this->model->summary($uuid),
             );
+
+            $kioskUuid = $this->input->get("uuid");
+            $update = array(
+                "ilock" => 1,
+            );
+            $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid'");
         }
+
+
+
+        // $dataSocket = [
+        //     'to' => 'supervisor',
+        //     'msg' => 'request reload From PHP',
+        //     'action' => 'reload'
+        // ];
+
+        // $url = 'http://localhost:3000/send-message?message=' . urlencode(json_encode($dataSocket));
+
+        // $ch = curl_init($url);
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // get response
+        // $response = curl_exec($ch);
+        // $error = curl_error($ch);
+        // curl_close($ch);
+
+        // Optional: simpan hasil ke dalam array
+        $data['socket'] = $this->model->socketReload();
 
         echo json_encode($data);
     }
@@ -167,21 +192,16 @@ class KioskPayment extends CI_Controller
                 }
 
                 // DEBIT BCA
-                if ($post['paymentTypeId'] == 'BCA01' || $post['paymentTypeId'] == 'BCA31') {
+                //if ($post['paymentTypeId'] == 'BCA01' || $post['paymentTypeId'] == 'BCA31') {
                     $insert = array(
                         "transactionId" => $id,
                         "paymentTypeId" => $post['paymentTypeId'],
                         "kioskUuid" => $kioskUuid,
-                        "respCode" => $post['data']['resp']['RespCode'],
-                        //    "hex" => $post['data']['hex'],
-                        //   "asciiString" => $post['data']['ascii'], 
-                        //    "dateTime" => $post['data']['resp']['DateTime'],
-
-                        "approvalCode" => $post['data']['resp']['ApprovalCode'],
+                        "respCode" => $post['data']['resp']['RespCode'], 
+                        "ApprovalCode" => $post['data']['resp']['ApprovalCode'],
                         "merchantId" => $post['data']['resp']['MerchantId'],
                         "terminalId" => $post['data']['resp']['TerminalId'],
                         "rrn" => $post['data']['resp']['RRN'], 
-                        //   "offlineFlag" => $post['data']['resp']['OfflineFlag'], 
                         "pan" => $post['data']['resp']['PAN'],
 
                         "transType" => $post['data']['resp']['TransType'],
@@ -192,7 +212,7 @@ class KioskPayment extends CI_Controller
                         "inputDate" => time(),
                     );
                     $this->db->insert("cso1_paymentBcaEcr", $insert);
-                }
+               // }
 
                 // $this->db->trans_complete();
                 $trans_status = true;
@@ -680,19 +700,20 @@ class KioskPayment extends CI_Controller
         echo json_encode($data);
     }
 
-    function destroyQrBca(){
-        $post =   json_decode(file_get_contents('php://input'), true);
+    function destroyQrBca()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
         $error = true;
         if ($post) {
             $kioskUuid = $post['kioskUuid'];
-            $update = array( 
+            $update = array(
                 "reffNo" => null,
-                "navigate" => null,  
+                "navigate" => null,
             );
-            $this->db->update("cso1_kioskUuid", $update,"kioskUuid = '$kioskUuid' ");
+            $this->db->update("cso1_kioskUuid", $update, "kioskUuid = '$kioskUuid' ");
             $data = array(
                 "update" => $update,
-                
+
             );
         }
         echo json_encode($data);

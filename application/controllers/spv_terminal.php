@@ -70,48 +70,61 @@ class Spv_terminal extends CI_Controller
     }
     function transaction($kioskUuid = "")
     {
-        $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
+        $id = $this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kioskUuid . "' ");
+        if (count($this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kioskUuid . "' "))) {
 
-        $items = $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId',  i.price1 as 'masterPrice', 1 as 'weight'
+
+
+            $storeOutlesId = $this->model->select("storeOutlesId", "cso1_kioskUuid", "kioskUuid = '$kioskUuid'");
+
+            $items = $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId',  i.price1 as 'masterPrice', 1 as 'weight'
             from cso1_kioskCart as k
             join cso1_item as i on i.id = k.itemId
             where k.kioskUuid = '$kioskUuid' and  k.presence = 1
         ");
 
-        $i = 0;
-        foreach ($items as $row) {
-            $barcode = $row['barcode'];
-            //  $items[$i]['weight'] =  $items[$i]['barcode'];
+            $i = 0;
+            foreach ($items as $row) {
+                $barcode = $row['barcode'];
+                //  $items[$i]['weight'] =  $items[$i]['barcode'];
 
-            $arrItem = $this->model->barcode($barcode);
-            if (isset($arrItem['prefix'])) {
-                if ($arrItem['prefix'] == 2) {
-                    $arrItem = $this->model->barcode($barcode);
+                $arrItem = $this->model->barcode($barcode);
+                if (isset($arrItem['prefix'])) {
+                    if ($arrItem['prefix'] == 2) {
+                        $arrItem = $this->model->barcode($barcode);
 
-                    $items[$i]['weight'] = (float) $arrItem['weight'];
+                        $items[$i]['weight'] = (float) $arrItem['weight'];
+                    }
                 }
+                $i++;
             }
-            $i++;
-        }
 
 
-        $data = array(
-            "items" => $items,
+            $data = array(
+                "items" => $items,
 
-            "storeOutlesPaymentType" => $this->model->sql("SELECT s.id, s.paymentTypeId, p.*
+                "storeOutlesPaymentType" => $this->model->sql("SELECT s.id, s.paymentTypeId, p.*
                     from cso1_storeOutlesPaymentType as s
                     join cso1_paymentType as p on p.id = s.paymentTypeId
                     where s.storeOutlesId =  '$storeOutlesId' and s.presence = 1 and s.status = 1"),
 
-            "freeItem" => $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId'
+                "freeItem" => $this->model->sql("SELECT k.*, i.description,  i.id as 'itemId'
                 from cso1_kioskCartFreeItem as k
                 join cso1_item as i on i.id = k.freeItemId
                 where k.kioskUuid = '$kioskUuid' and k.presence = 1
             "),
-            "kioskCart" => $this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kioskUuid . "' ")[0],
-            "summary" => $this->model->summary($kioskUuid),
-            "priceLevel" => $this->model->priceLevel($kioskUuid),
-        );
+                "kioskCart" => $this->model->sql("SELECT * from cso1_kioskUuid where kioskUuid = '" . $kioskUuid . "' ")[0],
+                "summary" => $this->model->summary($kioskUuid),
+                "priceLevel" => $this->model->priceLevel($kioskUuid),
+            );
+        }
+        else{
+             $data = array(
+                "items" => [],
+                "error" => true,
+                "msg" => "BILL ID NOT AVAIBLE OR DELETED"
+            );
+        }
         echo json_encode($data);
     }
     function transactionDetail()
@@ -209,7 +222,7 @@ class Spv_terminal extends CI_Controller
 
                 $this->db->insert("cso1_kioskCart", $insert);
             }
-            $this->kiosk->writeLog("SUPERVISOR DUPLICATE QTY ".$post['qty']." $id $barcode $itemId : $price - $discount = $finalPrice", $filename);
+            $this->kiosk->writeLog("SUPERVISOR DUPLICATE QTY " . $post['qty'] . " $id $barcode $itemId : $price - $discount = $finalPrice", $filename);
 
         }
         echo json_encode($insert);

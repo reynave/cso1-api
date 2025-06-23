@@ -6,7 +6,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'WINDOWS-AN3885S\SQLEXPRESS',
+	'hostname' => 'WINDOWS-AN3885S',
 	'username' => '',
 	'password' => '',
 	'database' => 'cso1',
@@ -24,5 +24,5 @@ $db['default'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE,
-	'openAPI' => FALSE,  
+	'openAPI' => TRUE,  
 );

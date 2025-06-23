@@ -21,9 +21,8 @@ class KioskPrint extends CI_Controller
     }
 
     function index()
-    {
-        $data = array(
-            "items" => $this->model->sql("SELECT t.id, t.startDate, t.memberId, t.finalPrice, 
+    {   
+        $a = "SELECT t.id, t.startDate, t.memberId, t.finalPrice, e.rrn,
             p.label as 'paymentName', e.kioskUuid, e.approvalCode, t.kioskUuid, e.approvalCode, t.terminalId
                 from cso1_transaction as t 
                 left join cso1_paymentType as p on p.id = t.paymentTypeId
@@ -32,7 +31,12 @@ class KioskPrint extends CI_Controller
                     year(t.startDate) = year(GETDATE()) AND  
                     month(t.startDate) = month(GETDATE()) AND  
                     day(t.startDate) = day(GETDATE()) 
-                )"), 
+                )";
+
+        
+        $data = array(
+            "items" => $this->model->sql($a), 
+            "a" => $a,
         ); 
         echo json_encode($data);
     }
@@ -127,7 +131,7 @@ class KioskPrint extends CI_Controller
             where t.id= '" . $id . "' ")[0]['memberId'];
             $member = isset($memberId) && $memberId != '0'  ?  "MEMBER ID : ".$memberId : "MEMBER ID : VISITOR";
           
-
+          $paymentBcaEcr =  $this->model->sql("SELECT  *  from cso1_paymentBcaEcr    where transactionId = '" . $id . "' ");
             $data = array(
                 "id" => $id,
                 "printable" =>   $isId ? true : false,
@@ -136,8 +140,8 @@ class KioskPrint extends CI_Controller
                 from cso1_transaction  as t
                 left join cso1_paymentType as p on p.id = t.paymentTypeId
                 where t.id= '" . $id . "' ")[0] : [],
-                
-                
+
+                "paymentBcaEcr" =>  $paymentBcaEcr ?  $paymentBcaEcr : [], 
                 "itemsList" => $itemsList,
                 "items" =>  $items,
                 "freeItem" => $this->model->sql(" SELECT t1.*, i.description, i.shortDesc, i.id as 'itemId'

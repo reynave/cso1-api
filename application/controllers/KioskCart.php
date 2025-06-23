@@ -229,7 +229,7 @@ class KioskCart extends CI_Controller
                             $update = [
                                 "kioskUuid" => $post['kioskUuid'],
                                 "originPrice" => $promo['newPrice'],
-                                "price" => $promo['newPrice'] * $weight,
+                                "price" => ceil($promo['newPrice'] * $weight),
                                 "isSpecialPrice" => isset($promo['isSpecialPrice']),
                                 "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                                 "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
@@ -598,6 +598,9 @@ class KioskCart extends CI_Controller
             $this->db->delete('cso1_kioskUuid', $delete);
             $this->db->delete('cso1_kioskCart', $delete);
             $this->db->delete('cso1_kioskCartFreeItem', $delete);
+
+            $this->model->socketReload();
+
         }
     }
 }
