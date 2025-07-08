@@ -124,64 +124,83 @@ class Spv_reset extends CI_Controller
                     "cart" => $this->model->sql("select count(id) as total from cso1_kioskCart")[0]['total'],
                 ),
             );
-            $this->db->trans_start();
-            $id = $this->model->number("reset");
-            $insert1 = array(
-                "id" => $id,
-                "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
-                "totalNumberOfCheck" => $data['overal']['qty'],
-                "summaryTotalVoid" => $data['summary']['void'],
-                "summaryTotalTransaction" => $data['summary']['transaction'],
-                "summaryTotalCart" => $data['summary']['cart'],
-                "overalitemSales" => $data['overal']['itemSales'], //
-                "overalDiscount" => $data['overal']['discount'],
-                "overalNetSales" => $data['overal']['netSales'],
-                "overalFinalPrice" => $data['overal']['finalPrice'],
-                "overalTax" => $data['overal']['tax'],
 
-                "startDate" => $this->model->select("inputDate", "cso1_userAuth", "token = '" . $post['token'] . "'"),
-                "endDate" => time(),
+            $data = $this->model->sql("SELECT top 1 * 
+            From cso1_reset where 
+            closeDate is null  order by id DESC ");
 
-                "closeDate" => date("Y-m-d H:i:s"),
 
-                "presence" => 1,
-                "inputDate" => time(),
-                "inputBy" => $this->model->userId(),
-                "note" => $post['note'],
-            );
-            $this->db->insert("cso1_reset", $insert1);
+            if (count($data) == 0) {
 
-            $q = $this->model->sql("SELECT p.name, t1.*
+                $data = array(
+                    "error" => true,
+                    "note" => "ot found ID "
+                );
+                echo json_encode($data);
+            } else {
+
+                $id = $data[0]['id'];
+                $this->db->trans_start();
+
+
+                $insert1 = array(
+
+                    "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
+                    "totalNumberOfCheck" => isset($data['overal']['qty']),
+                    "summaryTotalVoid" => isset($data['summary']['void']),
+                    "summaryTotalTransaction" => isset($data['summary']['transaction']),
+                    "summaryTotalCart" => isset($data['summary']['cart']),
+                    "overalitemSales" => isset($data['overal']['itemSales']), //
+                    "overalDiscount" => isset($data['overal']['discount']),
+                    "overalNetSales" => isset($data['overal']['netSales']),
+                    "overalFinalPrice" => isset($data['overal']['finalPrice']),
+                    "overalTax" => isset($data['overal']['tax']),
+
+                    "startDate" => $this->model->select("inputDate", "cso1_userAuth", "token = '" . $post['token'] . "'"),
+                    "endDate" => time(),
+
+                    "closeDate" => date("Y-m-d H:i:s"),
+
+                    "presence" => 1,
+                    "inputDate" => time(),
+                    "inputBy" => $this->model->userId(),
+                    "note" => $post['note'],
+                );
+                $this->db->update("cso1_reset", $insert1, "id = '$id' ");
+
+                $q = $this->model->sql("SELECT p.name, t1.*
                 from (select paymentTypeId, count(paymentTypeId) as 'check', sum(finalPrice) as 'paid'
                 from cso1_transaction
                 where resetId is null and presence = 1
                 group by paymentTypeId) as  t1
                 join cso1_paymentType as p on p.id = t1.paymentTypeId");
 
-            foreach ($q as $row) {
-                $insert = array(
+                foreach ($q as $row) {
+                    $insert = array(
+                        "resetId" => $id,
+                        "paymentTypeId" => $row['paymentTypeId'],
+                        "qty" => $row['check'],
+                        "paidAmount" => $row['paid'],
+                        "presence" => 1,
+                        "inputDate" => time(),
+                    );
+                    $this->db->insert("cso1_resetPayment", $insert);
+                }
+
+                $update = array(
                     "resetId" => $id,
-                    "paymentTypeId" => $row['paymentTypeId'],
-                    "qty" => $row['check'],
-                    "paidAmount" => $row['paid'],
-                    "presence" => 1,
-                    "inputDate" => time(),
+                    "updateDate" => time(),
                 );
-                $this->db->insert("cso1_resetPayment", $insert);
-            }
-
-            $update = array(
-                "resetId" => $id,
-                "updateDate" => time(),
-            );
-            $this->db->update("cso1_transaction", $update, "resetId is null ");
+                $this->db->update("cso1_transaction", $update, "resetId is null ");
 
 
-            $this->db->delete('cso1_userAuth', array('token' => $post['token']));
+                $this->db->delete('cso1_userAuth', array('token' => $post['token']));
 
-            $this->db->trans_complete();
-            if ($this->db->trans_status() !== FALSE) {
-                echo json_encode($insert1);
+                $this->db->trans_complete();
+                if ($this->db->trans_status() !== FALSE) {
+                    echo json_encode($insert1);
+                }
+
             }
 
         }
@@ -241,7 +260,7 @@ class Spv_reset extends CI_Controller
                 where t.resetId = '$id' and   t.terminalId = '" . $row['terminalId'] . "' and d.void = 1
             ")[0]['id'];
 
-            $items[$i]['payments'] =  $this->model->sql("SELECT p.name, p.label, b.* from cso1_paymentType as p
+            $items[$i]['payments'] = $this->model->sql("SELECT p.name, p.label, b.* from cso1_paymentType as p
                 join (
                     select t.paymentTypeId, count(t.id) as 'qty', sum(t.finalPrice) as 'paidAmount'
                     from cso1_transaction  as t
@@ -267,12 +286,47 @@ class Spv_reset extends CI_Controller
                 where p.resetId = '$id' and p.presence = 1
                 order by t.name asc "),
         );
+
+       
+
+         $items2 = $this->model->sql("SELECT 
+            count(id) as 'totalNumberOfCheck', 
+            sum(total) as 'overalitemSales',
+            sum(discount + discountMember) as 'overalDiscount',
+            sum(ppn) as 'overalTax',
+            sum(total - (discount + discountMember)) as 'overalNetSales',
+            sum(finalPrice) as 'overalFinalPrice' 
+            from cso1_transaction
+            where resetId = '$id' and presence = 1 
+            group by resetId 
+        ");
+        
+       
+
+        $update = array(
+ 
+            "totalNumberOfCheck" => $items2[0]['totalNumberOfCheck'],
+          //  "summaryTotalVoid" => $items2['totalNumberOfCheck'],
+          //  "summaryTotalTransaction" => $items2['totalNumberOfCheck'],
+          //  "summaryTotalCart" => $items2['totalNumberOfCheck'],
+            "overalitemSales" => $items2[0]['overalitemSales'],
+            "overalDiscount" => $items2[0]['overalDiscount'],
+            "overalNetSales" => $items2[0]['overalNetSales'],
+            "overalFinalPrice" => $items2[0]['overalFinalPrice'],
+            "overalTax" => $items2[0]['overalTax'],
+
+           
+        );
+        $this->db->update("cso1_reset", $update, "id = '$id' ");
+
+
         echo json_encode($data);
     }
 
 
 
-    function delete(){
+    function delete()
+    {
         $post = json_decode(file_get_contents('php://input'), true);
         if ($post) {
             $update = array(
@@ -281,7 +335,7 @@ class Spv_reset extends CI_Controller
                 "updateBy" => $this->model->userId(),
 
             );
-            $this->db->update("cso1_reset", $update, " id = '".$post['item']['id']."' ");
+            $this->db->update("cso1_reset", $update, " id = '" . $post['item']['id'] . "' ");
 
 
 
@@ -291,24 +345,26 @@ class Spv_reset extends CI_Controller
         }
     }
 
-    function where_newReset($dates, $t = ''){
-        $date = explode('-',$dates);
+    function where_newReset($dates, $t = '')
+    {
+        $date = explode('-', $dates);
         $whereDate = "
-        ( Year( DATEADD(SECOND,  ".$t."transactionDate, '1970-01-01 00:00:00')) = ".$date[0]." and
-        month( DATEADD(SECOND, ".$t."transactionDate, '1970-01-01 00:00:00')) = ".$date[1]."  and
-        day( DATEADD(SECOND, ".$t."transactionDate, '1970-01-01 00:00:00')) = ".$date[2]." )
+        ( Year( DATEADD(SECOND,  " . $t . "transactionDate, '1970-01-01 00:00:00')) = " . $date[0] . " and
+        month( DATEADD(SECOND, " . $t . "transactionDate, '1970-01-01 00:00:00')) = " . $date[1] . "  and
+        day( DATEADD(SECOND, " . $t . "transactionDate, '1970-01-01 00:00:00')) = " . $date[2] . " )
      ";
 
 
         return $whereDate;
     }
-    function newReset(){
+    function newReset()
+    {
         $post = json_decode(file_get_contents('php://input'), true);
         if ($post) {
-            $date = $post['date']; 
-            $whereDate = $this->where_newReset( $date, 't.');
+            $date = $post['date'];
+            $whereDate = $this->where_newReset($date, 't.');
             $data = array(
-                "w" => $whereDate ,
+                "w" => $whereDate,
                 "username" => $this->model->select("name", "cso1_user", "id= '" . $this->model->userId() . "' "),
                 "overal" => $this->model->sql("SELECT sum(total) as 'itemSales', sum(discount + discountMember)  as 'discount' ,
                     sum(total - (discount + discountMember)) as 'netSales', sum(ppn) as 'tax',
@@ -342,7 +398,7 @@ class Spv_reset extends CI_Controller
             $this->db->trans_start();
             $id = $this->model->number("reset");
 
-            $whereDate2 = $this->where_newReset( $date, '');
+            $whereDate2 = $this->where_newReset($date, '');
             $startDate = $this->model->sql(" 
                 select top 1  id,  transactionDate,
                 DATEADD(HOUR, 7, DATEADD(SECOND, transactionDate, '1970-01-01 00:00:00'))   AS 'transactionDateTime', 
@@ -375,12 +431,12 @@ class Spv_reset extends CI_Controller
                 "overalFinalPrice" => $data['overal']['finalPrice'],
                 "overalTax" => $data['overal']['tax'],
 
-                 "openDate" => $startDate[0]['transactionDateTime'],
-                 "closeDate" =>  $endDate[0]['transactionDateTime'],
+                "openDate" => $startDate[0]['transactionDateTime'],
+                "closeDate" => $endDate[0]['transactionDateTime'],
 
-                "startDate" =>  $startDate[0]['transactionDate'],
-                "endDate" =>   $endDate[0]['transactionDate'],
-                
+                "startDate" => $startDate[0]['transactionDate'],
+                "endDate" => $endDate[0]['transactionDate'],
+
                 "presence" => 1,
 
                 "inputDate" => time(),
@@ -389,7 +445,7 @@ class Spv_reset extends CI_Controller
             );
             $this->db->insert("cso1_reset", $insert1);
 
-            $whereDate2 = $this->where_newReset( $date, '');
+            $whereDate2 = $this->where_newReset($date, '');
             $q = $this->model->sql("SELECT p.name, t1.*
                 from (select paymentTypeId, count(paymentTypeId) as 'check', sum(finalPrice) as 'paid'
                 from cso1_transaction
@@ -413,19 +469,92 @@ class Spv_reset extends CI_Controller
                 "resetId" => $id,
                 "updateDate" => time(),
             );
-            $this->db->update("cso1_transaction", $update,$whereDate2);
+            $this->db->update("cso1_transaction", $update, $whereDate2);
 
 
             $this->db->trans_complete();
             if ($this->db->trans_status() !== FALSE) {
                 echo json_encode($data);
-            }else{
-                $err= array(
+            } else {
+                $err = array(
                     "error" => true,
                 );
                 echo json_encode($err);
             }
-      
+
+        }
+    }
+
+
+    function startCheck()
+    {
+        $data = $this->model->sql("SELECT top 1 * 
+            From cso1_reset where 
+            closeDate is null  order by id DESC");
+
+        $err = array(
+            "error" => true,
+            "item" => $data,
+        );
+        echo json_encode($err);
+
+    }
+
+    function onStart()
+    {
+        $post = json_decode(file_get_contents('php://input'), true);
+        if ($post) {
+
+            $data = $this->model->sql("SELECT  id,  DATEADD(SECOND, startDate, '1970-01-01 00:00:00') AS startDate
+                FROM cso1_reset
+                WHERE endDate is null
+                ORDER BY id desc 
+            ");
+
+            if (count($data) > 0) {
+
+                $err = array(
+                    "error" => false,
+                    "data" => $data,
+                );
+                echo json_encode($err);
+            } else {
+
+
+
+                $this->db->trans_start();
+                $id = $this->model->number("reset");
+                $insert = array(
+                    "id" => $id,
+                    //  "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
+                    "startDate" => time(),
+                    "openDate" => date("Y-m-d H:i:s"),
+                    "presence" => 1,
+                    "inputDate" => time(),
+                );
+                $this->db->insert("cso1_reset", $insert);
+
+                $data = $this->model->sql("SELECT  id,  DATEADD(SECOND, startDate, '1970-01-01 00:00:00') AS startDate
+                        FROM cso1_reset
+                        WHERE endDate is null
+                        ORDER BY id desc 
+                    ");
+                $err = array(
+                    "error" => false,
+                    "data" => $data,
+                );
+                $this->db->trans_complete();
+                if ($this->db->trans_status() !== FALSE) {
+
+                    echo json_encode($err);
+                } else {
+                    $err = array(
+                        "error" => true,
+                    );
+                    echo json_encode($err);
+                }
+
+            }
         }
     }
 }
