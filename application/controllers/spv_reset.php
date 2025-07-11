@@ -125,40 +125,38 @@ class Spv_reset extends CI_Controller
                 ),
             );
 
-            $data = $this->model->sql("SELECT top 1 * 
+            $reset = $this->model->sql("SELECT top 1 * 
             From cso1_reset where 
             closeDate is null  order by id DESC ");
 
 
-            if (count($data) == 0) {
+            if (count($reset) == 0) {
 
-                $data = array(
+                $rest = array(
                     "error" => true,
-                    "note" => "ot found ID "
+                    "note" => "not found ID "
                 );
-                echo json_encode($data);
+                echo json_encode($rest);
             } else {
 
-                $id = $data[0]['id'];
+                $id = $reset[0]['id'];
                 $this->db->trans_start();
 
 
                 $insert1 = array(
 
                     "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
-                    "totalNumberOfCheck" => isset($data['overal']['qty']),
-                    "summaryTotalVoid" => isset($data['summary']['void']),
-                    "summaryTotalTransaction" => isset($data['summary']['transaction']),
-                    "summaryTotalCart" => isset($data['summary']['cart']),
-                    "overalitemSales" => isset($data['overal']['itemSales']), //
-                    "overalDiscount" => isset($data['overal']['discount']),
-                    "overalNetSales" => isset($data['overal']['netSales']),
-                    "overalFinalPrice" => isset($data['overal']['finalPrice']),
-                    "overalTax" => isset($data['overal']['tax']),
+                    "totalNumberOfCheck" => (int) $data['overal']['qty'],
+                    "summaryTotalVoid" => (int) $data['summary']['void'],
+                    "summaryTotalTransaction" => (int) $data['summary']['transaction'],
+                    "summaryTotalCart" => (int) $data['summary']['cart'],
+                    "overalitemSales" => (int) $data['overal']['itemSales'], //
+                    "overalDiscount" => (int) $data['overal']['discount'],
+                    "overalNetSales" => (int) $data['overal']['netSales'],
+                    "overalFinalPrice" => (int) $data['overal']['finalPrice'],
+                    "overalTax" => (int) $data['overal']['tax'],
 
-                    "startDate" => $this->model->select("inputDate", "cso1_userAuth", "token = '" . $post['token'] . "'"),
                     "endDate" => time(),
-
                     "closeDate" => date("Y-m-d H:i:s"),
 
                     "presence" => 1,
@@ -198,7 +196,12 @@ class Spv_reset extends CI_Controller
 
                 $this->db->trans_complete();
                 if ($this->db->trans_status() !== FALSE) {
-                    echo json_encode($insert1);
+                    $rest = array(
+                        "id" => $id,
+                        "updateDate" => time(),
+                    );
+
+                    echo json_encode($rest);
                 }
 
             }
@@ -211,7 +214,7 @@ class Spv_reset extends CI_Controller
         $data = array(
             "items" => $this->model->sql("select TOP 30 r.*, u.name as 'name'
             from cso1_reset as r
-            join cso1_user as u on r.inputBy = u.id
+            left join cso1_user as u on r.inputBy = u.id
             where  r.presence = 1
             order by r.startDate DESC"),
         );
@@ -233,7 +236,7 @@ class Spv_reset extends CI_Controller
     function print($id = "")
     {
 
-        $items = $this->model->sql("SELECT terminalId, storeOutlesId,
+        $itemGroup = $this->model->sql("SELECT terminalId, storeOutlesId,
             count(id) as 'totalNumberOfCheck',
 
             sum(total) as 'overalitemSales',
@@ -247,20 +250,23 @@ class Spv_reset extends CI_Controller
             group by terminalId, storeOutlesId
         ");
         $i = 0;
-        foreach ($items as $row) {
-            $items[$i]['summaryTotalTransaction'] = $this->model->sql("SELECT count(d.id) as 'id'
+        if (count($itemGroup) > 0) {
+
+
+            foreach ($itemGroup as $row) {
+                $itemGroup[$i]['summaryTotalTransaction'] = $this->model->sql("SELECT count(d.id) as 'id'
                 from cso1_transaction as t
                 left join cso1_transactionDetail as d ON d.transactionId = t.id
                 where t.resetId = '$id' and   t.terminalId = '" . $row['terminalId'] . "' and d.void = 0 and  d.presence = 1
             ")[0]['id'];
 
-            $items[$i]['summaryTotalVoid'] = $this->model->sql("SELECT count(d.id) as 'id'
+                $itemGroup[$i]['summaryTotalVoid'] = $this->model->sql("SELECT count(d.id) as 'id'
                 from cso1_transaction as t
                 left join cso1_transactionDetail as d ON d.transactionId = t.id
                 where t.resetId = '$id' and   t.terminalId = '" . $row['terminalId'] . "' and d.void = 1
             ")[0]['id'];
 
-            $items[$i]['payments'] = $this->model->sql("SELECT p.name, p.label, b.* from cso1_paymentType as p
+                $itemGroup[$i]['payments'] = $this->model->sql("SELECT p.name, p.label, b.* from cso1_paymentType as p
                 join (
                     select t.paymentTypeId, count(t.id) as 'qty', sum(t.finalPrice) as 'paidAmount'
                     from cso1_transaction  as t
@@ -268,17 +274,18 @@ class Spv_reset extends CI_Controller
                     group by t.paymentTypeId
                 ) as b on b.paymentTypeId = p.id
             ");
-            $i++;
+                $i++;
+            }
         }
-
+        $items2 = $this->model->sql("SELECT r.*, u.name as 'name'
+                from cso1_reset as r
+                left join cso1_user as u on r.inputBy = u.id
+                where  r.presence = 1 and r.id = '$id'
+                order by r.id DESC");
 
         $data = array(
-            "itemGroup" => $items,
-            "items" => $this->model->sql("SELECT r.*, u.name as 'name'
-                from cso1_reset as r
-                join cso1_user as u on r.inputBy = u.id
-                where  r.presence = 1 and r.id = '$id'
-                order by r.id DESC")[0],
+            "itemGroup" => $itemGroup,
+            "items" => count($items2) > 0 ? $items2[0] : [],
 
             "payments" => $this->model->sql("SELECT p.* , t.name as 'paymentName'
                 from cso1_resetPayment as p
@@ -287,9 +294,9 @@ class Spv_reset extends CI_Controller
                 order by t.name asc "),
         );
 
-       
 
-         $items2 = $this->model->sql("SELECT 
+
+        $items2 = $this->model->sql("SELECT 
             count(id) as 'totalNumberOfCheck', 
             sum(total) as 'overalitemSales',
             sum(discount + discountMember) as 'overalDiscount',
@@ -300,22 +307,22 @@ class Spv_reset extends CI_Controller
             where resetId = '$id' and presence = 1 
             group by resetId 
         ");
-        
-       
+
+
 
         $update = array(
- 
-            "totalNumberOfCheck" => $items2[0]['totalNumberOfCheck'],
-          //  "summaryTotalVoid" => $items2['totalNumberOfCheck'],
-          //  "summaryTotalTransaction" => $items2['totalNumberOfCheck'],
-          //  "summaryTotalCart" => $items2['totalNumberOfCheck'],
-            "overalitemSales" => $items2[0]['overalitemSales'],
-            "overalDiscount" => $items2[0]['overalDiscount'],
-            "overalNetSales" => $items2[0]['overalNetSales'],
-            "overalFinalPrice" => $items2[0]['overalFinalPrice'],
-            "overalTax" => $items2[0]['overalTax'],
 
-           
+            "totalNumberOfCheck" => count($items2) > 0 ? $items2[0]['totalNumberOfCheck'] : 0,
+            "summaryTotalVoid" => count($items2) > 0 ? $items2[0]['totalNumberOfCheck'] : 0,
+            "summaryTotalTransaction" => count($items2) > 0 ? $items2[0]['totalNumberOfCheck'] : 0,
+            "summaryTotalCart" => count($items2) > 0 ? $items2[0]['totalNumberOfCheck'] : 0,
+            "overalitemSales" => count($items2) > 0 ? $items2[0]['overalitemSales'] : 0,
+            "overalDiscount" => count($items2) > 0 ? $items2[0]['overalDiscount'] : 0,
+            "overalNetSales" => count($items2) > 0 ? $items2[0]['overalNetSales'] : 0,
+            "overalFinalPrice" => count($items2) > 0 ? $items2[0]['overalFinalPrice'] : 0,
+            "overalTax" => count($items2) > 0 ? $items2[0]['overalTax'] : 0,
+
+
         );
         $this->db->update("cso1_reset", $update, "id = '$id' ");
 
@@ -527,10 +534,12 @@ class Spv_reset extends CI_Controller
                 $insert = array(
                     "id" => $id,
                     //  "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
-                    "startDate" => time(),
-                    "openDate" => date("Y-m-d H:i:s"),
+                    "startDate" => $post['time'],
+
+                    "openDate" => $post['startDate'] . " " . date("H:i:s"),
                     "presence" => 1,
                     "inputDate" => time(),
+                    "inputBy" => $this->model->userId(),
                 );
                 $this->db->insert("cso1_reset", $insert);
 
