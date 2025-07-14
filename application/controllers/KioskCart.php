@@ -147,6 +147,7 @@ class KioskCart extends CI_Controller
 
             $weight = 1.0;
             $note = "";
+           
             // CHECK BARCODE 
             $barcode = str_split($post['barcode']);
             $arrItem = $this->model->barcode($post['barcode']);
@@ -157,7 +158,7 @@ class KioskCart extends CI_Controller
                 $itemId = $this->model->select("itemId", "cso1_itemBarcode", "barcode = '" . $arrItem['itemId'] . "' and presence = 1");
                 $weight = (float) $arrItem['weight'];
                 $note = number_format($arrItem['weight'], $arrItem['config']['digitFloat']) . " Kg";
-
+                
 
             } else {
                 // BARCODE STATIC
@@ -213,6 +214,7 @@ class KioskCart extends CI_Controller
                         "inputDate" => time(),
                         "updateDate" => time(),
                         "note" => $note,
+                        "qty" => $weight,
                     );
                     $this->db->insert("cso1_kioskCart", $insert);
 

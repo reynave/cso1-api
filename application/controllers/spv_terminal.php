@@ -392,7 +392,7 @@ class Spv_terminal extends CI_Controller
                 "storeOutlesId" => $storeOutlesId,
                 "terminalId" => $terminalId,
                 "struk" => $id,
-                "cashierId" => "",
+                "cashierId" => "Close by Supervisor",
                 "pthType" => 1,
 
                 "total" => (int) $summary['total'],
@@ -408,7 +408,7 @@ class Spv_terminal extends CI_Controller
                 "locked" => 1,
                 "presence" => 1,
                 "inputDate" => time(),
-                "updateDate" => time(),
+                "updateDate" => time(), 
             );
             $this->db->insert('cso1_transaction', $insert);
 
@@ -443,6 +443,8 @@ class Spv_terminal extends CI_Controller
                     "inputDate" => time(),
                     "updateDate" => time(),
                     "updateBy" => $row['updateBy'],
+                    "transactionDate" => $row['transactionDate'],
+                    "qty" => $row['qty'],
                 );
                 $this->db->insert('cso1_transactionDetail', $insertDetail);
             }

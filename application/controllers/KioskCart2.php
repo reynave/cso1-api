@@ -185,6 +185,7 @@ class KioskCart2 extends CI_Controller
                     "inputDate" => time(),
                     "updateDate" => time(),
                     "note" => $note,
+                    "qty" => $weight,
                 );
                 $this->db->insert("cso1_kioskCart", $insert);
 

@@ -137,16 +137,16 @@ class KioskPayment extends CI_Controller
                 foreach ($q as $row) {
 
 
-                    $qty = 1;
-                    $barcode = str_split($row['barcode']);
-                    $arrItem = $this->model->barcode($row['barcode']);
-                    if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
-                        // BARCODE DINAMIC  
-                        $barcode = $arrItem['itemId'];
-                        $qty = $arrItem['weight'];
-                    } else {
-                        $barcode = $row['barcode'];
-                    }
+                    // $qty = 1;
+                    // $barcode = str_split($row['barcode']);
+                    // $arrItem = $this->model->barcode($row['barcode']);
+                    // if (count($barcode) >= 13 && $arrItem['prefix'] == 2) {
+                    //     // BARCODE DINAMIC  
+                    //     $barcode = $arrItem['itemId'];
+                    //     $qty = $arrItem['weight'];
+                    // } else {
+                    //     $barcode = $row['barcode'];
+                    // }
 
 
 
@@ -171,7 +171,7 @@ class KioskPayment extends CI_Controller
                         "updateDate" => $row['updateDate'],
                         "updateBy" => $row['updateBy'],
                         "transactionDate" => $row['transactionDate'],
-                        "qty" => $qty,
+                        "qty" => $row['qty'],
                     );
                     $this->db->insert('cso1_transactionDetail', $insertDetail);
                 }
