@@ -11,22 +11,23 @@ class ReportsItemSales extends CI_Controller
         header("Access-Control-Allow-Headers: key, token,  Content-Type");
         header('Access-Control-Allow-Methods: GET, POST, PUT');
         header('Content-Type: application/json');
+        $this->file = 'C:/xampp7433/htdocs/app/sync';
         // error_reporting(E_ALL);  
         if (!$this->model->header($this->openAPI)) {
-           // echo $this->model->error("Error auth");
-          //  exit;
+            // echo $this->model->error("Error auth");
+            //  exit;
         }
     }
     // START :: ITEMS
     function storeBranches()
     {
         $data = array(
-            "storeOutles" => $this->input->get('storeBranchesId') ?  $this->model->sql("SELECT id, name 
+            "storeOutles" => $this->input->get('storeBranchesId') ? $this->model->sql("SELECT id, name 
             from cso1_storeOutles where storeBranchesId = '" . $this->input->get('storeBranchesId') . "' and presence = 1 order by name ASC") : [],
 
             "storeBranches" => $this->model->sql("SELECT id, name from cso1_storeBranches where presence = 1 order by name ASC"),
             "dateFrom" => date('Y-m-d'),
-            "dateTo" =>date('Y-m-d'),
+            "dateTo" => date('Y-m-d'),
         );
         echo json_encode($data);
     }
@@ -67,26 +68,26 @@ class ReportsItemSales extends CI_Controller
                 ) as t1
                 join cso1_item as i on i.id = t1.itemId  
                 where  i.itemCategoryId  = '" . $row['id'] . "' ");
-            
+
             foreach ($itemDetail as $rec) {
                 $totalAmount += $rec['totalAmount'];
-                $qty += $rec['qty'];    
+                $qty += $rec['qty'];
             }
 
 
             $itemDetailEdit = [];
-            foreach ($itemDetail as $rec) { 
-                array_push($itemDetailEdit,[
-                    "itemId" =>  $rec['itemId'],
-                    "totalAmount" =>  $rec['totalAmount'],
-                    "qty" =>  $rec['qty'],
-                    "description" =>  $rec['description'],
-                    "itemCategoryId" =>  $rec['itemCategoryId'],
-                    "percent" => number_format(($rec['qty']/$qty) * 100,1),
+            foreach ($itemDetail as $rec) {
+                array_push($itemDetailEdit, [
+                    "itemId" => $rec['itemId'],
+                    "totalAmount" => $rec['totalAmount'],
+                    "qty" => $rec['qty'],
+                    "description" => $rec['description'],
+                    "itemCategoryId" => $rec['itemCategoryId'],
+                    "percent" => number_format(($rec['qty'] / $qty) * 100, 1),
                 ]);
             }
 
-            
+
 
             $detailItem = array(
                 "id" => $row['id'],
@@ -106,7 +107,7 @@ class ReportsItemSales extends CI_Controller
             "dateFrom" => $startDate,
             "dateTo" => $endDate,
             "itemsCategory" => $itemsCategory,
-            "items" =>  $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
+            "items" => $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
                 from (
                     select td.itemId, sum(td.price) as 'totalAmount', sum(td.qty) as 'qty'
                     from cso1_transaction as t
@@ -122,4 +123,41 @@ class ReportsItemSales extends CI_Controller
         );
         echo json_encode($data);
     }
+
+
+    function exportGold()
+    {
+        $this->load->model('transaction');
+
+
+        $start_date = $this->input->get('startDate');
+        $end_date =  $this->input->get('endDate');
+
+        $date_array = [];
+
+        $current_date = new DateTime($start_date);
+        $end_date_obj = new DateTime($end_date);
+
+        while ($current_date <= $end_date_obj) {
+        	$date_array[] = $current_date->format('Y-m-d'); // Simpan tanggal dalam format Y-m-d
+        	$current_date->modify('+1 day'); // Tambahkan 1 hari
+        }
+
+        $syncRest = [];
+        foreach($date_array as $row){
+            $syncRest[] = $this->transaction->sync($row);
+        }
+
+        $data = array(
+            "dateFrom" => $start_date,
+            "dateTo" => $end_date,
+            "dateArray " =>  $date_array ,
+            "syncRest" => $syncRest,
+        );
+        echo json_encode($data);
+
+
+        //  echo $this->transaction->sync(date("Y-m-d"));
+    }
+
 }
