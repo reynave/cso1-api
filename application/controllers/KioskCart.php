@@ -236,6 +236,7 @@ class KioskCart extends CI_Controller
                                 "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                                 "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
                                 "discount" => $promo['discount'],
+                                "note" => "SPECIAL PRICE",
                             ];
                         }else{
                             $update = [
@@ -244,17 +245,18 @@ class KioskCart extends CI_Controller
                                 "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                                 "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
                                 "discount" => $promo['discount'],
+                                "note" => "PROMO DISCOUNT",
                             ];
                         }
 
                         $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
 
-                        if (isset($promo['isSpecialPrice'])) {
-                            $update = [
-                                "note" => $note . ' ' . number_format($promo['newPrice'])
-                            ];
-                            $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
-                        }
+                        // if (isset($promo['isSpecialPrice'])) {
+                        //     $update = [
+                        //         "note" => $note . ' ' . number_format($promo['newPrice'])
+                        //     ];
+                        //     $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
+                        // }
 
 
                         $price = $promo['newPrice'];

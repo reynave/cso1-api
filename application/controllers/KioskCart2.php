@@ -38,13 +38,32 @@ class KioskCart2 extends CI_Controller
 
             $this->benchmark->mark('code_start');
             $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
-            $itemsList = $this->model->sql("SELECT 
+
+            $q_verBeta = "SELECT 
+                    c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice,  
+                    i.description, i.shortDesc, i.images, c.promoPrice, p.typeOfPromotion  ,
+                    CASE  p.typeOfPromotion 
+                    WHEN 1 THEN 'SPECIAL PRICE'
+                    WHEN 2 THEN 'DISCOUNT'
+                    ELSE ''
+                    END  as 'note'
+
+                FROM cso1_kioskCart as c
+                left join cso1_item as i on i.id = c.itemId
+                left join cso1_promotion as p on p.id = c.promotionId
+                WHERE c.presence =1 and c.kioskUuid = '$uuid'  ";
+
+
+
+            $q = "SELECT 
                     c.id, c.kioskUuid, c.itemId, c.price, c.discount, c.barcode, c.originPrice, c.note,
                     i.description, i.shortDesc, i.images, c.promoPrice
                 FROM cso1_kioskCart as c
                 left join cso1_item as i on i.id = c.itemId
-                WHERE c.presence =1 and c.kioskUuid = '$uuid' 
-            ");
+                WHERE c.presence =1 and c.kioskUuid = '$uuid'";
+
+
+            $itemsList = $this->model->sql($q);
 
             $this->benchmark->mark('code_end');
 
@@ -193,17 +212,28 @@ class KioskCart2 extends CI_Controller
                 $qty = (int) $this->model->select("count(id)", "cso1_kioskCart", " kioskUuid = '" . $post['kioskUuid'] . "' AND  itemId = '$itemId' ") + 1;
                 $promo = $this->promo->getPromo2($itemId, $finalPrice, $qty);
                 if ($promo['promotionItemId'] > 0) {
+
+                    $typeOfPromotion = $this->model->select("typeOfPromotion", "cso1_promotion", " id = '" . $promo['promotionId'] . "'");
+                    if ($typeOfPromotion == 1) {
+                        $note = 'SPECIAL PRICE';
+                    }
+                    if ($typeOfPromotion == 2) {
+                        $note = 'DISCOUNT PRICE';
+                    }
+
                     $update = [
-                         "promoPrice" => (int) $promo['newPrice'],
+                        "promoPrice" => (int) $promo['newPrice'],
                         "kioskUuid" => $post['kioskUuid'],
                         "price" => $promo['newPrice'] * $weight,
                         "originPrice" => $promo['newPrice'],
-                        
+
                         "isSpecialPrice" => isset($promo['isSpecialPrice']),
                         "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
                         "promotionItemId" => isset($promo['promotionItemId']) ? $promo['promotionItemId'] : "",
                         "discount" => $promo['discount'],
-                        "note" => $note . $this->model->select("description", "cso1_promotion", " id = '" . $promo['promotionId'] . "'"),
+                        //  "note" => $note . $this->model->select("description", "cso1_promotion", " id = '" . $promo['promotionId'] . "'"),
+                        "note" => $note,
+
                     ];
                     $this->db->update("cso1_kioskCart", $update, " id = $kioskCartId ");
 
@@ -244,7 +274,7 @@ class KioskCart2 extends CI_Controller
                     "items" => $this->model->sql($sql)[0],
                 );
 
-                if( $weight <  $min){ 
+                if ($weight < $min) {
                     $data = array(
                         "promo" => [],
                         "totalQty" => $totalQty,
@@ -252,7 +282,7 @@ class KioskCart2 extends CI_Controller
                         "items" => array(
                             "id" => 0,
                         ),
-                        "note" => $post['barcode']." minimum weight = ".$min,
+                        "note" => $post['barcode'] . " minimum weight = " . $min,
                     );
 
                     $update = array(
