@@ -28,9 +28,9 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-       // $fileName = "POSTRAHEADER$ymd.txt";
-         $fileName = "SCOTRAHEADER$ymd.txt";
-        
+        // $fileName = "POSTRAHEADER$ymd.txt";
+        $fileName = "SCOTRAHEADER$ymd.txt";
+
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
         $PTSCASHIER = 'SPVKSR';
         $sql = "SELECT * from cso1_transaction  
@@ -50,15 +50,15 @@ class Transaction extends CI_Model
                 $row['memberId'] . '|' . // 8
                 $row['finalPrice'] . '|' . // 9
                 '0|1' . // 10  dan 11 
-                
+
                 "\n";
             fwrite($myfile, $txt);
         }
         fclose($myfile);
 
-       // $fileNameTrg = "postraheader$ymd.trg";
+        // $fileNameTrg = "postraheader$ymd.trg";
         $fileNameTrg = "scotraheader$ymd.trg";
-       
+
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);
@@ -66,18 +66,19 @@ class Transaction extends CI_Model
 
 
         $insert = array(
-            "fileSize" =>  $i,
+            "fileSize" => $i,
             "module" => "POSTRAHEADER",
             "fileName" => $fileName,
-            "status" => 1, 
-            "presence" => 1, 
-             "syncDate" => date("Y-m-d H:i:s"),
+            "status" => 1,
+            "presence" => 1,
+            "syncDate" => date("Y-m-d H:i:s"),
             "inputDate" => time(),
         );
         $this->db->insert("cso1_syncLog", $insert);
-        return "POSTRAHEADER CREATED " . $ymd;
+       // return "POSTRAHEADER CREATED " . $ymd;
+       // return true;
     }
- 
+
     function postrasalesitem($date)
     {
         $ymd = date("ymd", strtotime($date));
@@ -85,7 +86,7 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-       // $fileName = "POSTRASALESITEM$ymd.txt";
+        // $fileName = "POSTRASALESITEM$ymd.txt";
         $fileName = "SCOTRASALESITEM$ymd.txt";
 
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
@@ -116,20 +117,18 @@ class Transaction extends CI_Model
         $PTSCASHIER = 'SPVKSR';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
-            
-            
+
+
             //$qty = $row['PTSQTY'];
-            $barcode =  $row['PTSTILLCODE'];  
-            $arrItem = $this->model->barcode($row['PTSTILLCODE']);
-           //    print_r( $arrItem);
-            if ( $arrItem['prefix'] == '2') { 
-                // BARCODE DINAMIC  
-                $barcode = $arrItem['itemId'];
-                //$qty = (float)$arrItem['weight'] * $row['PTSQTY'];
-             
-            } 
-            
-            $PTSBUSDATE = $row['PTSBUSDATE'] == '' ? date("d/m/Y H:i:s", $row['inputDate'] - rand(1,99)) :  date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']) );
+            $barcode = $row['PTSTILLCODE'];
+            // $arrItem = $this->model->barcode($row['PTSTILLCODE']); 
+            // if ( $arrItem['prefix'] == '2') { 
+            //     // BARCODE DINAMIC  
+            //     $barcode = $arrItem['itemId']; 
+
+            // } 
+
+            $PTSBUSDATE = $row['PTSBUSDATE'] == '' ? date("d/m/Y H:i:s", $row['inputDate'] - rand(1, 99)) : date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']));
 
             $txt =
                 $i . '|' .      //1 Kode unik untuk tiap baris transaksi (ID/no urut per baris transaksi)
@@ -139,14 +138,14 @@ class Transaction extends CI_Model
 
                 $PTSCASHIER . '|' . //5 Kode kasir 
                 $PTSBUSDATE . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss) 
-              
+
                 '1' . '|' . //7 Type of sales item: 1=sales, 2=return
                 $row['PTSQTY'] . '|' . //8  Total barang yang terjual per item
-                ($row['PTSQTY']* $row['PTSTOTALPRICE'] ). '|' . //9 Total harga barang yang terjual per item (Sebelum discount)
-                ($row['PTSQTY']*$row['PTSTOTALDISC']) . '|' . //10 Total diskon barang yang terjual per item (Dalam Rupiah)
+                ($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . //9 Total harga barang yang terjual per item (Sebelum discount)
+                ($row['PTSQTY'] * $row['PTSTOTALDISC']) . '|' . //10 Total diskon barang yang terjual per item (Dalam Rupiah)
                 '' . $barcode . '|' . //11 Barcode item
                 '' . $row['PTIPROMOCODE'] . '|' . // 12 Kode promo (kode promo yang dari GOLD)
-    
+
                 $row['PTIUNITPRICE'] . '|' . //13   Harga per item
 
                 '' . //14 Untuk Simpan ID SPG (Depstore)
@@ -155,25 +154,27 @@ class Transaction extends CI_Model
         }
         fclose($myfile);
 
-       // $fileNameTrg = "postrasalesitem$ymd.trg";
+        // $fileNameTrg = "postrasalesitem$ymd.trg";
         $fileNameTrg = "scotrasalesitem$ymd.trg";
-       
+
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);
         fclose($myfile);
 
         $insert = array(
-            "fileSize" =>  $i,
+            "fileSize" => $i,
             "module" => "POSTRASALESITEM",
-            "fileName" => $fileName, 
+            "fileName" => $fileName,
             "inputDate" => time(),
             "syncDate" => date("Y-m-d H:i:s"),
-            "status" => 1, 
-            "presence" => 1, 
+            "status" => 1,
+            "presence" => 1,
         );
         $this->db->insert("cso1_syncLog", $insert);
-        return "POSTRASALESITEM CREATED " . $ymd;
+        //return "POSTRASALESITEM CREATED " . $ymd;
+       // return true;
+
     }
     function postratender($date)
     {
@@ -182,9 +183,9 @@ class Transaction extends CI_Model
         $month = date("m", strtotime($date));
         $day = date("d", strtotime($date));
 
-       // $fileName = "POSTRATENDER$ymd.txt";
+        // $fileName = "POSTRATENDER$ymd.txt";
         $fileName = "SCOTRATENDER$ymd.txt";
-        
+
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
         $sql = "SELECT *
@@ -198,14 +199,14 @@ class Transaction extends CI_Model
         $PTSCASHIER = 'SPVKSR';
         foreach ($this->model->sql($sql) as $row) {
             $i++;
-            $QR = $this->model->select('qr','cso1_paymentType',"id = '".$row['paymentTypeId']."' ");
+            $QR = $this->model->select('qr', 'cso1_paymentType', "id = '" . $row['paymentTypeId'] . "' ");
             //$QR = $QR == '' ? '3':$QR;
             $txt =
                 $i . '|' .      //1
                 $row['id'] . '|' . //2
                 '' . $row['terminalId'] . '|' .   //3
                 '' . $row['storeOutlesId'] . '|' . //4
-                ''. $PTSCASHIER . '|' . //5
+                '' . $PTSCASHIER . '|' . //5
                 $QR . '|' .  //6
                 date("d/m/Y H:i:s", $row['inputDate']) . '|' . //7
                 $row['finalPrice'] . '|' . //8
@@ -219,24 +220,24 @@ class Transaction extends CI_Model
         fclose($myfile);
 
         //$fileNameTrg = "postratender$ymd.trg";
-         $fileNameTrg = "scotratender$ymd.trg";
-        
+        $fileNameTrg = "scotratender$ymd.trg";
+
         $myfile = fopen("../sync/transaction/$fileNameTrg", "w") or die("Unable to open file!");
         $txt = "end\n";
         fwrite($myfile, $txt);
         fclose($myfile);
 
-        $insert = array( 
-            "fileSize" =>  $i,
+        $insert = array(
+            "fileSize" => $i,
             "module" => "POSTRATENDER",
-            "fileName" => $fileName, 
+            "fileName" => $fileName,
             "inputDate" => time(),
             "syncDate" => date("Y-m-d H:i:s"),
-            "status" => 1, 
-            "presence" => 1, 
+            "status" => 1,
+            "presence" => 1,
         );
-        $this->db->insert("cso1_syncLog", $insert); 
-
-        return "POSTRATENDER CREATED " . $ymd;
+        $this->db->insert("cso1_syncLog", $insert);
+       // return true;
+        // return "POSTRATENDER CREATED " . $ymd;
     }
 }
