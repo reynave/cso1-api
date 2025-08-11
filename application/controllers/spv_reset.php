@@ -254,7 +254,7 @@ class Spv_reset extends CI_Controller
 
 
             foreach ($itemGroup as $row) {
-                $itemGroup[$i]['summaryTotalTransaction'] = $this->model->sql("SELECT count(d.id) as 'id'
+                $itemGroup[$i]['summaryTotalTransaction'] = $this->model->sql("SELECT  sum(d.qty) as 'id'
                 from cso1_transaction as t
                 left join cso1_transactionDetail as d ON d.transactionId = t.id
                 where t.resetId = '$id' and   t.terminalId = '" . $row['terminalId'] . "' and d.void = 0 and  d.presence = 1
