@@ -91,7 +91,7 @@ class Transaction extends CI_Model
 
         $myfile = fopen("../sync/transaction/$fileName", "w") or die("Unable to open file!");
 
-        $sql = "SELECT  
+        $sql = "SELECT   
                     t.id as 'PTSTXNUM', 
                     t.terminalId as 'PTSCR', 
                     t.storeOutlesId as 'PTSSITE', 
@@ -100,16 +100,17 @@ class Transaction extends CI_Model
                     d.inputDate, '1' as 'PTSTYPE',
                     d.qty as 'PTSQTY', 
                     d.originPrice as 'PTSTOTALPRICE', 
-                    (d.originPrice - d.price) as 'PTSTOTALDISC', 
+                    d.discount as 'PTSTOTALDISC', 
                     d.barcode as 'PTSTILLCODE', 
                     d.promotionId as 'PTIPROMOCODE',
                     d.price as 'PTIUNITPRICE'
             from cso1_transaction as t 
             left join cso1_transactionDetail as d on d.transactionId = t.id
-            where  t.presence = 1 and d.presence = 1 and d.void = 0 and
-            ( year(t.startDate) = '$year' and  
-            month(t.startDate) = '$month' and 
-            day(t.startDate) = '$day')";
+            where  t.presence = 1 and d.presence = 1 and d.void = 0 
+           and ( year(t.startDate) = '$year' and  
+             month(t.startDate) = '$month' and 
+           day(t.startDate) = '$day')   
+            ";
 
         //echo   "\n" . $sql . "\n" . "\n";
         //$PTSQTY = 1;
@@ -131,24 +132,24 @@ class Transaction extends CI_Model
             $PTSBUSDATE = $row['PTSBUSDATE'] == '' ? date("d/m/Y H:i:s", $row['inputDate'] - rand(1, 99)) : date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']));
 
             $txt =
-                $i . '|' .      //1 Kode unik untuk tiap baris transaksi (ID/no urut per baris transaksi)
-                $row['PTSTXNUM'] . '|' . //2 Nomor struk transaksi
-                '' . $row['PTSCR'] . '|' .   //3 Kode PC untuk POS
-                '' . $row['PTSSITE'] . '|' . //4 Kode toko
+$i . '|' .      				//1 Kode unik untuk tiap baris transaksi (ID/no urut per baris transaksi)
+$row['PTSTXNUM'] . '|' . 		//2 Nomor struk transaksi
+'' . $row['PTSCR'] . '|' .   	//3 Kode PC untuk POS
+'' . $row['PTSSITE'] . '|' . 	//4 Kode toko
 
-                $PTSCASHIER . '|' . //5 Kode kasir 
-                $PTSBUSDATE . '|' .  //6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss) 
+$PTSCASHIER . '|' . 			//5 Kode kasir 
+$PTSBUSDATE . '|' .  			//6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,ss) 
 
-                '1' . '|' . //7 Type of sales item: 1=sales, 2=return
-                $row['PTSQTY'] . '|' . //8  Total barang yang terjual per item
-                ($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . //9 Total harga barang yang terjual per item (Sebelum discount)
-                ($row['PTSQTY'] * $row['PTSTOTALDISC']) . '|' . //10 Total diskon barang yang terjual per item (Dalam Rupiah)
-                '' . $barcode . '|' . //11 Barcode item
-                '' . $row['PTIPROMOCODE'] . '|' . // 12 Kode promo (kode promo yang dari GOLD)
+'1' . '|' . 					//7 Type of sales item: 1=sales, 2=return
+$row['PTSQTY'] . '|' . 			//8  Total barang yang terjual per item
 
-                $row['PTIUNITPRICE'] . '|' . //13   Harga per item
+($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
+($row['PTIPROMOCODE'] != '' ? ($row['PTSQTY'] * $row['PTSTOTALDISC']) : ''). '|' . 	//10 Total diskon barang yang terjual per item (Dalam Rupiah)
 
-                '' . //14 Untuk Simpan ID SPG (Depstore)
+'' . $barcode . '|' . 				//11 Barcode item
+'' . $row['PTIPROMOCODE'] . '|' . 	//12 Kode promo (kode promo yang dari GOLD)
+$row['PTIUNITPRICE'] . '|' . 		//13   Harga per item
+'' . 								//14 Untuk Simpan ID SPG (Depstore)
                 "\n";
             fwrite($myfile, $txt);
         }

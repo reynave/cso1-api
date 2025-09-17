@@ -93,20 +93,22 @@ class Spv_reset extends CI_Controller
 
         $post = json_decode(file_get_contents('php://input'), true);
         if ($post) {
+            $selectDate = date("Y-m-d");
+            $whereDate = " CONVERT(date, t.endDate) = '$selectDate'";
             $data = array(
                 "username" => $this->model->select("name", "cso1_user", "id= '" . $this->model->userId() . "' "),
                 "overal" => $this->model->sql("SELECT sum(total) as 'itemSales', sum(discount + discountMember)  as 'discount' ,
                     sum(total - (discount + discountMember)) as 'netSales', sum(ppn) as 'tax',
                     sum(finalPrice) as 'finalPrice', count(id) as 'qty'
                     from cso1_transaction  t
-                    where resetId is null and presence = 1")[0],
+                    where  $whereDate and presence = 1")[0],
 
                 "voidItems" => $this->model->sql("SELECT t1.qty, t1.itemId , i.description, i.barcode ,i.id
                     from (
                     select count( d.itemId ) as qty, d.itemId
                     from cso1_transactionDetail as d
                     join cso1_transaction as t on t.id = d.transactionId
-                    where d.void = 1 and t.resetId is null
+                    where d.void = 1 and  $whereDate
                     group by d.itemId) t1
                     join cso1_item as i on i.id = t1.itemId"),
 
@@ -114,12 +116,12 @@ class Spv_reset extends CI_Controller
                     "void" => $this->model->sql("SELECT count(d.void) as 'total'
                         from cso1_transactionDetail as d
                         join cso1_transaction as t on t.id = d.transactionId
-                        where  t.resetId is null and d.void = 1")[0]['total'],
+                        where  $whereDate and d.void = 1")[0]['total'],
 
                     "transaction" => $this->model->sql("SELECT count(d.id) as 'total'
                         from cso1_transactionDetail as d
                         join cso1_transaction as t on t.id = d.transactionId
-                        where  t.resetId is null and d.void = 0 and d.presence = 1")[0]['total'],
+                        where   $whereDate and d.void = 0 and d.presence = 1")[0]['total'],
 
                     "cart" => $this->model->sql("select count(id) as total from cso1_kioskCart")[0]['total'],
                 ),
@@ -142,7 +144,13 @@ class Spv_reset extends CI_Controller
                 $id = $reset[0]['id'];
                 $this->db->trans_start();
 
+                $startDate = $this->model->sql("SELECT 
+                        top 1 startDate, endDate
+                        from cso1_transaction where
+                          CONVERT(date, endDate) = '" . date('Y-m-d') . "' order by startDate ASC");
 
+                $startDate = count($startDate) > 0 ? $startDate[0]['startDate'] : date("Y-m-d 00:00:00");
+                
                 $insert1 = array(
 
                     "storeOutlesId" => $this->model->select("storeOutlesId", "cso1_user", "id= '" . $this->model->userId() . "' "),
@@ -159,6 +167,7 @@ class Spv_reset extends CI_Controller
                     "endDate" => time(),
                     "closeDate" => date("Y-m-d H:i:s"),
 
+                    "openDate" => $startDate,
                     "presence" => 1,
                     "inputDate" => time(),
                     "inputBy" => $this->model->userId(),
@@ -167,10 +176,10 @@ class Spv_reset extends CI_Controller
                 $this->db->update("cso1_reset", $insert1, "id = '$id' ");
 
                 $q = $this->model->sql("SELECT p.name, t1.*
-                from (select paymentTypeId, count(paymentTypeId) as 'check', sum(finalPrice) as 'paid'
-                from cso1_transaction
-                where resetId is null and presence = 1
-                group by paymentTypeId) as  t1
+                from (select t.paymentTypeId, count(t.paymentTypeId) as 'check', sum(t.finalPrice) as 'paid'
+                from cso1_transaction as t
+                where $whereDate  and t.presence = 1
+                group by t.paymentTypeId) as  t1
                 join cso1_paymentType as p on p.id = t1.paymentTypeId");
 
                 foreach ($q as $row) {
@@ -194,7 +203,7 @@ class Spv_reset extends CI_Controller
                 $this->db->update(
                     "cso1_transaction",
                     $update,
-                    "resetId is null AND CONVERT(date, endDate) = '$today'"
+                    " CONVERT(date, endDate) = '$today'"
                 );
 
 
@@ -383,7 +392,7 @@ class Spv_reset extends CI_Controller
                     "cart" => 0,
                 ),
             );
- 
+
             $startDate = $this->model->sql("SELECT 
                         top 1 startDate, endDate
                         from cso1_transaction where 
@@ -500,7 +509,7 @@ class Spv_reset extends CI_Controller
         );
         echo json_encode($data);
     }
- 
+
 
     function historyYear()
     {
