@@ -103,7 +103,8 @@ class Transaction extends CI_Model
                     d.discount as 'PTSTOTALDISC', 
                     d.barcode as 'PTSTILLCODE', 
                     d.promotionId as 'PTIPROMOCODE',
-                    d.price as 'PTIUNITPRICE'
+                    d.price as 'PTIUNITPRICE',
+                    d.itemId
             from cso1_transaction as t 
             left join cso1_transactionDetail as d on d.transactionId = t.id
             where  t.presence = 1 and d.presence = 1 and d.void = 0 
@@ -121,14 +122,12 @@ class Transaction extends CI_Model
 
 
             //$qty = $row['PTSQTY'];
-            $barcode = $row['PTSTILLCODE'];
-            // $arrItem = $this->model->barcode($row['PTSTILLCODE']); 
-            // if ( $arrItem['prefix'] == '2') { 
-            //     // BARCODE DINAMIC  
-            //     $barcode = $arrItem['itemId']; 
-
-            // } 
-
+            // Cek karakter pertama barcode
+            $barcode = $row['PTSTILLCODE']; 
+            if (substr($barcode, 0, 1) === "2") { 
+                $barcode = $row['itemId']; 
+            }
+            
             $PTSBUSDATE = $row['PTSBUSDATE'] == '' ? date("d/m/Y H:i:s", $row['inputDate'] - rand(1, 99)) : date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']));
 
             $txt =
@@ -144,11 +143,11 @@ $PTSBUSDATE . '|' .  			//6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,
 $row['PTSQTY'] . '|' . 			//8  Total barang yang terjual per item
 
 ($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
-($row['PTIPROMOCODE'] != '' ? ($row['PTSQTY'] * $row['PTSTOTALDISC']) : ''). '|' . 	//10 Total diskon barang yang terjual per item (Dalam Rupiah)
+($row['PTIPROMOCODE'] != '' ? ($row['PTSQTY'] * $row['PTSTOTALDISC']) : '0'). '|' . 	//10 Total diskon barang yang terjual per item (Dalam Rupiah)
 
 '' . $barcode . '|' . 				//11 Barcode item
 '' . $row['PTIPROMOCODE'] . '|' . 	//12 Kode promo (kode promo yang dari GOLD)
-$row['PTIUNITPRICE'] . '|' . 		//13   Harga per item
+$row['PTSTOTALPRICE']. '|' . 		//13 Harga per item
 '' . 								//14 Untuk Simpan ID SPG (Depstore)
                 "\n";
             fwrite($myfile, $txt);
