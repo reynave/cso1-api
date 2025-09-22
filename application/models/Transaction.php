@@ -96,7 +96,14 @@ class Transaction extends CI_Model
                     t.terminalId as 'PTSCR', 
                     t.storeOutlesId as 'PTSSITE', 
                     'SPVKSR' as 'PTSCASHIER',
+                    t.startDate,
                     d.transactionDate as 'PTSBUSDATE' , 
+                    t.endDate,
+                    	
+					DATEPART(HOUR, t.startDate) as 'header_hour', 
+					DATEPART(HOUR, d.transactionDate) as 'detail_hour', 
+
+
                     d.inputDate, '1' as 'PTSTYPE',
                     d.qty as 'PTSQTY', 
                     d.originPrice as 'PTSTOTALPRICE', 
@@ -108,18 +115,19 @@ class Transaction extends CI_Model
             from cso1_transaction as t 
             left join cso1_transactionDetail as d on d.transactionId = t.id
             where  t.presence = 1 and d.presence = 1 and d.void = 0 
-           and ( year(t.startDate) = '$year' and  
-             month(t.startDate) = '$month' and 
-           day(t.startDate) = '$day')   
+            and ( year(t.startDate) = '$year' and  
+                month(t.startDate) = '$month' and 
+                day(t.startDate) = '$day')   
             ";
 
         //echo   "\n" . $sql . "\n" . "\n";
         //$PTSQTY = 1;
         $i = 0;
         $PTSCASHIER = 'SPVKSR';
+        $n = 7;
         foreach ($this->model->sql($sql) as $row) {
             $i++;
-
+          
 
             //$qty = $row['PTSQTY'];
             // Cek karakter pertama barcode
@@ -128,8 +136,18 @@ class Transaction extends CI_Model
                 $barcode = $row['itemId']; 
             }
             
-            $PTSBUSDATE = $row['PTSBUSDATE'] == '' ? date("d/m/Y H:i:s", $row['inputDate'] - rand(1, 99)) : date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']));
+             $PTSBUSDATE =  $row['PTSBUSDATE'];
 
+            if( $row['header_hour'] != $row['detail_hour'] ){
+
+                $PTSBUSDATE = date('d/m/Y H:i:s', strtotime($row['startDate']) + $n);
+  $n += 7;
+            //  $PTSBUSDATE = date("d/m/Y H:i:s", $row['startDate'] + rand(1, 99)) ;
+            }else{
+                $PTSBUSDATE = date("d/m/Y H:i:s", strtotime($row['PTSBUSDATE']));
+                $n = 0;
+            }
+            
             $txt =
 $i . '|' .      				//1 Kode unik untuk tiap baris transaksi (ID/no urut per baris transaksi)
 $row['PTSTXNUM'] . '|' . 		//2 Nomor struk transaksi
@@ -142,7 +160,7 @@ $PTSBUSDATE . '|' .  			//6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,
 '1' . '|' . 					//7 Type of sales item: 1=sales, 2=return
 $row['PTSQTY'] . '|' . 			//8  Total barang yang terjual per item
 
-($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
+ceil($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
 ($row['PTIPROMOCODE'] != '' ? ($row['PTSQTY'] * $row['PTSTOTALDISC']) : '0'). '|' . 	//10 Total diskon barang yang terjual per item (Dalam Rupiah)
 
 '' . $barcode . '|' . 				//11 Barcode item
