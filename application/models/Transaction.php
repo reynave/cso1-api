@@ -160,7 +160,7 @@ $PTSBUSDATE . '|' .  			//6 Tanggal transaksi dalam format date (DD/MM/YY,hh,mm,
 '1' . '|' . 					//7 Type of sales item: 1=sales, 2=return
 $row['PTSQTY'] . '|' . 			//8  Total barang yang terjual per item
 
-ceil($row['PTSQTY'] * $row['PTSTOTALPRICE']) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
+ceil( ($row['PTIUNITPRICE'] - $row['PTSTOTALDISC']) ) . '|' . 	//9 Total harga barang yang terjual per item (Sebelum discount)
 ($row['PTIPROMOCODE'] != '' ? ($row['PTSQTY'] * $row['PTSTOTALDISC']) : '0'). '|' . 	//10 Total diskon barang yang terjual per item (Dalam Rupiah)
 
 '' . $barcode . '|' . 				//11 Barcode item

@@ -3,12 +3,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class CmdMember extends CI_Controller
 {
     // FOR php7 : C:\xampp7433\php\php.exe index.php Cmd promo
-    // FULL LINK PS C:\xampp7433\htdocs\app\cso1-api> C:\xampp7433\php\php.exe index.php Cmd promo
+    // FULL LINK PS C:\xampp7433\htdocs\app\cso1-api> C:\xampp7433\php\php.exe index.php CmdMember
 
     public function __construct()
     {
         parent::__construct();
-        $this->file = 'C:\xampp7433\htdocs\app\sync\KMEMBER2.DBF';
+        $this->file = 'C:\xampp7433\htdocs\app\sync\KMEMBER.DBF';
         date_default_timezone_set('Asia/Jakarta');
         error_reporting(E_ERROR | E_PARSE);
         $this->time = array(
@@ -25,8 +25,9 @@ class CmdMember extends CI_Controller
         $data = [];
         // Buka file DBF dalam mode baca (0 = read-only)
         $db = dbase_open($file, 0);
-
+        $this->db->query("Truncate table  cso1_memberVip");
         if ($db) {
+             //$this->db->delete("cso1_memberVip", "1 = 1");
             // Dapatkan jumlah record dalam file
             $recordCount = dbase_numrecords($db);
 
@@ -44,7 +45,7 @@ class CmdMember extends CI_Controller
                     $value = trim($value);
                 }); 
                 $fkode = $row['FKODE'] ? $row['FKODE'] : $row['fkode'];
-                $this->db->delete("cso1_memberVip", "FKODE = '$fkode' ");
+               
                 $insert = array(
                     "FKODE" => $row['FKODE'] ? $row['FKODE'] : $row['fkode'],
                     "FNAME" =>  $row['FNAME'] ?  $row['FNAME']:  $row['fname'] ,

@@ -78,21 +78,22 @@ class ReportsReset extends CI_Controller
     function fnFilter()
     {
         //? storeBranchesId=11&storeOutletId=&dateFrom=2022-09-14&dateTo=2022-09-13 
-        $dateFrom = strtotime($this->input->get('dateFrom'));
-        $dateTo =  strtotime($this->input->get('dateTo'));
+        $dateFrom =  $this->input->get('dateFrom');
+        $dateTo =   $this->input->get('dateTo');
         $storeOutlesId = $this->input->get('storeOutletId');
-
+        $q = "SELECT top 1000 a.*, u.name as 'user' 
+FROM cso1_reset as a 
+join cso1_user as u on u.id = a.inputBy   
+and a.presence = 1 
+and a.openDate >= '$dateFrom' and a.openDate <= '$dateTo' and a.totalNumberOfCheck > 0
+order by id desc
+            ";
         $data = array(
             "dateFrom" => $dateFrom,
             "dateTo" =>  $dateTo,
             "storeOutlesId" => $storeOutlesId,
-            "items" => $this->model->sql("SELECT a.*, u.name as 'user' 
-            FROM cso1_reset as a 
-            join cso1_user as u on u.id = a.inputBy   
-            WHERE a.storeOutlesId = '$storeOutlesId' and 
-                (a.endDate >=  " . $dateFrom . " and  a.endDate <= " .  $dateTo  . " )  
-                and a.presence = 1
-            "),
+          
+            "items" => $this->model->sql($q),
 
         );
         echo json_encode($data);

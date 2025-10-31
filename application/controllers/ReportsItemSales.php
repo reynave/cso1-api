@@ -42,7 +42,7 @@ class ReportsItemSales extends CI_Controller
 
 
 
-    function fnFilter()
+    function fnFilter_0()
     {
         $itemsCategory = [];
         $startDate = $this->input->get('dateFrom');
@@ -102,12 +102,7 @@ class ReportsItemSales extends CI_Controller
         }
 
 
-
-        $data = array(
-            "dateFrom" => $startDate,
-            "dateTo" => $endDate,
-            "itemsCategory" => $itemsCategory,
-            "items" => $this->model->sql("SELECT t1.*, i.description , i.itemCategoryId, c.name
+        $q="SELECT t1.*, i.description , i.itemCategoryId, c.name
                 from (
                     select td.itemId, sum(td.price) as 'totalAmount', sum(td.qty) as 'qty'
                     from cso1_transaction as t
@@ -119,7 +114,48 @@ class ReportsItemSales extends CI_Controller
                 join cso1_item as i on i.id = t1.itemId
                 left join cso1_itemCategory as c on c.id = i.itemCategoryId 
                 order by t1.totalAmount DESC 
-            "),
+            ";
+        $data = array(
+            "dateFrom" => $startDate,
+            "dateTo" => $endDate,
+            "itemsCategory" => $itemsCategory,
+            "q" => $q,
+            "items" => $this->model->sql($q),
+        );
+        echo json_encode($data);
+    }
+  function fnFilter()
+    {
+        $itemsCategory = [];
+        $startDate = $this->input->get('dateFrom');
+        $endDate = $this->input->get('dateTo');
+
+        $where_epoctime = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+            and (t.transactionDate  >=  " . strtotime($this->input->get('dateFrom')) . " and t.transactionDate < " . strtotime($this->input->get('dateTo')) . ")";
+        $where = "and t.storeOutlesId = '" . $this->input->get('storeOutletId') . "' 
+            and (cast(startDate as date) >= '$startDate' and cast(startDate as date) <= '$endDate' )  ";
+
+   
+
+        $q="SELECT t1.* , i.description, '' as name, i.itemCategoryId  from 
+            (
+                SELECT    d.itemId,  
+                sum(d.price - d.discount) as 'totalAmount',
+                sum( d.qty ) as 'qty'
+            from cso1_transaction as t 
+            left join cso1_transactionDetail as d on d.transactionId = t.id
+            where  t.presence = 1 and d.presence = 1 and d.void = 0 
+                $where 
+                group by d.itemId
+            ) as t1
+         left join cso1_item as i on i.id = t1.itemId
+            ";
+        $data = array(
+            "dateFrom" => $startDate,
+            "dateTo" => $endDate,
+            "itemsCategory" => $itemsCategory,
+      
+            "items" => $this->model->sql($q),
         );
         echo json_encode($data);
     }

@@ -212,6 +212,7 @@ class Spv_terminal extends CI_Controller
                     "barcode" => $post['item']['barcode'],
                     "originPrice" => $post['item']['originPrice'],
                     "discount" => $post['item']['discount'],
+                    "qty" => $post['item']['qty'],
                     "transactionDate" => date("Y-m-d H:i:s"),
                     "void" => 0,
                     "isPriceEdit" => 1,

@@ -495,7 +495,7 @@ class Spv_reset extends CI_Controller
     function history()
     {
         $data = array(
-            "items" => $this->model->sql("SELECT TOP 30 r.*, u.name as 'name'
+            "items" => $this->model->sql("SELECT TOP 130 r.*, u.name as 'name'
                 from cso1_reset as r
                 left join cso1_user as u on r.inputBy = u.id
                 where  r.presence = 1
