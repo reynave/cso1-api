@@ -15,14 +15,14 @@ class KioskPayment extends CI_Controller
         header('Content-Type: application/json');
         date_default_timezone_set('Asia/Jakarta');
 
-        if (!$this->model->checkDeviceObj()) {
-            echo $this->model->error("Error auth");
-            exit;
-        } else {
-            $getDeviceObj = $this->model->getDeviceObj();
-            $this->terminalId = $getDeviceObj['terminalId'];
-            $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
-        }
+        // if (!$this->model->checkDeviceObj()) {
+        //     echo $this->model->error("Error auth");
+        //     exit;
+        // } else {
+        //     $getDeviceObj = $this->model->getDeviceObj();
+        //     $this->terminalId = $getDeviceObj['terminalId'];
+        //     $this->storeOutlesId = $getDeviceObj['storeOutlesId'];
+        // }
     }
 
     function index()
@@ -700,6 +700,21 @@ class KioskPayment extends CI_Controller
         echo json_encode($data);
     }
 
+    function fnCheckRefNo(){
+        $post = json_decode(file_get_contents('php://input'), true);
+        $error = true;
+        $reffNumber = $this->input->get("reffNumber");
+       // if ($post) {
+    $result  = $this->model->sql("select * from cso1_paymentBcaEcr where rrn = '$reffNumber' ");
+    
+        $data = array(
+            "result" => $result,
+            "error" => count($result) > 0 ? true : false,
+
+        );
+       // }
+        echo json_encode($data);
+    }
     function destroyQrBca()
     {
         $post = json_decode(file_get_contents('php://input'), true);
