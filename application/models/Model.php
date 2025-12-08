@@ -630,7 +630,7 @@ class Model extends CI_Model
         return $result;
     }
 
-    function summary($uuid = "")
+    function summaryVer1($uuid = "")
     {
         $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
 
@@ -695,6 +695,74 @@ class Model extends CI_Model
         );
 
         $summary['final'] = $summary['total'] - $summary['discount'] - $summary['memberDiscount'];
+        return $summary;
+    }
+
+    function summary($uuid = "")
+    {
+        $memberId = $this->model->select("memberId", "cso1_kioskUuid", "presence = 1 AND status = 1  AND kioskUuid = '" . $uuid . "'");
+
+        $discountMember = 0;
+        if ((int) $memberId > 0) {
+            $discountMember = (int) $this->model->sql("SELECT sum(discountAmount) as 'discountAmount', 
+        sum(discountPercent) as 'discountPercent'
+        from cso1_promotion where presence =1 and status =  1 and startDate >= " . time() . "  and endDate <= " . time())[0]['discountAmount'];
+        }
+        $bkp = (int) $this->model->sql("  SELECT  sum(c.price) as 'total'
+                from cso1_kioskCart as c
+                join cso1_item as i on i.id = c.itemId
+                join cso1_taxCode as x on x.id = i.itemTaxId
+                where c.presence = 1 and  kioskUuid = '$uuid' and x.percentage > 0 and x.taxType = 1
+            ")[0]['total'] + (int) $this->model->sql("  SELECT  sum (c.price*(x.percentage /100) + c.price ) as 'total'
+                from cso1_kioskCart as c
+                join cso1_item as i on i.id = c.itemId
+                join cso1_taxCode as x on x.id = i.itemTaxId
+                where c.presence = 1 and  kioskUuid = '$uuid' and x.percentage > 0 and x.taxType = 0
+            ")[0]['total'];
+        $nonBkp = (int) $this->model->sql("  SELECT   sum(c.price) as 'total'
+            from cso1_kioskCart as c
+            join cso1_item as i on i.id = c.itemId
+            join cso1_taxCode as x on x.id = i.itemTaxId
+            where c.presence = 1 and  kioskUuid = '$uuid' and x.percentage = 0")[0]['total'];
+
+
+        $ppnExc = (int) $this->model->sql("SELECT sum(((c.price - c.discount) * (t.percentage/100)) ) as 'tax' 
+            from cso1_kioskCart as c
+            join cso1_item as i on c.itemId = i.id
+            left join cso1_taxCode as t on t.id = i.itemTaxId
+            where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 0 ")[0]['tax'];
+
+        $ppnInc =  (int) $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
+            from cso1_kioskCart as c
+            join cso1_item as i on c.itemId = i.id
+            left join cso1_taxCode as t on t.id = i.itemTaxId
+            where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 1 ")[0]['ppnInc'];
+
+        $summary = array(
+            "total" => $this->model->sql("SELECT sum(k.price) as 'subTotal'
+                    FROM cso1_kioskCart as k
+                    where k.presence = 1 and k.kioskUuid = '$uuid' ")[0]['subTotal'],
+            "discount" => $this->model->sql("SELECT sum(k.discount) as 'discount'
+                    FROM cso1_kioskCart as k
+                    where k.presence = 1 and k.kioskUuid = '$uuid' ")[0]['discount'],
+            "memberDiscount" => $discountMember,
+            "voucer" => 0,
+
+            // Barang Kena Pajak 
+          //  "bkp" => $bkp - ($ppnExc + $ppnInc),
+             "bkp" => (int) ( ($bkp ) / 1.11),
+          
+            "dpp" =>ceil ( ($bkp ) / 1.11),
+
+            //harga sebelum ppn + (harga sebelum ppn x 0.11) = 100.000
+            "ppn" => ceil( $ppnInc + $ppnExc),
+
+            "nonBkp" => $nonBkp,
+            "final" => 0,
+
+        );
+
+        $summary['final'] = $summary['total'] -   $summary['memberDiscount'];
         return $summary;
     }
 

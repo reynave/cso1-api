@@ -161,11 +161,12 @@ class KioskCart2 extends CI_Controller
 
             if ($totalQty >= $limit) {
                 $data = array(
-                    "sql" => $sqlQty,
+                    
                     "totalQty" => $totalQty,
                     "limit" => $limit,
                     "error" => true,
                     "note" => "Maxsimum only $limit items",
+                    "warning" => "Maxsimum only $limit items",
                 );
             } else if ($itemId) {
                 $filename = $post['kioskUuid'] . '.txt';
@@ -213,11 +214,11 @@ class KioskCart2 extends CI_Controller
                 $promo = $this->promo->getPromo2($itemId, $finalPrice, $qty);
                 if ($promo['promotionItemId'] > 0) {
 
-                    $typeOfPromotion = $this->model->select("typeOfPromotion", "cso1_promotion", " id = '" . $promo['promotionId'] . "'");
-                    if ($typeOfPromotion == 1) {
+                    $specialPrice = $this->model->select("specialPrice", "cso1_promotionItem", " promotionId = '" . $promo['promotionId'] . "'");
+                    if ($specialPrice > 0) {
                         $note = 'SPECIAL PRICE';
                     }
-                    if ($typeOfPromotion == 2) {
+                   else{
                         $note = 'DISCOUNT PRICE';
                     }
 
@@ -225,7 +226,7 @@ class KioskCart2 extends CI_Controller
                         "promoPrice" => (int) $promo['newPrice'],
                         "kioskUuid" => $post['kioskUuid'],
                         "price" => $promo['newPrice'] * $weight,
-                        "originPrice" => $promo['newPrice'],
+                      //  "originPrice" => $promo['newPrice'],
 
                         "isSpecialPrice" => isset($promo['isSpecialPrice']),
                         "promotionId" => isset($promo['promotionId']) ? $promo['promotionId'] : "",
@@ -271,6 +272,7 @@ class KioskCart2 extends CI_Controller
                     "weight" => $weight,
                     "error" => false,
                     "note" => "Item add",
+                    "warning" => "",
                     "items" => $this->model->sql($sql)[0],
                 );
 
@@ -283,6 +285,8 @@ class KioskCart2 extends CI_Controller
                             "id" => 0,
                         ),
                         "note" => $post['barcode'] . " minimum weight = " . $min,
+
+                        "warning" => "",
                     );
 
                     $update = array(
@@ -299,6 +303,7 @@ class KioskCart2 extends CI_Controller
                         "id" => 0,
                     ),
                     "note" => "Item not found!",
+                    "warning" => "Barcode " . $post['barcode'] . " not found",
                 );
             }
 
