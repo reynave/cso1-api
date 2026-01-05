@@ -154,7 +154,7 @@ class ReportsItemSales extends CI_Controller
             "dateFrom" => $startDate,
             "dateTo" => $endDate,
             "itemsCategory" => $itemsCategory,
-      
+            "q" => $q,
             "items" => $this->model->sql($q),
         );
         echo json_encode($data);

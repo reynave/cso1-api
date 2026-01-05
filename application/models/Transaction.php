@@ -135,6 +135,9 @@ class Transaction extends CI_Model
             if (substr($barcode, 0, 1) === "2") { 
                 $barcode = $row['itemId']; 
             }
+            // tolong buatkan code untuk buang spasi di barcode
+            $barcode = str_replace(' ', '', $barcode);  
+            
             
              $PTSBUSDATE =  $row['PTSBUSDATE'];
 
