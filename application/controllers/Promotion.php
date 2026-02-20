@@ -21,7 +21,7 @@ class Promotion extends CI_Controller
     // START :: ITEMS
     function index()
     {
-
+        $searchTerm = $this->input->get('searchTerm');
         $update = array(
             "presence" => 0,
             "updateDate" => time(),
@@ -32,8 +32,11 @@ class Promotion extends CI_Controller
 
         $data = array(
             "itemsPromotion" => $this->model->sql("SELECT p.*, so.description as 'storeOutlet' FROM cso1_promotion  as p 
-            left join cso1_storeOutles as so on so.id = p.storeOutlesId
-            where  p.presence = 1 and p.status = 1"),
+                left join cso1_storeOutles as so on so.id = p.storeOutlesId
+            where  
+            p.presence = 1  and (p.description like '%" . $searchTerm . "%' or p.id like '%" . $searchTerm . "%')
+             order by p.inputDate DESC
+            "),
             "storeOutles" => $this->model->sql("SELECT * From  cso1_storeOutles where  presence = 1"),
 
         );
@@ -59,6 +62,7 @@ class Promotion extends CI_Controller
 
         $data = array(
             "promotion" => $this->model->sql("select *, 
+            ISNULL(Mon, 0) as Mon, ISNULL(Tue, 0) as Tue, ISNULL(Wed, 0) as Wed, ISNULL(Thu, 0) as Thu, ISNULL(Fri, 0) as Fri, ISNULL(Sat, 0) as Sat, ISNULL(Sun, 0) as Sun,
             FORMAT ( dateadd(S, startDate, '1970-01-01 00:00:00')  , 'yyyy-MM-dd')as startDate,
             FORMAT ( dateadd(S, endDate, '1970-01-01 00:00:00')  , 'yyyy-MM-dd') as endDate 
             from cso1_promotion where id = '" . $id . "' and presence = 1 ")[0],
@@ -163,6 +167,14 @@ class Promotion extends CI_Controller
                 "discountPercent" => $post['item']['discountPercent'], 
                 "inputDate" => time(),
                 "inputBy" => $this->model->userId(),
+                "Mon"   => $post['item']['Mon'],
+                "Tue"   => $post['item']['Tue'],
+                "Wed"   => $post['item']['Wed'],
+                "Thu"   => $post['item']['Thu'],
+                "Fri"   => $post['item']['Fri'],
+                "Sat"   => $post['item']['Sat'],
+                "Sun"   => $post['item']['Sun'],
+
             );
             $this->db->update('cso1_promotion', $update, "id='" . $post['item']['id'] . "' ");
             $data = array(

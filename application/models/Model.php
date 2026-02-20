@@ -726,17 +726,21 @@ class Model extends CI_Model
             where c.presence = 1 and  kioskUuid = '$uuid' and x.percentage = 0")[0]['total'];
 
 
-        $ppnExc = (int) $this->model->sql("SELECT sum(((c.price - c.discount) * (t.percentage/100)) ) as 'tax' 
+        $ppnExc = (int) $this->model->sql("SELECT sum(((c.price - c.discount) * ((t.percentage/100))) ) as 'tax' 
             from cso1_kioskCart as c
             join cso1_item as i on c.itemId = i.id
             left join cso1_taxCode as t on t.id = i.itemTaxId
             where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 0 ")[0]['tax'];
 
-        $ppnInc =  (int) $this->model->sql("SELECT sum(c.price - ((c.price - c.discount) / (t.percentage/100 + 1))) as    'ppnInc' 
+
+$taxPercent = 1 + (int) $this->model->sql("SELECT percentage from cso1_taxCode where taxType = 1")[0]['percentage'] /100;
+
+        $q1 = "SELECT sum(c.price) - (sum(c.price) / $taxPercent  ) as    'ppnInc' 
             from cso1_kioskCart as c
             join cso1_item as i on c.itemId = i.id
             left join cso1_taxCode as t on t.id = i.itemTaxId
-            where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 1 ")[0]['ppnInc'];
+            where c.presence = 1 and c.isFreeItem = 0 and c.kioskUuid = '$uuid' and t.taxType = 1 ";
+        $ppnInc =  (int) $this->model->sql($q1)[0]['ppnInc'];
 
         $summary = array(
             "total" => $this->model->sql("SELECT sum(k.price) as 'subTotal'
@@ -750,16 +754,20 @@ class Model extends CI_Model
 
             // Barang Kena Pajak 
           //  "bkp" => $bkp - ($ppnExc + $ppnInc),
-             "bkp" => (int) ( ($bkp ) / 1.11),
+            "bkp" => ceil ( ($bkp ) / 1.11),
           
             "dpp" =>ceil ( ($bkp ) / 1.11),
 
             //harga sebelum ppn + (harga sebelum ppn x 0.11) = 100.000
-            "ppn" => ceil( $ppnInc + $ppnExc),
+            "ppn" => ceil( $ppnInc + $ppnExc) ,
 
             "nonBkp" => $nonBkp,
             "final" => 0,
 
+            "ppnExc" => ceil( $ppnExc) ,
+            "ppnInc" => ceil( $ppnInc) ,
+
+            "taxPpnIncPercent" => $taxPercent,
         );
 
         $summary['final'] = $summary['total'] -   $summary['memberDiscount'];

@@ -211,7 +211,7 @@ class Cmd extends CI_Controller
     function transaction()
     {
           header('Access-Control-Allow-Origin: *');
-        header("Access-Control-Allow-Headers: key, token,  Content-Type");
+        header("Access-Control-Allow-Headers: *");
         header('Access-Control-Allow-Methods: GET, POST, PUT');
         header('Content-Type: application/json');
         $this->load->model('transaction');
