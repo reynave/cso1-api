@@ -78,7 +78,7 @@ class KioskPrint extends CI_Controller
             // "); 
 
             //ver 2
-            $q = " SELECT  td.id, td.barcode, td.itemId, (td.price - td.discount) as 'totalPrice', td.price, td.originPrice,
+            $q = " SELECT  td.id, td.barcode, td.itemId, (td.price) as 'totalPrice', td.price, td.originPrice,
                     (td.isSpecialPrice) as 'isSpecialPrice', (td.discount) as 'totalDiscount', td.note,  i.description, i.shortDesc
             from cso1_transactionDetail as td
             JOIN cso1_item as i on i.id = td.itemId
